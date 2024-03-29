@@ -8,6 +8,7 @@ import com.redpxnda.nucleus.util.MiscUtil;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Pair;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -15,13 +16,14 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class RegistryAnalyzerImpl {
-    public static final Multimap<String, Supplier<Map<RegistryKey<?>, Map<Identifier, Object>>>> registrationListeners = Multimaps.newMultimap(new ConcurrentHashMap<>(), HashSet::new);
+    public static final Multimap<String, Pair<Supplier<Map<RegistryKey<?>, Map<Identifier, Object>>>, Consumer<Object>>> registrationListeners = Multimaps.newMultimap(new ConcurrentHashMap<>(), HashSet::new);
 
-    public static void register(String modId, Supplier<Class<?>> holderClass) {
-        registrationListeners.put(modId, () -> {
+    public static void register(String modId, Supplier<Class<?>> holderClass, Consumer<Object> finishListener) {
+        registrationListeners.put(modId, new Pair<>(() -> {
             Map<RegistryKey<?>, Map<Identifier, Object>> map = new HashMap<>();
             Class<?> cls = holderClass.get();
             for (Field field : cls.getDeclaredFields()) {
@@ -54,6 +56,10 @@ public class RegistryAnalyzerImpl {
                 }
             }
             return map;
-        });
+        }, finishListener));
+    }
+
+    public static void register(String modId, Supplier<Class<?>> holderClass) {
+        register(modId, holderClass, obj -> {});
     }
 }
