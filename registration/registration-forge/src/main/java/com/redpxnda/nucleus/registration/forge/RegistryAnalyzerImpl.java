@@ -5,6 +5,7 @@ import com.google.common.collect.Multimaps;
 import com.redpxnda.nucleus.registration.RegistryAnalyzer;
 import com.redpxnda.nucleus.registration.RegistryId;
 import com.redpxnda.nucleus.util.MiscUtil;
+import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.util.Identifier;
 
@@ -31,7 +32,17 @@ public class RegistryAnalyzerImpl {
                 if (id == null) continue;
 
                 Class<?> type = field.getType();
-                RegistryKey<?> reg = MiscUtil.objectsToRegistries.get(type).getKey();
+                RegistryKey<?> reg = null;
+                for (Map.Entry<Class<?>, Registry<?>> entry : MiscUtil.objectsToRegistries.entrySet()) {
+                    if (entry.getKey().isAssignableFrom(type)) {
+                        reg = entry.getValue().getKey();
+                        break;
+                    }
+                }
+                if (reg == null) {
+                    RegistryAnalyzer.LOGGER.warn("Failed to find registry type for type '{}' in '{}'!", type.getSimpleName(), cls.getSimpleName());
+                    continue;
+                }
 
                 Map<Identifier, Object> objects = map.computeIfAbsent(reg, k -> new HashMap<>());
                 Identifier identifier = new Identifier(modId, id.value());

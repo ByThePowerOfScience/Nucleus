@@ -8,6 +8,7 @@ import net.minecraft.util.Identifier;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.Map;
 import java.util.function.Supplier;
 
 public class RegistryAnalyzerImpl {
@@ -21,7 +22,17 @@ public class RegistryAnalyzerImpl {
             if (id == null) continue;
 
             Class<?> type = field.getType();
-            Registry<?> reg = MiscUtil.objectsToRegistries.get(type);
+            Registry<?> reg = null;
+            for (Map.Entry<Class<?>, Registry<?>> entry : MiscUtil.objectsToRegistries.entrySet()) {
+                if (entry.getKey().isAssignableFrom(type)) {
+                    reg = entry.getValue();
+                    break;
+                }
+            }
+            if (reg == null) {
+                RegistryAnalyzer.LOGGER.warn("Failed to find registry type for type '{}' in '{}'!", type.getSimpleName(), cls.getSimpleName());
+                continue;
+            }
 
             Identifier identifier = new Identifier(modId, id.value());
             try {

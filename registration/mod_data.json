@@ -1,6 +1,6 @@
 {
   "id": "nucleus_registration",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "name": "Nucleus (Registration)",
   "description": "Yet another cross-platform registration library.",
   "authors": [
