@@ -4,6 +4,7 @@ import com.redpxnda.nucleus.config.ConfigBuilder;
 import com.redpxnda.nucleus.config.ConfigManager;
 import com.redpxnda.nucleus.config.ConfigType;
 import com.redpxnda.nucleus.facet.FacetRegistry;
+import com.redpxnda.nucleus.registration.RegistryAnalyzer;
 import dev.architectury.event.events.common.PlayerEvent;
 import dev.architectury.platform.Platform;
 import net.fabricmc.api.EnvType;
@@ -57,5 +58,15 @@ public class NucleusTest {
 
         if (Platform.getEnv() == EnvType.CLIENT)
             ConfigManager.CONFIG_SCREENS_REGISTRY.register(r -> r.add("nucleus_test", new Identifier("nucleus:test-common")));
+
+        /*
+        ██████╗ ███████╗ ██████╗ ██╗███████╗████████╗██████╗ ██╗███████╗███████╗
+        ██╔══██╗██╔════╝██╔════╝ ██║██╔════╝╚══██╔══╝██╔══██╗██║██╔════╝██╔════╝
+        ██████╔╝█████╗  ██║  ███╗██║███████╗   ██║   ██████╔╝██║█████╗  ███████╗
+        ██╔══██╗██╔══╝  ██║   ██║██║╚════██║   ██║   ██╔══██╗██║██╔══╝  ╚════██║
+        ██║  ██║███████╗╚██████╔╝██║███████║   ██║   ██║  ██║██║███████╗███████║
+        ╚═╝  ╚═╝╚══════╝ ╚═════╝ ╚═╝╚══════╝   ╚═╝   ╚═╝  ╚═╝╚═╝╚══════╝╚══════╝
+         */
+        RegistryAnalyzer.register("nucleus", () -> TestRegistries.class);
     }
 }
