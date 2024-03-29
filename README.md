@@ -24,25 +24,25 @@ repositories {
 
 dependencies {
     // general example, may vary depending on what you're using. See below for proper examples.
-    implementation "com.redpxnda.nucleus:<MODULE>-<PLATFORM>:<MINECRAFT_VERSION>+<VERSION>"
+    implementation "com.redpxnda.nucleus:nucleus-<MODULE>-<PLATFORM>:<MINECRAFT_VERSION>+<VERSION>"
 }
 ```
 On Architectury Loom(and possibly fabric loom), you should do:
 ```groovy
-include(modApi("com.redpxnda.nucleus:<MODULE>-<PLATFORM>:<MINECRAFT_VERSION>+<VERSION>"))
+include(modApi("com.redpxnda.nucleus:nucleus-<MODULE>-<PLATFORM>:<MINECRAFT_VERSION>+<VERSION>"))
 
 /* ex: 
-include(modApi("com.redpxnda.nucleus:core-fabric:1.20.1+1.0.0"))\
+include(modApi("com.redpxnda.nucleus:nucleus-core-fabric:1.20.1+1.0.0"))\
 */
 ```
 On NeoGradle(might need an extra fg.deobf on ForgeGradle):
 ```groovy
-implementation(jarJar("com.redpxnda.nucleus:<MODULE>-<PLATFORM>:<MINECRAFT_VERSION>+<VERSION>")) {
+implementation(jarJar("com.redpxnda.nucleus:nucleus-<MODULE>-<PLATFORM>:<MINECRAFT_VERSION>+<VERSION>")) {
     jarJar.ranged(it, "[<VERSION>,)")
 }
 
 /*ex: 
-implementation(jarJar("com.redpxnda.nucleus:codec-forge:1.20.1+1.0.0")) {
+implementation(jarJar("com.redpxnda.nucleus:nucleus-codec-forge:1.20.1+1.0.0")) {
     jarJar.ranged(it, "[1.0.0,)")
 }
 */
