@@ -12,6 +12,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.Map;
 
+@Deprecated // todo remove
 public class InterfaceDispatcher<T> {
     @SafeVarargs
     public static <T> InterfaceDispatcher<T> of(Map<String, T> handlers, String typeKey, boolean allowSingleString, T... classGetter) {

@@ -2,6 +2,7 @@ package com.redpxnda.nucleus;
 
 import com.google.gson.Gson;
 import com.redpxnda.nucleus.client.Rendering;
+import com.redpxnda.nucleus.math.InterpolateMode;
 import com.redpxnda.nucleus.network.SimplePacket;
 import com.redpxnda.nucleus.network.clientbound.ParticleCreationPacket;
 import com.redpxnda.nucleus.network.clientbound.PlaySoundPacket;
@@ -34,6 +35,7 @@ public class Nucleus {
         NucleusRegistries.init();
         EnvExecutor.runInEnv(Env.CLIENT, () -> Rendering::init);
         ReloadSyncPackets.init();
+        InterpolateMode.init();
 
         LifecycleEvent.SERVER_BEFORE_START.register(server -> SERVER = server);
     }
