@@ -38,7 +38,7 @@ public class TextFieldComponent extends TextFieldWidget implements ConfigCompone
         return getText();
     }
     public void setValue(String value) {
-        setText(value);
+        super.setText(value);
     }
 
     @Override
