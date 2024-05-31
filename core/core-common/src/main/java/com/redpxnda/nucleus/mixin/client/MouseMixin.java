@@ -16,7 +16,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(Mouse.class)
 public class MouseMixin {
-    @Shadow @Final private MinecraftClient client;
 
     @Inject(
             method = "updateMouse",
@@ -24,6 +23,7 @@ public class MouseMixin {
             cancellable = true
     )
     private void nucleus$playerMoveCameraEvent(CallbackInfo ci) {
+        MinecraftClient client = MinecraftClient.getInstance();
         EventResult result = ClientEvents.CAN_MOVE_CAMERA.invoker().call(client);
         if (result.interruptsFurtherEvaluation())
             ci.cancel();

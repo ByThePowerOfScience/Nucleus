@@ -14,7 +14,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(InGameHud.class)
 public class GuiMixin {
-    @Shadow @Final private MinecraftClient client;
 
     @Inject(
             method = "render",
@@ -22,6 +21,7 @@ public class GuiMixin {
             cancellable = true
     )
     private void nucleus$renderHudEvent(DrawContext guiGraphics, float f, CallbackInfo ci) {
+        MinecraftClient client = MinecraftClient.getInstance();
         EventResult result = RenderEvents.HUD_RENDER_PRE.invoker().render(client, guiGraphics, f);
         if (result.interruptsFurtherEvaluation())
             ci.cancel();
