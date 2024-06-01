@@ -35,6 +35,7 @@ public class MouseMixin {
     )
     private void nucleus$modifyCameraMotionEvent(ClientPlayerEntity instance, double xMotion, double yMotion, Operation<Void> original) {
         ClientEvents.CameraMotion motion = new ClientEvents.CameraMotion(xMotion, yMotion);
+        MinecraftClient client = MinecraftClient.getInstance();
         ClientEvents.MODIFY_CAMERA_MOTION.invoker().move(client, motion);
         original.call(instance, motion.getXMotion(), motion.getYMotion());
     }
