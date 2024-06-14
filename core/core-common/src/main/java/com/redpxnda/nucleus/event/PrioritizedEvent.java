@@ -179,6 +179,7 @@ public interface PrioritizedEvent<T> extends Event<T> {
         private static <T, R> R invokeMethod(T listener, Method method, Object[] args) throws Throwable {
             return (R) MethodHandles.lookup().unreflect(method)
                     .bindTo(listener).invokeWithArguments(args);
+
         }
 
         protected final Function<PriorityMap<T>, T> function;

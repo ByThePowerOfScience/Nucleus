@@ -14,7 +14,7 @@ import java.nio.file.Files
 
 plugins {
     id "architectury-plugin" version "3.4-SNAPSHOT"
-    id "dev.architectury.loom" version "1.3-SNAPSHOT" apply false
+    id "dev.architectury.loom" version "1.6-SNAPSHOT" apply false
     id "com.github.johnrengelman.shadow" version "7.1.2" apply false
 }
 
@@ -119,7 +119,7 @@ public class ${fabricClassName} implements ModInitializer {
 """{
   "required": true,
   "package": "com.redpxnda.nucleus.${name}.fabric.mixin",
-  "compatibilityLevel": "JAVA_17",
+  "compatibilityLevel": "JAVA_21",
   "minVersion": "0.8",
   "client": [
   ],
@@ -156,7 +156,7 @@ public class ${forgeClassName} {
 """{
   "required": true,
   "package": "com.redpxnda.nucleus.${name}.forge.mixin",
-  "compatibilityLevel": "JAVA_17",
+  "compatibilityLevel": "JAVA_21",
   "minVersion": "0.8",
   "client": [
   ],
@@ -300,12 +300,12 @@ subprojects { Project subproject ->
         println("platfrom: ${platform}")*/
 
         def isFabric = platform.endsWith("fabric")
-        def isForge = platform.endsWith("forge")
+        def isNeoForge = platform.endsWith("neoForge")
         def isCommon = platform.endsWith("common")
 
-        platform = isFabric ? "fabric" : isForge ? "forge" : isCommon ? "common" : platform
+        platform = isFabric ? "fabric" : isNeoForge ? "neoForge" : isCommon ? "common" : platform
 
-        if (isFabric || isForge) apply plugin: "com.github.johnrengelman.shadow"
+        if (isFabric || isNeoForge) apply plugin: "com.github.johnrengelman.shadow"
         apply plugin: "dev.architectury.loom"
         apply plugin: "java"
         apply plugin: "architectury-plugin"
@@ -319,9 +319,9 @@ subprojects { Project subproject ->
             if (isFabric) {
                 platformSetupLoomIde()
                 fabric()
-            } else if (isForge) {
+            } else if (isNeoForge) {
                 platformSetupLoomIde()
-                forge()
+                neoforge()
             } else if (isCommon) {
                 common(rootProject.enabled_platforms.split(","))
             }
@@ -334,7 +334,7 @@ subprojects { Project subproject ->
                 defaultRefmapName = "nucleus-${module}${isCommon ? "-common" : ""}.refmap.json"
             }
 
-            if (isForge) {
+            if (isNeoForge) {
                 forge {
                     for (def mixin in mod_data.mixins)
                         mixinConfig mixin
@@ -343,7 +343,7 @@ subprojects { Project subproject ->
         }
 
         configurations {
-            if (isFabric || isForge) {
+            if (isFabric || isNeoForge) {
                 common
                 shadowCommon // Don't use shadow from the shadow plugin since it *excludes* files.
                 compileClasspath.extendsFrom common
@@ -351,7 +351,7 @@ subprojects { Project subproject ->
 
                 if (isFabric)
                     developmentFabric.extendsFrom common
-                if (isForge)
+                if (isNeoForge)
                     developmentForge.extendsFrom common
             }
         }
@@ -374,8 +374,8 @@ subprojects { Project subproject ->
 
                 common(project(path: ":${module}:${module}-common", configuration: "namedElements")) { transitive false }
                 shadowCommon(project(path: ":${module}:${module}-common", configuration: "transformProductionFabric")) { transitive false }
-            } else if (isForge) {
-                forge "net.minecraftforge:forge:${rootProject.minecraft_version}-${rootProject.forge_version}"
+            } else if (isNeoForge) {
+                neoForge "net.neoforged:neoforge:${rootProject.neoforge_version}"
                 modApi "dev.architectury:architectury-forge:${rootProject.architectury_version}"
 
                 /*implementation(annotationProcessor("io.github.llamalad7:mixinextras-common:${rootProject.mixin_extras_version}"))
@@ -407,7 +407,7 @@ subprojects { Project subproject ->
             group = "nucleus"
             description = "Generates fabric.mod.json and mods.toml from the mod_data.json file"
 
-            if (isForge) {
+            if (isNeoForge) {
                 doLast {
                     def toml = new TomlBuilder()
 
@@ -500,7 +500,7 @@ subprojects { Project subproject ->
         processResources {
             dependsOn "generateModMetadata"
 
-            if (isFabric || isForge) {
+            if (isFabric || isNeoForge) {
                 inputs.properties subproject.property_data
 
                 if (isFabric)
@@ -508,25 +508,25 @@ subprojects { Project subproject ->
                         expand subproject.property_data
                     }
 
-                if (isForge)
+                if (isNeoForge)
                     filesMatching("META-INF/mods.toml") {
                         expand subproject.property_data
                     }
             }
         }
 
-        if (isFabric || isForge) {
+        if (isFabric || isNeoForge) {
             shadowJar {
                 configurations = [project.configurations.shadowCommon]
                 archiveClassifier = "dev-shadow"
 
-                if (isForge)
+                if (isNeoForge)
                     exclude "fabric.mod.json"
             }
         }
 
         remapJar {
-            if (isFabric || isForge) {
+            if (isFabric || isNeoForge) {
                 input.set shadowJar.archiveFile
                 dependsOn shadowJar
                 archiveClassifier = null
@@ -541,7 +541,7 @@ subprojects { Project subproject ->
             destinationDirectory.set(file("$rootDir/build/${ver}/${platform}"))
         }
 
-        if (isFabric || isForge) {
+        if (isFabric || isNeoForge) {
             jar {
                 archiveClassifier = "dev"
             }
@@ -570,7 +570,7 @@ subprojects { Project subproject ->
 
                             from components.java
                         }
-                    } else if (isForge) {
+                    } else if (isNeoForge) {
                         mavenForge(MavenPublication) {
                             artifactId = "nucleus-" + module + "-" + platform
                             version = rootProject.minecraft_version + "+" + ver
@@ -618,7 +618,7 @@ subprojects { Project subproject ->
                         publishing.publications.mavenCommon.groupId = "com.${rootProject.github}"
                     else if (isFabric)
                         publishing.publications.mavenFabric.groupId = "com.${rootProject.github}"
-                    else if (isForge)
+                    else if (isNeoForge)
                         publishing.publications.mavenForge.groupId = "com.${rootProject.github}"
                 }
             }*/
@@ -631,15 +631,15 @@ static def includeMixinExtras(Project proj) {
         def platform = subproject.name
 
         def isFabric = platform.endsWith("fabric")
-        def isForge = platform.endsWith("forge")
+        def isNeoForge = platform.endsWith("neoForge")
         def isCommon = platform.endsWith("common")
 
         dependencies {
             if (isFabric) {
                 include(implementation(annotationProcessor("io.github.llamalad7:mixinextras-fabric:${rootProject.mixin_extras_version}")))
-            } else if (isForge) {
+            } else if (isNeoForge) {
                 implementation(annotationProcessor("io.github.llamalad7:mixinextras-common:${rootProject.mixin_extras_version}"))
-                implementation(include("io.github.llamalad7:mixinextras-forge:${rootProject.mixin_extras_version}"))
+                //implementation(include("io.github.llamalad7:mixinextras-forge:${rootProject.mixin_extras_version}"))
             } else if (isCommon) {
                 implementation(annotationProcessor("io.github.llamalad7:mixinextras-common:${rootProject.mixin_extras_version}"))
             }
@@ -710,7 +710,7 @@ static def setupAccessWideners(Project proj, String path) {
         def platform = subproject.name
 
         def isFabric = platform.endsWith("fabric")
-        def isForge = platform.endsWith("forge")
+        def isForge = platform.endsWith("neoForge")
         def isCommon = platform.endsWith("common")
 
         loom {
