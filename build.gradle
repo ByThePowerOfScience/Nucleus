@@ -332,9 +332,9 @@ subprojects { Project subproject ->
         loom {
             silentMojangMappingsLicense()
 
-            mixin {
+            /*mixin { // todo update?
                 defaultRefmapName = "nucleus-${module}${isCommon ? "-common" : ""}.refmap.json"
-            }
+            }*/
 
             /*if (isNeoForge) { // bye forge, hello neo!
                 forge {
