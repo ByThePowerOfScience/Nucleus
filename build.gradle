@@ -300,10 +300,10 @@ subprojects { Project subproject ->
         println("platfrom: ${platform}")*/
 
         def isFabric = platform.endsWith("fabric")
-        def isNeoForge = platform.endsWith("neoForge")
+        def isNeoForge = platform.endsWith("forge")
         def isCommon = platform.endsWith("common")
 
-        platform = isFabric ? "fabric" : isNeoForge ? "neoForge" : isCommon ? "common" : platform
+        platform = isFabric ? "fabric" : isNeoForge ? "forge" : isCommon ? "common" : platform
 
         if (isFabric || isNeoForge) apply plugin: "com.github.johnrengelman.shadow"
         apply plugin: "dev.architectury.loom"
@@ -321,7 +321,9 @@ subprojects { Project subproject ->
                 fabric()
             } else if (isNeoForge) {
                 platformSetupLoomIde()
-                neoforge()
+                neoForge {
+                    platformPackage = "forge" // todo neoforge rename
+                }
             } else if (isCommon) {
                 common(rootProject.enabled_platforms.split(","))
             }
@@ -334,12 +336,12 @@ subprojects { Project subproject ->
                 defaultRefmapName = "nucleus-${module}${isCommon ? "-common" : ""}.refmap.json"
             }
 
-            if (isNeoForge) {
+            /*if (isNeoForge) { // bye forge, hello neo!
                 forge {
                     for (def mixin in mod_data.mixins)
                         mixinConfig mixin
                 }
-            }
+            }*/
         }
 
         configurations {
@@ -352,12 +354,13 @@ subprojects { Project subproject ->
                 if (isFabric)
                     developmentFabric.extendsFrom common
                 if (isNeoForge)
-                    developmentForge.extendsFrom common
+                    developmentNeoForge.extendsFrom common
             }
         }
 
         repositories {
             mavenCentral()
+            if (isNeoForge) maven { url "https://maven.neoforged.net/releases/" }
         }
 
         dependencies {
@@ -376,13 +379,13 @@ subprojects { Project subproject ->
                 shadowCommon(project(path: ":${module}:${module}-common", configuration: "transformProductionFabric")) { transitive false }
             } else if (isNeoForge) {
                 neoForge "net.neoforged:neoforge:${rootProject.neoforge_version}"
-                modApi "dev.architectury:architectury-forge:${rootProject.architectury_version}"
+                modApi "dev.architectury:architectury-neoforge:${rootProject.architectury_version}"
 
                 /*implementation(annotationProcessor("io.github.llamalad7:mixinextras-common:${rootProject.mixin_extras_version}"))
                 implementation "io.github.llamalad7:mixinextras-forge:${rootProject.mixin_extras_version}"*/
 
                 common(project(path: ":${module}:${module}-common", configuration: "namedElements")) { transitive false }
-                shadowCommon(project(path: ":${module}:${module}-common", configuration: "transformProductionForge")) { transitive = false }
+                shadowCommon(project(path: ":${module}:${module}-common", configuration: "transformProductionNeoForge")) { transitive false }
             } else if (isCommon) {
                 // We depend on fabric loader here to use the fabric @Environment annotations and get the mixin dependencies
                 // Do NOT use other classes from fabric loader
@@ -448,7 +451,7 @@ subprojects { Project subproject ->
                     def path = file("./src/main/resources/META-INF")
                     path.mkdirs()
 
-                    def file = path.toPath().resolve("mods.toml")
+                    def file = path.toPath().resolve("neoforge.mods.toml")
                     Files.deleteIfExists(file)
                     file.withWriter { toml.writeTo(it) }
                 }
@@ -509,7 +512,7 @@ subprojects { Project subproject ->
                     }
 
                 if (isNeoForge)
-                    filesMatching("META-INF/mods.toml") {
+                    filesMatching("META-INF/neoforge.mods.toml") {
                         expand subproject.property_data
                     }
             }
@@ -631,7 +634,7 @@ static def includeMixinExtras(Project proj) {
         def platform = subproject.name
 
         def isFabric = platform.endsWith("fabric")
-        def isNeoForge = platform.endsWith("neoForge")
+        def isNeoForge = platform.endsWith("forge") // todo project names forge->neoforge
         def isCommon = platform.endsWith("common")
 
         dependencies {
@@ -652,13 +655,13 @@ static def implementMixinExtras(Project proj) {
         def platform = subproject.name
 
         def isFabric = platform.endsWith("fabric")
-        def isForge = platform.endsWith("forge")
+        def isNeoForge = platform.endsWith("forge")
         def isCommon = platform.endsWith("common")
 
         dependencies {
             if (isFabric) {
                 implementation(annotationProcessor("io.github.llamalad7:mixinextras-fabric:${rootProject.mixin_extras_version}"))
-            } else if (isForge) {
+            } else if (isNeoForge) {
                 implementation(annotationProcessor("io.github.llamalad7:mixinextras-common:${rootProject.mixin_extras_version}"))
                 implementation "io.github.llamalad7:mixinextras-forge:${rootProject.mixin_extras_version}"
             } else if (isCommon) {
@@ -673,7 +676,7 @@ static def copyAccessWidenersFrom(Project proj, String module) {
         def platform = subproject.name
 
         def isFabric = platform.endsWith("fabric")
-        def isForge = platform.endsWith("forge")
+        def isNeoForge = platform.endsWith("forge")
         def isCommon = platform.endsWith("common")
 
         loom {
@@ -683,17 +686,17 @@ static def copyAccessWidenersFrom(Project proj, String module) {
             if (isFabric)
                 accessWidenerPath = project(":${module}:${module}-fabric").loom.accessWidenerPath
 
-            if (isForge) {
+            if (isNeoForge) {
                 accessWidenerPath = project(":${module}:${module}-forge").loom.accessWidenerPath
 
-                forge {
+                /*forge {
                     convertAccessWideners = true
                     extraAccessWideners.add loom.accessWidenerPath.get().asFile.name
-                }
+                }*/
             }
         }
 
-        if (isFabric || isForge)
+        if (isFabric || isNeoForge)
             shadowJar {
                 exclude "architectury.common.json"
             }
@@ -710,32 +713,34 @@ static def setupAccessWideners(Project proj, String path) {
         def platform = subproject.name
 
         def isFabric = platform.endsWith("fabric")
-        def isForge = platform.endsWith("neoForge")
+        def isNeoForge = platform.endsWith("forge")
         def isCommon = platform.endsWith("common")
 
         loom {
             if (isCommon)
                 accessWidenerPath = file(path)
 
-            if (isFabric || isForge)
+            if (isFabric || isNeoForge)
                 accessWidenerPath = project(":${proj.name}:${proj.name}-common").loom.accessWidenerPath
 
-            if (isForge)
+            /*if (isNeoForge)
                 forge {
                     convertAccessWideners = true
                     extraAccessWideners.add loom.accessWidenerPath.get().asFile.name
-                }
+                }*/
         }
 
-        if (isFabric || isForge)
+        if (isFabric || isNeoForge) {
             shadowJar {
+                //exclude "architectury-common.accessWidener"
                 exclude "architectury.common.json"
             }
 
-        if (isFabric)
             remapJar {
-                injectAccessWidener = true
+                if (isFabric) injectAccessWidener = true
+                if (isNeoForge) atAccessWideners.add "architectury.accessWidener"
             }
+        }
     }
 }
 
