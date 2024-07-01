@@ -87,7 +87,7 @@ public class ${mainClassName} {
 """{
   "required": true,
   "package": "com.redpxnda.nucleus.${name}.mixin",
-  "compatibilityLevel": "JAVA_17",
+  "compatibilityLevel": "JAVA_21",
   "minVersion": "0.8",
   "client": [
   ],
@@ -325,7 +325,9 @@ subprojects { Project subproject ->
                     platformPackage = "forge" // todo neoforge rename
                 }
             } else if (isCommon) {
-                common(rootProject.enabled_platforms.split(","))
+                common(rootProject.enabled_platforms.split(",")) {
+                    it.platformPackage "neoforge", "forge"
+                }
             }
         }
 
@@ -399,10 +401,13 @@ subprojects { Project subproject ->
 
         tasks.withType(JavaCompile) {
             options.encoding = "UTF-8"
-            options.release = 17
+            options.release = 21
         }
 
         java {
+            /*toolchain {
+                languageVersion.set(JavaLanguageVersion.of(21))
+            }*/
             withSourcesJar()
         }
 
