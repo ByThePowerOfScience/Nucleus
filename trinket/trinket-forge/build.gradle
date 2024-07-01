@@ -3,8 +3,12 @@ repositories {
 }
 
 dependencies {
+    def mc_version = rootProject.minecraft_version
+    if (!"${rootProject.curios_mc_override}".isEmpty())
+        mc_version = rootProject.curios_mc_override
+
     if ("${rootProject.use_curios}" == "true")
-        modRuntimeOnly "top.theillusivec4.curios:curios-forge:${rootProject.curios_version}+${rootProject.minecraft_version}"
-    modCompileOnly "top.theillusivec4.curios:curios-forge:${rootProject.curios_version}+${rootProject.minecraft_version}"
-    modCompileOnlyApi "top.theillusivec4.curios:curios-forge:${rootProject.curios_version}+${rootProject.minecraft_version}:api"
+        modRuntimeOnly "top.theillusivec4.curios:curios-forge:${rootProject.curios_version}+${mc_version}"
+    modCompileOnly "top.theillusivec4.curios:curios-forge:${rootProject.curios_version}+${mc_version}"
+    modCompileOnlyApi "top.theillusivec4.curios:curios-forge:${rootProject.curios_version}+${mc_version}:api"
 }
