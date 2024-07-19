@@ -6,8 +6,8 @@ transitive-accessible class net/minecraft/server/MinecraftServer$ReloadableResou
 #transitive-accessible method net/minecraft/client/particle/CrackParticle <init> (Lnet/minecraft/client/world/ClientWorld;DDDDDDLnet/minecraft/item/ItemStack;)V
 transitive-accessible method net/minecraft/nbt/NbtIo read (Ljava/io/DataInput;Lnet/minecraft/nbt/NbtAccounter;)Lnet/minecraft/nbt/CompoundTag;
 transitive-accessible method net/minecraft/client/renderer/RenderType translucentState (Lnet/minecraft/client/renderer/RenderStateShard$ShaderStateShard;)Lnet/minecraft/client/renderer/RenderType$CompositeState;
-transitive-accessible class net/minecraft/client/render/item/HeldItemRenderer$HandRenderType
-transitive-accessible class net/minecraft/server/world/ThreadedAnvilChunkStorage$EntityTracker
-transitive-accessible field net/minecraft/client/particle/Particle MAX_SQUARED_COLLISION_CHECK_DISTANCE D
-transitive-accessible field net/minecraft/client/particle/Particle stopped Z
-transitive-accessible method net/minecraft/item/ItemGroup <init> (Lnet/minecraft/item/ItemGroup$Row;ILnet/minecraft/item/ItemGroup$Type;Lnet/minecraft/text/Text;Ljava/util/function/Supplier;Lnet/minecraft/item/ItemGroup$EntryCollector;)V
+transitive-accessible class net/minecraft/client/renderer/ItemInHandRenderer$HandRenderSelection
+transitive-accessible class net/minecraft/server/level/ChunkMap$TrackedEntity
+transitive-accessible field net/minecraft/client/particle/Particle MAXIMUM_COLLISION_VELOCITY_SQUARED D
+transitive-accessible field net/minecraft/client/particle/Particle stoppedByCollision Z
+#transitive-accessible method net/minecraft/world/item/CreativeModeTab <init> (Lnet/minecraft/world/item/CreativeModeTab$Row;ILnet/minecraft/world/item/CreativeModeTab$Type;Lnet/minecraft/network/chat/Component;Ljava/util/function/Supplier;Lnet/minecraft/world/item/CreativeModeTab$DisplayItemsGenerator;)V

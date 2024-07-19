@@ -14,17 +14,4 @@ public class ClientboundHandling {
 
         level.addParticle(options, x, y, z, xs, ys, zs);
     }
-
-    public static void playClientSound(double x, double y, double z, SoundEvent event, SoundSource category, float volume, float pitch) {
-        Minecraft mc = Minecraft.getInstance();
-        Level level = mc.level;
-        if (level == null) return;
-
-        level.playLocalSound(
-                x, y, z,
-                event, category,
-                volume, pitch,
-                false
-        );
-    }
 }

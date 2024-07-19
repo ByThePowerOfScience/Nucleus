@@ -4,20 +4,15 @@ import com.redpxnda.nucleus.Nucleus;
 import dev.architectury.networking.NetworkManager;
 import java.util.function.Supplier;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerPlayer;
 
-public interface SimplePacket extends PlayerSendable {
-    void toBuffer(FriendlyByteBuf buf);
+public interface NucleusPacket extends PlayerSendable, CustomPacketPayload {
     void handle(NetworkManager.PacketContext context);
-    default void wrappedHandle(Supplier<NetworkManager.PacketContext> supplier) {
-        NetworkManager.PacketContext context = supplier.get();
-        context.queue(() -> handle(context));
-    }
-
     default void send(ServerPlayer player) {
-        Nucleus.CHANNEL.sendToPlayer(player, this);
+        NetworkManager.sendToPlayer(player, this);
     }
     default void send(Iterable<ServerPlayer> players) {
-        Nucleus.CHANNEL.sendToPlayers(players, this);
+        NetworkManager.sendToPlayers(players, this);
     }
 }

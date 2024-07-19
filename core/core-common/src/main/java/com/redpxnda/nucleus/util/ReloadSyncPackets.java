@@ -1,13 +1,13 @@
 package com.redpxnda.nucleus.util;
 
 import com.redpxnda.nucleus.event.ServerEvents;
-import com.redpxnda.nucleus.network.SimplePacket;
+import com.redpxnda.nucleus.network.NucleusPacket;
 import dev.architectury.event.events.common.PlayerEvent;
 
 import java.util.ArrayList;
 import java.util.function.Supplier;
 
-public class ReloadSyncPackets extends ArrayList<Supplier<SimplePacket>> {
+public class ReloadSyncPackets extends ArrayList<Supplier<NucleusPacket>> {
     public static ReloadSyncPackets instance = new ReloadSyncPackets();
 
     public static void init() {

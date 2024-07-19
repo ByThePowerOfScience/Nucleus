@@ -1,5 +1,6 @@
 package com.redpxnda.nucleus.util;
 
+import com.mojang.datafixers.util.*;
 import com.mojang.serialization.Codec;
 import com.redpxnda.nucleus.Nucleus;
 import io.netty.buffer.ByteBufInputStream;
@@ -9,6 +10,7 @@ import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import org.slf4j.Logger;
 
 import java.io.IOException;
@@ -20,80 +22,127 @@ import java.util.function.Supplier;
 public class ByteBufUtil {
     private static final Logger LOGGER = Nucleus.getLogger();
 
-    public static <T> void writeWithCodec(FriendlyByteBuf buf, T instance, Codec<T> codec) {
-        Tag tag = codec.encodeStart(NbtOps.INSTANCE, instance).getOrThrow(false, s ->
-                LOGGER.error("Failed to encode {} into a FriendlyByteBuf using codec -> {}", instance, s)
-        );
-        writeTag(tag, buf);
-    }
-    public static <T> T readWithCodec(FriendlyByteBuf buf, Codec<T> codec) {
-        Tag tag = readTag(buf);
-        return codec.parse(NbtOps.INSTANCE, tag).getOrThrow(false, s ->
-                LOGGER.error("Failed to decode tag '{}' from FriendlyByteBuf using codec -> {}", tag, s)
-        );
+    public static <B, C, T1, T2, T3, T4, T5, T6, T7> StreamCodec<B, C> composite(final StreamCodec<? super B, T1> streamCodec, final Function<C, T1> getter, final StreamCodec<? super B, T2> streamCodec2, final Function<C, T2> getter2, final StreamCodec<? super B, T3> streamCodec3, final Function<C, T3> getter3, final StreamCodec<? super B, T4> streamCodec4, final Function<C, T4> getter4, final StreamCodec<? super B, T5> streamCodec5, final Function<C, T5> getter5, final StreamCodec<? super B, T6> streamCodec6, final Function<C, T6> getter6, final StreamCodec<? super B, T7> streamCodec7, final Function<C, T7> getter7, final Function7<T1, T2, T3, T4, T5, T6, T7, C> creator) {
+        return new StreamCodec<B, C>(){
+
+            @Override
+            public C decode(B buffer) {
+                T1 object1 = streamCodec.decode(buffer);
+                T2 object2 = streamCodec2.decode(buffer);
+                T3 object3 = streamCodec3.decode(buffer);
+                T4 object4 = streamCodec4.decode(buffer);
+                T5 object5 = streamCodec5.decode(buffer);
+                T6 object6 = streamCodec6.decode(buffer);
+                T7 object7 = streamCodec7.decode(buffer);
+                return creator.apply(object1, object2, object3, object4, object5, object6, object7);
+            }
+
+            @Override
+            public void encode(B buffer, C output) {
+                streamCodec.encode(buffer, getter.apply(output));
+                streamCodec2.encode(buffer, getter2.apply(output));
+                streamCodec3.encode(buffer, getter3.apply(output));
+                streamCodec4.encode(buffer, getter4.apply(output));
+                streamCodec5.encode(buffer, getter5.apply(output));
+                streamCodec6.encode(buffer, getter6.apply(output));
+                streamCodec7.encode(buffer, getter7.apply(output));
+            }
+        };
     }
 
-    public static void writeTag(Tag tag, FriendlyByteBuf buf) {
-        try {
-            NbtIo.writeUnnamedTag(tag, new ByteBufOutputStream(buf));
-        } catch (IOException e) {
-            LOGGER.error("Failed to write Nbt tag '{}' to byte buffer!", tag);
-            throw new RuntimeException(e);
-        }
-    }
-    public static Tag readTag(FriendlyByteBuf buf) {
-        try {
-            return NbtIo.readUnnamedTag(new ByteBufInputStream(buf), 0, NbtAccounter.UNLIMITED);
-        } catch (IOException e) {
-            LOGGER.error("Failed to read Nbt from byte buffer!");
-            throw new RuntimeException(e);
-        }
+    public static <B, C, T1, T2, T3, T4, T5, T6, T7, T8> StreamCodec<B, C> composite(final StreamCodec<? super B, T1> streamCodec, final Function<C, T1> getter, final StreamCodec<? super B, T2> streamCodec2, final Function<C, T2> getter2, final StreamCodec<? super B, T3> streamCodec3, final Function<C, T3> getter3, final StreamCodec<? super B, T4> streamCodec4, final Function<C, T4> getter4, final StreamCodec<? super B, T5> streamCodec5, final Function<C, T5> getter5, final StreamCodec<? super B, T6> streamCodec6, final Function<C, T6> getter6, final StreamCodec<? super B, T7> streamCodec7, final Function<C, T7> getter7, final StreamCodec<? super B, T8> streamCodec8, final Function<C, T8> getter8, final Function8<T1, T2, T3, T4, T5, T6, T7, T8, C> creator) {
+        return new StreamCodec<B, C>(){
+
+            @Override
+            public C decode(B buffer) {
+                T1 object1 = streamCodec.decode(buffer);
+                T2 object2 = streamCodec2.decode(buffer);
+                T3 object3 = streamCodec3.decode(buffer);
+                T4 object4 = streamCodec4.decode(buffer);
+                T5 object5 = streamCodec5.decode(buffer);
+                T6 object6 = streamCodec6.decode(buffer);
+                T7 object7 = streamCodec7.decode(buffer);
+                T8 object8 = streamCodec8.decode(buffer);
+                return creator.apply(object1, object2, object3, object4, object5, object6, object7, object8);
+            }
+
+            @Override
+            public void encode(B buffer, C output) {
+                streamCodec.encode(buffer, getter.apply(output));
+                streamCodec2.encode(buffer, getter2.apply(output));
+                streamCodec3.encode(buffer, getter3.apply(output));
+                streamCodec4.encode(buffer, getter4.apply(output));
+                streamCodec5.encode(buffer, getter5.apply(output));
+                streamCodec6.encode(buffer, getter6.apply(output));
+                streamCodec7.encode(buffer, getter7.apply(output));
+                streamCodec8.encode(buffer, getter8.apply(output));
+            }
+        };
     }
 
-    /**
-     * Writes a String -> anything map to a packetbytebuf
-     * @param map the
-     * @param writer the consumer defining how to write this object to a buffer
-     * @param buf the buffer to write to
-     */
-    public static <T> void writeMap(Map<String, T> map, BiConsumer<FriendlyByteBuf, T> writer, FriendlyByteBuf buf) {
-        buf.writeInt(map.size());
-        map.forEach((key, value) -> {
-            assert value != null : "No null values allowed for map byte buffer writing.";
-            buf.writeUtf(key);
-            writer.accept(buf, value);
-        });
+    public static <B, C, T1, T2, T3, T4, T5, T6, T7, T8, T9> StreamCodec<B, C> composite(final StreamCodec<? super B, T1> streamCodec, final Function<C, T1> getter, final StreamCodec<? super B, T2> streamCodec2, final Function<C, T2> getter2, final StreamCodec<? super B, T3> streamCodec3, final Function<C, T3> getter3, final StreamCodec<? super B, T4> streamCodec4, final Function<C, T4> getter4, final StreamCodec<? super B, T5> streamCodec5, final Function<C, T5> getter5, final StreamCodec<? super B, T6> streamCodec6, final Function<C, T6> getter6, final StreamCodec<? super B, T7> streamCodec7, final Function<C, T7> getter7, final StreamCodec<? super B, T8> streamCodec8, final Function<C, T8> getter8, final StreamCodec<? super B, T9> streamCodec9, final Function<C, T9> getter9, final Function9<T1, T2, T3, T4, T5, T6, T7, T8, T9, C> creator) {
+        return new StreamCodec<B, C>(){
+
+            @Override
+            public C decode(B buffer) {
+                T1 object1 = streamCodec.decode(buffer);
+                T2 object2 = streamCodec2.decode(buffer);
+                T3 object3 = streamCodec3.decode(buffer);
+                T4 object4 = streamCodec4.decode(buffer);
+                T5 object5 = streamCodec5.decode(buffer);
+                T6 object6 = streamCodec6.decode(buffer);
+                T7 object7 = streamCodec7.decode(buffer);
+                T8 object8 = streamCodec8.decode(buffer);
+                T9 object9 = streamCodec9.decode(buffer);
+                return creator.apply(object1, object2, object3, object4, object5, object6, object7, object8, object9);
+            }
+
+            @Override
+            public void encode(B buffer, C output) {
+                streamCodec.encode(buffer, getter.apply(output));
+                streamCodec2.encode(buffer, getter2.apply(output));
+                streamCodec3.encode(buffer, getter3.apply(output));
+                streamCodec4.encode(buffer, getter4.apply(output));
+                streamCodec5.encode(buffer, getter5.apply(output));
+                streamCodec6.encode(buffer, getter6.apply(output));
+                streamCodec7.encode(buffer, getter7.apply(output));
+                streamCodec8.encode(buffer, getter8.apply(output));
+                streamCodec9.encode(buffer, getter9.apply(output));
+            }
+        };
     }
 
-    /**
-     * Reads a String -> anything map from a packetbytebuf
-     * @param creator the creator for the map (don't create an immutable map!)
-     * @param reader the function defining how to read this object
-     * @param buf the buffer to read from
-     */
-    public static <T, M extends Map<String, T>> Map<String, T> readMap(Supplier<M> creator, Function<FriendlyByteBuf, T> reader, FriendlyByteBuf buf) {
-        M map = creator.get();
-        int size = buf.readInt();
-        for (int i = 0; i < size; i++) {
-            map.put(buf.readUtf(), reader.apply(buf));
-        }
-        return map;
-    }
+    public static <B, C, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> StreamCodec<B, C> composite(final StreamCodec<? super B, T1> streamCodec, final Function<C, T1> getter, final StreamCodec<? super B, T2> streamCodec2, final Function<C, T2> getter2, final StreamCodec<? super B, T3> streamCodec3, final Function<C, T3> getter3, final StreamCodec<? super B, T4> streamCodec4, final Function<C, T4> getter4, final StreamCodec<? super B, T5> streamCodec5, final Function<C, T5> getter5, final StreamCodec<? super B, T6> streamCodec6, final Function<C, T6> getter6, final StreamCodec<? super B, T7> streamCodec7, final Function<C, T7> getter7, final StreamCodec<? super B, T8> streamCodec8, final Function<C, T8> getter8, final StreamCodec<? super B, T9> streamCodec9, final Function<C, T9> getter9, final StreamCodec<? super B, T10> streamCodec10, final Function<C, T10> getter10, final Function10<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, C> creator) {
+        return new StreamCodec<B, C>(){
 
-    public static Map<String, Long> readLongMap(Supplier<Map<String, Long>> creator, FriendlyByteBuf buf) {
-        Map<String, Long> map = creator.get();
-        int size = buf.readInt();
-        for (int i = 0; i < size; i++) {
-            map.put(buf.readUtf(), buf.readLong());
-        }
-        return map;
-    }
-    public static void writeLongMap(Map<String, Long> map, FriendlyByteBuf buf) {
-        buf.writeInt(map.size());
-        map.forEach((key, value) -> {
-            assert value != null : "No null values allowed for long map byte buffer writing.";
-            buf.writeUtf(key);
-            buf.writeLong(value);
-        });
+            @Override
+            public C decode(B buffer) {
+                T1 object1 = streamCodec.decode(buffer);
+                T2 object2 = streamCodec2.decode(buffer);
+                T3 object3 = streamCodec3.decode(buffer);
+                T4 object4 = streamCodec4.decode(buffer);
+                T5 object5 = streamCodec5.decode(buffer);
+                T6 object6 = streamCodec6.decode(buffer);
+                T7 object7 = streamCodec7.decode(buffer);
+                T8 object8 = streamCodec8.decode(buffer);
+                T9 object9 = streamCodec9.decode(buffer);
+                T10 object10 = streamCodec10.decode(buffer);
+                return creator.apply(object1, object2, object3, object4, object5, object6, object7, object8, object9, object10);
+            }
+
+            @Override
+            public void encode(B buffer, C output) {
+                streamCodec.encode(buffer, getter.apply(output));
+                streamCodec2.encode(buffer, getter2.apply(output));
+                streamCodec3.encode(buffer, getter3.apply(output));
+                streamCodec4.encode(buffer, getter4.apply(output));
+                streamCodec5.encode(buffer, getter5.apply(output));
+                streamCodec6.encode(buffer, getter6.apply(output));
+                streamCodec7.encode(buffer, getter7.apply(output));
+                streamCodec8.encode(buffer, getter8.apply(output));
+                streamCodec9.encode(buffer, getter9.apply(output));
+                streamCodec10.encode(buffer, getter10.apply(output));
+            }
+        };
     }
 }

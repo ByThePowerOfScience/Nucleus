@@ -3,28 +3,27 @@ package com.redpxnda.nucleus;
 import com.google.gson.Gson;
 import com.redpxnda.nucleus.client.Rendering;
 import com.redpxnda.nucleus.math.InterpolateMode;
-import com.redpxnda.nucleus.network.SimplePacket;
+import com.redpxnda.nucleus.network.NucleusPacket;
 import com.redpxnda.nucleus.network.clientbound.ParticleCreationPacket;
-import com.redpxnda.nucleus.network.clientbound.PlaySoundPacket;
 import com.redpxnda.nucleus.registry.NucleusRegistries;
 import com.redpxnda.nucleus.util.ReloadSyncPackets;
 import com.redpxnda.nucleus.util.SupporterUtil;
 import dev.architectury.event.events.common.LifecycleEvent;
-import dev.architectury.networking.NetworkChannel;
+import dev.architectury.networking.NetworkManager;
+import dev.architectury.platform.Platform;
 import dev.architectury.utils.Env;
 import dev.architectury.utils.EnvExecutor;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.function.Function;
-
 public class Nucleus {
     public static final String MOD_ID = "nucleus";
-    public static final NetworkChannel CHANNEL = NetworkChannel.create(loc("main"));
     public static final Gson GSON = new Gson();
     private static final StackWalker STACK_WALKER = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE);
     public static @Nullable MinecraftServer SERVER;
@@ -41,12 +40,12 @@ public class Nucleus {
     }
 
     private static void packets() {
-        registerPacket(ParticleCreationPacket.class, ParticleCreationPacket::new);
-        registerPacket(PlaySoundPacket.class, PlaySoundPacket::new);
+        registerPacket(NetworkManager.Side.S2C, ParticleCreationPacket.TYPE, ParticleCreationPacket.STREAM_CODEC);
     }
 
-    public static <T extends SimplePacket> void registerPacket(Class<T> cls, Function<FriendlyByteBuf, T> decoder) {
-        CHANNEL.register(cls, T::toBuffer, decoder, T::wrappedHandle);
+    public static <T extends NucleusPacket> void registerPacket(NetworkManager.Side side, CustomPacketPayload.Type<T> type, StreamCodec<? super RegistryFriendlyByteBuf, T> streamCodec) {
+        if (side == NetworkManager.Side.C2S || Platform.getEnvironment() == Env.CLIENT) // common if client to server, client only if server to client
+            NetworkManager.registerReceiver(side, type, streamCodec, (packet, context) -> context.queue(() -> packet.handle(context)));
     }
 
     public static ResourceLocation loc(String str) {

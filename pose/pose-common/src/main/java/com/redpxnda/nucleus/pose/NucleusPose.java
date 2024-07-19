@@ -7,6 +7,7 @@ import com.redpxnda.nucleus.pose.client.ClientPoseFacet;
 import com.redpxnda.nucleus.pose.client.PoseAnimationResourceListener;
 import com.redpxnda.nucleus.pose.network.clientbound.PoseFacetSyncPacket;
 import com.redpxnda.nucleus.pose.server.ServerPoseFacet;
+import dev.architectury.networking.NetworkManager;
 import dev.architectury.registry.ReloadListenerRegistry;
 import dev.architectury.utils.Env;
 import dev.architectury.utils.EnvExecutor;
@@ -19,7 +20,7 @@ public class NucleusPose {
     public static final String MOD_ID = "nucleus_pose";
     
     public static void init() {
-        Nucleus.registerPacket(PoseFacetSyncPacket.class, PoseFacetSyncPacket::new);
+        Nucleus.registerPacket(NetworkManager.Side.S2C, PoseFacetSyncPacket.TYPE, PoseFacetSyncPacket.STREAM_CODEC);
 
         EnvExecutor.runInEnv(Env.CLIENT, () -> () -> {
             PoseAnimationResourceListener.init();
