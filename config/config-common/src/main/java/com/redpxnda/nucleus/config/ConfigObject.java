@@ -15,9 +15,9 @@ import com.redpxnda.nucleus.util.json.JsoncElement;
 import dev.architectury.platform.Platform;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.Pair;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Tuple;
 import org.apache.commons.io.FileUtils;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -36,7 +36,7 @@ public class ConfigObject<T> {
     private static final Logger LOGGER = Nucleus.getLogger();
     
     public final String fileLocation;
-    public final Identifier id;
+    public final ResourceLocation id;
     public final ConfigType type;
     public final Codec<T> codec;
     public final Supplier<T> defaultCreator;
@@ -57,7 +57,7 @@ public class ConfigObject<T> {
      * @param instance       handler instance, null before first read
      */
     public ConfigObject(
-            String fileLocation, Identifier id, ConfigType type,
+            String fileLocation, ResourceLocation id, ConfigType type,
             Codec<T> codec, Supplier<T> defaultCreator, @Nullable Consumer<T> onUpdate,
             @Nullable Function<T, ConfigPreset<T, ?>> presetGetter, boolean watch, @Nullable T instance
     ) {
@@ -197,7 +197,7 @@ public class ConfigObject<T> {
         protected @Environment(EnvType.CLIENT) Function<Object, Object> screenCreator; // forge is weird, @OnlyIn doesn't work on fields so: Object - should always be a screen -> screen function
 
         public Automatic(
-                String fileLocation, Identifier id, ConfigType type,
+                String fileLocation, ResourceLocation id, ConfigType type,
                 AutoCodec<T> codec, Supplier<T> defaultCreator, @Nullable Consumer<T> onUpdate,
                 @Nullable Function<T, ConfigPreset<T, ?>> presetGetter, boolean watch, @Nullable T instance,
                 @Nullable Map<String, Field> fieldMap
@@ -211,10 +211,10 @@ public class ConfigObject<T> {
         @Environment(EnvType.CLIENT)
         protected void setupScreenSupplier(Map<String, Field> fieldMap) {
             screenCreator = scr -> {
-                Map<String, Pair<Field, ConfigComponent<?>>> map = new LinkedHashMap<>();
+                Map<String, Tuple<Field, ConfigComponent<?>>> map = new LinkedHashMap<>();
                 for (Map.Entry<String, Field> entry : fieldMap.entrySet()) {
                     var comp = ConfigComponentBehavior.getComponent(entry.getValue(), new ArrayList<>());
-                    map.put(entry.getKey(), new Pair<>(entry.getValue(), comp));
+                    map.put(entry.getKey(), new Tuple<>(entry.getValue(), comp));
                 }
 
                 return new ConfigScreen<>((Screen) scr, map, this);

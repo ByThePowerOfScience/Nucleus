@@ -2,21 +2,21 @@ package com.redpxnda.nucleus.codec.tag;
 
 import com.mojang.serialization.Codec;
 import com.redpxnda.nucleus.codec.behavior.CodecBehavior;
-import net.minecraft.item.Item;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.tag.TagKey;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.Item;
 import org.jetbrains.annotations.NotNull;
 
 @CodecBehavior.Override()
 public class TaggableItem extends TaggableEntry<Item> {
-    public static final Codec<TaggableItem> CODEC = new TaggableEntryCodec<>(TaggableItem::new, TaggableItem::new, Registries.ITEM, RegistryKeys.ITEM);
+    public static final Codec<TaggableItem> CODEC = new TaggableEntryCodec<>(TaggableItem::new, TaggableItem::new, BuiltInRegistries.ITEM, Registries.ITEM);
 
     public TaggableItem(@NotNull Item object) {
-        super(object, Registries.ITEM, RegistryKeys.ITEM);
+        super(object, BuiltInRegistries.ITEM, Registries.ITEM);
     }
 
     public TaggableItem(@NotNull TagKey<Item> tag) {
-        super(tag, Registries.ITEM, RegistryKeys.ITEM);
+        super(tag, BuiltInRegistries.ITEM, Registries.ITEM);
     }
 }

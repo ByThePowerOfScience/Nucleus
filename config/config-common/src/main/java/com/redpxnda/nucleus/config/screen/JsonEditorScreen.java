@@ -2,58 +2,58 @@ package com.redpxnda.nucleus.config.screen;
 
 import com.google.gson.JsonElement;
 import com.redpxnda.nucleus.Nucleus;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.gui.widget.EditBoxWidget;
-import net.minecraft.client.toast.SystemToast;
-import net.minecraft.text.Text;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Consumer;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.MultiLineEditBox;
+import net.minecraft.client.gui.components.toasts.SystemToast;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
 
 public class JsonEditorScreen extends Screen {
-    protected ButtonWidget discardButton;
-    protected ButtonWidget saveButton;
-    protected EditBoxWidget editBox;
+    protected Button discardButton;
+    protected Button saveButton;
+    protected MultiLineEditBox editBox;
     protected final Screen parent;
     protected final Consumer<JsonElement> updateListener;
     protected final String initialText;
 
     public JsonEditorScreen(Screen parent, Consumer<JsonElement> updateListener, String initialText) {
-        super(Text.translatable("nucleus.json_editor.title"));
+        super(Component.translatable("nucleus.json_editor.title"));
         this.parent = parent;
         this.updateListener = updateListener;
         this.initialText = initialText;
     }
 
     public void setText(String text) {
-        editBox.setText(text);
+        editBox.setValue(text);
     }
 
     @Override
     protected void init() {
-        discardButton = ButtonWidget.builder(Text.translatable("nucleus.config_screen.discard"), wid -> {
-            close();
-        }).dimensions(16, height-26, 96, 20).build();
-        saveButton = ButtonWidget.builder(Text.translatable("nucleus.config_screen.save"), wid -> {
+        discardButton = Button.builder(Component.translatable("nucleus.config_screen.discard"), wid -> {
+            onClose();
+        }).bounds(16, height-26, 96, 20).build();
+        saveButton = Button.builder(Component.translatable("nucleus.config_screen.save"), wid -> {
             JsonElement element = getJson();
             if (element != null) {
                 updateListener.accept(element);
                 closeNoUpdate();
             } else {
-                client.getToastManager().add(new SystemToast(
-                        SystemToast.Type.PACK_LOAD_FAILURE,
-                        Text.translatable("nucleus.json_editor.save_fail"),
-                        Text.translatable("nucleus.json_editor.save_fail.description")));
+                minecraft.getToasts().addToast(new SystemToast(
+                        SystemToast.SystemToastIds.PACK_LOAD_FAILURE,
+                        Component.translatable("nucleus.json_editor.save_fail"),
+                        Component.translatable("nucleus.json_editor.save_fail.description")));
             }
-        }).dimensions(128, height-26, 96, 20).build();
+        }).bounds(128, height-26, 96, 20).build();
 
-        editBox = new EditBoxWidget(client.textRenderer, 8, 8, width-8, height-40, Text.empty(), Text.empty());
+        editBox = new MultiLineEditBox(minecraft.font, 8, 8, width-8, height-40, Component.empty(), Component.empty());
 
-        addDrawableChild(discardButton);
-        addDrawableChild(saveButton);
-        addDrawableChild(editBox);
+        addRenderableWidget(discardButton);
+        addRenderableWidget(saveButton);
+        addRenderableWidget(editBox);
 
         setInitialFocus(editBox);
         setText(initialText);
@@ -61,28 +61,28 @@ public class JsonEditorScreen extends Screen {
 
     public @Nullable JsonElement getJson() {
         try {
-            return Nucleus.GSON.fromJson(editBox.getText(), JsonElement.class);
+            return Nucleus.GSON.fromJson(editBox.getValue(), JsonElement.class);
         } catch (Exception exception) {
             return null;
         }
     }
 
     @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        context.getMatrices().push();
-        context.getMatrices().translate(0, 0, -15);
-        renderBackgroundTexture(context);
-        context.getMatrices().pop();
+    public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
+        context.pose().pushPose();
+        context.pose().translate(0, 0, -15);
+        renderDirtBackground(context);
+        context.pose().popPose();
         super.render(context, mouseX, mouseY, delta);
     }
 
     @Override
-    public void close() {
+    public void onClose() {
         updateListener.accept(null);
-        client.setScreen(parent);
+        minecraft.setScreen(parent);
     }
 
     public void closeNoUpdate() {
-        client.setScreen(parent);
+        minecraft.setScreen(parent);
     }
 }

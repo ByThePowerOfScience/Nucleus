@@ -2,31 +2,31 @@ package com.redpxnda.nucleus.config.screen.component;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.text.Text;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.network.chat.Component;
 
 @Environment(EnvType.CLIENT)
-public class BooleanComponent extends ButtonWidget implements ConfigComponent<Boolean> {
-    public static final Text DESC_TEXT = Text.translatable("nucleus.config_screen.boolean.description");
-    public static final Text ON_TEXT = Text.translatable("nucleus.config_screen.boolean.on");
-    public static final Text OFF_TEXT = Text.translatable("nucleus.config_screen.boolean.off");
+public class BooleanComponent extends Button implements ConfigComponent<Boolean> {
+    public static final Component DESC_TEXT = Component.translatable("nucleus.config_screen.boolean.description");
+    public static final Component ON_TEXT = Component.translatable("nucleus.config_screen.boolean.on");
+    public static final Component OFF_TEXT = Component.translatable("nucleus.config_screen.boolean.off");
 
     public ConfigComponent<?> widget;
     public boolean checked = false;
 
     public BooleanComponent(int x, int y, int width, int height) {
-        super(x, y, width, height, OFF_TEXT, wid -> {}, DEFAULT_NARRATION_SUPPLIER);
+        super(x, y, width, height, OFF_TEXT, wid -> {}, DEFAULT_NARRATION);
     }
 
     @Override
-    protected void renderButton(DrawContext context, int mouseX, int mouseY, float delta) {
-        super.renderButton(context, mouseX, mouseY, delta);
+    protected void renderWidget(GuiGraphics context, int mouseX, int mouseY, float delta) {
+        super.renderWidget(context, mouseX, mouseY, delta);
         setFocused(isHovered());
     }
 
     @Override
-    public Text getInstructionText() {
+    public Component getInstructionText() {
         return DESC_TEXT;
     }
 

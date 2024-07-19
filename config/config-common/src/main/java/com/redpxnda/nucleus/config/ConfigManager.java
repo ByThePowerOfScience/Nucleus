@@ -11,10 +11,10 @@ import dev.architectury.platform.Platform;
 import dev.architectury.utils.Env;
 import dev.architectury.utils.EnvExecutor;
 import net.fabricmc.api.EnvType;
-import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.Minecraft;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Identifier;
+import net.minecraft.server.level.ServerPlayer;
 import org.slf4j.Logger;
 
 import java.io.IOException;
@@ -29,7 +29,7 @@ import java.util.function.Predicate;
 public class ConfigManager {
     private static final Logger LOGGER = Nucleus.getLogger();
     public static final AtomicBoolean skipNextWatch = new AtomicBoolean(false);
-    private static final Map<Identifier, ConfigObject<?>> configs = new HashMap<>();
+    private static final Map<ResourceLocation, ConfigObject<?>> configs = new HashMap<>();
     private static final Map<String, ConfigObject<?>> configsByFileLocation = new HashMap<>();
     public static final PrioritizedEvent<ConfigScreensEvent> CONFIG_SCREENS_REGISTRY = PrioritizedEvent.createLoop();
 
@@ -53,14 +53,14 @@ public class ConfigManager {
     /**
      * Use this carefully, it casts unsafely.
      */
-    public static <T> T getConfig(Identifier id) {
+    public static <T> T getConfig(ResourceLocation id) {
         return (T) configs.get(id).getInstance();
     }
 
     /**
      * Use this carefully, it casts unsafely.
      */
-    public static <T> ConfigObject<T> getConfigObject(Identifier id) {
+    public static <T> ConfigObject<T> getConfigObject(ResourceLocation id) {
         return (ConfigObject<T>) configs.get(id);
     }
 
@@ -147,8 +147,8 @@ public class ConfigManager {
                             Path path = ((Path) key.watchable()).resolve((Path) event.context());
 
                             if (path.toString().endsWith(".jsonc")) {
-                                if (Platform.getEnv() == EnvType.CLIENT && MinecraftClient.getInstance() != null)
-                                    MinecraftClient.getInstance().execute(() -> {
+                                if (Platform.getEnv() == EnvType.CLIENT && Minecraft.getInstance() != null)
+                                    Minecraft.getInstance().execute(() -> {
                                         ConfigObject<?> config = ConfigManager.getConfigObjectByPath(path);
                                         if (config != null && config.watch && config.type.clientCanControl()) {
                                             LOGGER.info("File modification for client-sided config '{}' detected. Updating!", config.id);
@@ -194,7 +194,7 @@ public class ConfigManager {
         new ConfigSyncPacket(config.id, config.serialize(JsoncOps.INSTANCE).toString()).send(server);
     }
 
-    public static void syncConfigWithPlayer(ConfigObject<?> config, ServerPlayerEntity sp) {
+    public static void syncConfigWithPlayer(ConfigObject<?> config, ServerPlayer sp) {
         if (config.type != ConfigType.SERVER_CLIENT_SYNCED) return;
         new ConfigSyncPacket(config.id, config.serialize(JsoncOps.INSTANCE).toString()).send(sp);
     }

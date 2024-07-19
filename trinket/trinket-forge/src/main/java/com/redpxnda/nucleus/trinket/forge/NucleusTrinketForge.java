@@ -4,7 +4,7 @@ import com.redpxnda.nucleus.trinket.NucleusTrinket;
 import com.redpxnda.nucleus.trinket.impl.forge.TrinketItemCreatorImpl;
 import dev.architectury.platform.Platform;
 import dev.architectury.platform.forge.EventBuses;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;

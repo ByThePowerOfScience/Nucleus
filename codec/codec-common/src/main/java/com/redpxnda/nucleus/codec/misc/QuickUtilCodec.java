@@ -6,8 +6,8 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
-import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.Tag;
 import org.jetbrains.annotations.Nullable;
 
 public interface QuickUtilCodec<A> extends Codec<A> {
@@ -31,11 +31,11 @@ public interface QuickUtilCodec<A> extends Codec<A> {
         return tryEncode(JsonOps.INSTANCE, input);
     }
 
-    default @Nullable A tryNbtParse(NbtElement input) {
+    default @Nullable A tryNbtParse(Tag input) {
         return tryParse(NbtOps.INSTANCE, input);
     }
 
-    default @Nullable NbtElement tryNbtEncode(A input) {
+    default @Nullable Tag tryNbtEncode(A input) {
         return tryEncode(NbtOps.INSTANCE, input);
     }
 

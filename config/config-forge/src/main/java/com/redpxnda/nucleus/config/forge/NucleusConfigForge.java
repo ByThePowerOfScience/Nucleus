@@ -5,6 +5,7 @@ import com.redpxnda.nucleus.config.ConfigManager;
 import com.redpxnda.nucleus.config.ConfigScreensEvent;
 import com.redpxnda.nucleus.config.NucleusConfig;
 import dev.architectury.platform.forge.EventBuses;
+import java.util.Optional;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.ConfigScreenHandler;

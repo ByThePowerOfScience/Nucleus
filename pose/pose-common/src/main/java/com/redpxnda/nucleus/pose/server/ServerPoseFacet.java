@@ -4,56 +4,56 @@ import com.redpxnda.nucleus.facet.entity.EntityFacet;
 import com.redpxnda.nucleus.facet.FacetKey;
 import com.redpxnda.nucleus.network.PlayerSendable;
 import com.redpxnda.nucleus.pose.network.clientbound.PoseFacetSyncPacket;
-import net.minecraft.entity.Entity;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Hand;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.Entity;
 
-public class ServerPoseFacet implements EntityFacet<NbtCompound> {
+public class ServerPoseFacet implements EntityFacet<CompoundTag> {
     public static FacetKey<ServerPoseFacet> KEY;
 
-    public static ServerPoseFacet get(ServerPlayerEntity entity) {
+    public static ServerPoseFacet get(ServerPlayer entity) {
         return KEY.get(entity);
     }
 
     public String pose = "none";
-    public Hand usedHand = Hand.MAIN_HAND;
+    public InteractionHand usedHand = InteractionHand.MAIN_HAND;
     public long updateTime = -100;
 
     public ServerPoseFacet(Entity entity) {
     }
 
     @Override
-    public NbtCompound toNbt() {
-        NbtCompound tag = new NbtCompound();
+    public CompoundTag toNbt() {
+        CompoundTag tag = new CompoundTag();
         tag.putString("pose", pose);
         tag.putLong("updateTime", updateTime);
-        tag.putString("usedHand", usedHand == Hand.MAIN_HAND ? "main" : "off");
+        tag.putString("usedHand", usedHand == InteractionHand.MAIN_HAND ? "main" : "off");
         return tag;
     }
 
     @Override
-    public void loadNbt(NbtCompound tag) {
+    public void loadNbt(CompoundTag tag) {
         pose = tag.getString("pose");
         updateTime = tag.getLong("updateTime");
-        usedHand = tag.getString("usedHand").equals("main") ? Hand.MAIN_HAND : Hand.OFF_HAND;
+        usedHand = tag.getString("usedHand").equals("main") ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
     }
 
     public void set(String pose, long time) {
         setPose(pose);
         setUpdateTime(time);
     }
-    public void set(String pose, long time, Hand usedHand) {
+    public void set(String pose, long time, InteractionHand usedHand) {
         set(pose, time);
         setUsedHand(usedHand);
     }
-    public void set(String pose, ServerPlayerEntity facetHolder) {
-        set(pose, facetHolder.getWorld().getTime());
+    public void set(String pose, ServerPlayer facetHolder) {
+        set(pose, facetHolder.level().getGameTime());
         sendToTrackers(facetHolder);
         sendToClient(facetHolder);
     }
-    public void set(String pose, ServerPlayerEntity facetHolder, Hand usedHand) {
-        set(pose, facetHolder.getWorld().getTime(), usedHand);
+    public void set(String pose, ServerPlayer facetHolder, InteractionHand usedHand) {
+        set(pose, facetHolder.level().getGameTime(), usedHand);
         sendToTrackers(facetHolder);
         sendToClient(facetHolder);
     }
@@ -64,8 +64,8 @@ public class ServerPoseFacet implements EntityFacet<NbtCompound> {
         setPose("none");
         setUpdateTime(time);
     }
-    public void reset(ServerPlayerEntity facetHolder) {
-        set("none", facetHolder.getWorld().getTime());
+    public void reset(ServerPlayer facetHolder) {
+        set("none", facetHolder.level().getGameTime());
         sendToTrackers(facetHolder);
         sendToClient(facetHolder);
     }
@@ -81,10 +81,10 @@ public class ServerPoseFacet implements EntityFacet<NbtCompound> {
     public long getUpdateTime() {
         return updateTime;
     }
-    public Hand getUsedHand() {
+    public InteractionHand getUsedHand() {
         return usedHand;
     }
-    public void setUsedHand(Hand usedHand) {
+    public void setUsedHand(InteractionHand usedHand) {
         this.usedHand = usedHand;
     }
 

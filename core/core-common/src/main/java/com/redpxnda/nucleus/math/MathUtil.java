@@ -1,14 +1,14 @@
 package com.redpxnda.nucleus.math;
 
-import net.minecraft.util.math.MathHelper;
 import org.joml.Vector3f;
 
 import java.util.Arrays;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Function;
+import net.minecraft.util.Mth;
 
-public class MathUtil extends MathHelper {
+public class MathUtil extends Mth {
     public static final Random random = new Random();
 
     public static double random(double min, double max) {

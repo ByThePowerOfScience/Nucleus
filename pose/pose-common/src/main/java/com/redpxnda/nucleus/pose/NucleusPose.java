@@ -10,8 +10,8 @@ import com.redpxnda.nucleus.pose.server.ServerPoseFacet;
 import dev.architectury.registry.ReloadListenerRegistry;
 import dev.architectury.utils.Env;
 import dev.architectury.utils.EnvExecutor;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.resource.ResourceType;
+import net.minecraft.server.packs.PackType;
+import net.minecraft.world.entity.player.Player;
 
 import static com.redpxnda.nucleus.Nucleus.loc;
 
@@ -33,12 +33,12 @@ public class NucleusPose {
         TrackingUpdateSyncer.register(ServerPoseFacet.KEY);
 
         FacetRegistry.ENTITY_FACET_ATTACHMENT.register((entity, attacher) -> {
-            if (entity instanceof PlayerEntity) {
-                if (!entity.getWorld().isClient) attacher.add(ServerPoseFacet.KEY, new ServerPoseFacet(entity));
+            if (entity instanceof Player) {
+                if (!entity.level().isClientSide) attacher.add(ServerPoseFacet.KEY, new ServerPoseFacet(entity));
                 else attacher.add(ClientPoseFacet.KEY, new ClientPoseFacet(entity));
             }
         });
 
-        EnvExecutor.runInEnv(Env.CLIENT, () -> () -> ReloadListenerRegistry.register(ResourceType.CLIENT_RESOURCES, new PoseAnimationResourceListener())); // works for nucleus and addon namespaces
+        EnvExecutor.runInEnv(Env.CLIENT, () -> () -> ReloadListenerRegistry.register(PackType.CLIENT_RESOURCES, new PoseAnimationResourceListener())); // works for nucleus and addon namespaces
     }
 }

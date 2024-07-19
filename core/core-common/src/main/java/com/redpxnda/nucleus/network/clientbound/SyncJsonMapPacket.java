@@ -3,11 +3,10 @@ package com.redpxnda.nucleus.network.clientbound;
 import com.google.gson.JsonElement;
 import com.redpxnda.nucleus.Nucleus;
 import com.redpxnda.nucleus.network.SimplePacket;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.util.JsonHelper;
-
 import java.util.HashMap;
 import java.util.Map;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.util.GsonHelper;
 
 public abstract class SyncJsonMapPacket implements SimplePacket {
     public void send() {
@@ -20,20 +19,20 @@ public abstract class SyncJsonMapPacket implements SimplePacket {
         this.elements = elements;
     }
 
-    public SyncJsonMapPacket(PacketByteBuf buf) {
+    public SyncJsonMapPacket(FriendlyByteBuf buf) {
         int size = buf.readInt();
         this.elements = new HashMap<>();
         for (int i = 0; i < size; i++) {
-            elements.put(buf.readString(), JsonHelper.deserialize(buf.readString()));
+            elements.put(buf.readUtf(), GsonHelper.parse(buf.readUtf()));
         }
     }
 
     @Override
-    public void toBuffer(PacketByteBuf buf) {
+    public void toBuffer(FriendlyByteBuf buf) {
         buf.writeInt(elements.size());
         elements.forEach((s, j) -> {
-            buf.writeString(s);
-            buf.writeString(j.toString());
+            buf.writeUtf(s);
+            buf.writeUtf(j.toString());
         });
     }
 }

@@ -4,11 +4,11 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
 import java.util.Set;
-import net.minecraft.server.world.EntityTrackingListener;
-import net.minecraft.server.world.ThreadedAnvilChunkStorage;
+import net.minecraft.server.level.ChunkMap;
+import net.minecraft.server.network.ServerPlayerConnection;
 
-@Mixin(ThreadedAnvilChunkStorage.EntityTracker.class)
+@Mixin(ChunkMap.TrackedEntity.class)
 public interface TrackedEntityAccessor {
     @Accessor
-    Set<EntityTrackingListener> getListeners();
+    Set<ServerPlayerConnection> getListeners();
 }

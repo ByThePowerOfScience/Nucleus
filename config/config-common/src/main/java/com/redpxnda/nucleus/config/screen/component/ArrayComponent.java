@@ -1,12 +1,6 @@
 package com.redpxnda.nucleus.config.screen.component;
 
 import com.redpxnda.nucleus.util.MiscUtil;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.gui.widget.ClickableWidget;
-import net.minecraft.text.Text;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Array;
@@ -16,29 +10,35 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
 
 import static com.redpxnda.nucleus.config.screen.component.ConfigEntriesComponent.KEY_TEXT_WIDTH;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
-public class ArrayComponent extends ClickableWidget implements ConfigComponent {
-    public static final Text DESC_TEXT = Text.translatable("nucleus.config_screen.collection.description");
-    public static final Text UP_ICON = Text.literal("∧");
-    public static final Text DOWN_ICON = Text.literal("∨");
-    public static final Text REMOVE_ICON = Text.literal("×");
+public class ArrayComponent extends AbstractWidget implements ConfigComponent {
+    public static final Component DESC_TEXT = Component.translatable("nucleus.config_screen.collection.description");
+    public static final Component UP_ICON = Component.literal("∧");
+    public static final Component DOWN_ICON = Component.literal("∨");
+    public static final Component REMOVE_ICON = Component.literal("×");
 
     public final Class cls;
     public final boolean primitive;
     public final Supplier<ConfigComponent> elementCreator;
     public final List<ConfigComponent> elements = new ArrayList<>();
-    public final Map<ConfigComponent, ButtonWidget> removers = new HashMap<>();
+    public final Map<ConfigComponent, Button> removers = new HashMap<>();
     public ConfigComponent<?> parent;
     public boolean minimized = true;
     public ConfigComponent<?> focusedComponent = null;
-    public final ButtonWidget adder;
-    public final ButtonWidget minimizer;
+    public final Button adder;
+    public final Button minimizer;
 
     public ArrayComponent(Class cls, boolean primitive, Type type, int x, int y) {
-        super(x, y, 142, 8, Text.empty());
+        super(x, y, 142, 8, Component.empty());
         this.cls = cls;
         this.primitive = primitive;
 
@@ -46,7 +46,7 @@ public class ArrayComponent extends ClickableWidget implements ConfigComponent {
             ConfigComponent comp = ConfigComponentBehavior.getComponent(type, new ArrayList<>());
             comp.setParent(this);
             elements.add(comp);
-            removers.put(comp, ButtonWidget.builder(REMOVE_ICON, wid -> {
+            removers.put(comp, Button.builder(REMOVE_ICON, wid -> {
                 if (Screen.hasShiftDown())
                     MiscUtil.moveListElementDown(elements, comp);
                 else if (Screen.hasControlDown())
@@ -57,35 +57,35 @@ public class ArrayComponent extends ClickableWidget implements ConfigComponent {
                     removers.remove(comp);
                 }
                 requestPositionUpdate();
-            }).dimensions(0, 0, 20, 20).build());
+            }).bounds(0, 0, 20, 20).build());
             return comp;
         };
 
-        adder = ButtonWidget.builder(Text.literal("＋"), wid -> {
+        adder = Button.builder(Component.literal("＋"), wid -> {
             elementCreator.get();
             requestPositionUpdate();
-        }).dimensions(0, 0, 20, 20).build();
+        }).bounds(0, 0, 20, 20).build();
 
-        Text minimizedText = Text.literal(">");
-        Text maximizedText = Text.literal("∨");
-        minimizer = ButtonWidget.builder(minimizedText, wid -> {
+        Component minimizedText = Component.literal(">");
+        Component maximizedText = Component.literal("∨");
+        minimizer = Button.builder(minimizedText, wid -> {
             minimized = !minimized;
             if (minimized) focusedComponent = null;
             wid.setMessage(minimized ? minimizedText : maximizedText);
             requestPositionUpdate();
-        }).dimensions(0, 0, 20, 20).build();
+        }).bounds(0, 0, 20, 20).build();
 
         //performPositionUpdate();
     }
 
     @Override
-    public void drawInstructionText(DrawContext context, int mouseX, int mouseY) {
+    public void drawInstructionText(GuiGraphics context, int mouseX, int mouseY) {
         if (minimizer.isMouseOver(mouseX, mouseY))
             ConfigComponent.super.drawInstructionText(context, mouseX, mouseY);
     }
 
     @Override
-    public @Nullable Text getInstructionText() {
+    public @Nullable Component getInstructionText() {
         return DESC_TEXT;
     }
 
@@ -167,14 +167,14 @@ public class ArrayComponent extends ClickableWidget implements ConfigComponent {
     }
 
     @Override
-    protected void renderButton(DrawContext context, int mouseX, int mouseY, float delta) {
+    protected void renderWidget(GuiGraphics context, int mouseX, int mouseY, float delta) {
         minimizer.render(context, mouseX, mouseY, delta);
         if (!minimized) {
             int index = 0;
             for (ConfigComponent element : elements) {
                 element.render(context, mouseX, mouseY, delta);
 
-                ButtonWidget remover = removers.get(element);
+                Button remover = removers.get(element);
                 if (Screen.hasShiftDown()) {
                     remover.setMessage(DOWN_ICON);
                     remover.active = index != elements.size()-1;
@@ -199,7 +199,7 @@ public class ArrayComponent extends ClickableWidget implements ConfigComponent {
         if (!minimized) {
             if (adder.isMouseOver(mX, mY)) return adder.mouseClicked(mX, mY, button);
             for (ConfigComponent component : elements) {
-                ButtonWidget remover;
+                Button remover;
                 if (focusedComponent != null && focusedComponent.mouseClicked(mX, mY, button)) {
                     return true;
                 } else if (component.isMouseOver(mX, mY)) {
@@ -257,7 +257,7 @@ public class ArrayComponent extends ClickableWidget implements ConfigComponent {
     }
 
     @Override
-    protected void appendClickableNarrations(NarrationMessageBuilder builder) {
+    protected void updateWidgetNarration(NarrationElementOutput builder) {
 
     }
 }

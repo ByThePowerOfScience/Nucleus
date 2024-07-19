@@ -1,26 +1,26 @@
 package com.redpxnda.nucleus.codec.tag;
 
 import com.mojang.serialization.Codec;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.tag.TagKey;
-
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
+import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.tags.TagKey;
 
 public class TagList<T> {
-    public static <T, L extends TagList<T>> Codec<L> getCodec(BiFunction<List<T>, List<TagKey<T>>, L> creator, Registry<T> registry, RegistryKey<? extends Registry<T>> registryKey) {
+    public static <T, L extends TagList<T>> Codec<L> getCodec(BiFunction<List<T>, List<TagKey<T>>, L> creator, Registry<T> registry, ResourceKey<? extends Registry<T>> registryKey) {
         return new TagListCodec<>(creator, registry, registryKey);
     }
 
     protected final Registry<T> registry;
-    protected final RegistryKey<? extends Registry<T>> registryKey;
+    protected final ResourceKey<? extends Registry<T>> registryKey;
     protected final List<T> objects;
     protected final List<TagKey<T>> tags;
 
-    public TagList(List<T> objects, List<TagKey<T>> tags, Registry<T> registry, RegistryKey<? extends Registry<T>> registryKey) {
+    public TagList(List<T> objects, List<TagKey<T>> tags, Registry<T> registry, ResourceKey<? extends Registry<T>> registryKey) {
         this.registry = registry;
         this.registryKey = registryKey;
         this.objects = new ArrayList<>(objects);
@@ -33,7 +33,7 @@ public class TagList<T> {
     public boolean contains(T obj) {
         if (objects.contains(obj)) return true;
         for (TagKey<T> t : tags) {
-            if (registry.getEntry(obj).isIn(t)) return true;
+            if (registry.wrapAsHolder(obj).is(t)) return true;
         }
         return false;
     }
@@ -51,7 +51,7 @@ public class TagList<T> {
     public List<T> getAll() {
         List<T> result = new ArrayList<>(objects);
         tags.forEach(t -> {
-            var entries = registry.getEntryList(t);
+            var entries = registry.getTag(t);
             entries.ifPresent(registryEntries -> registryEntries.forEach(entry -> result.add(entry.value())));
         });
         return result;

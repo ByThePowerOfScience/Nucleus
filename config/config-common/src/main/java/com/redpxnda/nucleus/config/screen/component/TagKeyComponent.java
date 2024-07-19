@@ -1,24 +1,24 @@
 package com.redpxnda.nucleus.config.screen.component;
 
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
-import net.minecraft.client.gui.widget.ClickableWidget;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.tag.TagKey;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.core.Registry;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
 
-public class TagKeyComponent<T> extends ClickableWidget implements ConfigComponent<TagKey<T>> {
-    public static final Text DESC_TEXT = Text.translatable("nucleus.config_screen.tag.description");
+public class TagKeyComponent<T> extends AbstractWidget implements ConfigComponent<TagKey<T>> {
+    public static final Component DESC_TEXT = Component.translatable("nucleus.config_screen.tag.description");
 
     public final IdentifierComponent delegate;
-    public final RegistryKey<? extends Registry<T>> registry;
+    public final ResourceKey<? extends Registry<T>> registry;
     public ConfigComponent<?> parent;
 
-    public TagKeyComponent(RegistryKey<? extends Registry<T>> registry, TextRenderer textRenderer, int x, int y, int width, int height) {
-        super(x, y, width, height, Text.empty());
+    public TagKeyComponent(ResourceKey<? extends Registry<T>> registry, Font textRenderer, int x, int y, int width, int height) {
+        super(x, y, width, height, Component.empty());
         this.registry = registry;
         this.delegate = new IdentifierComponent(textRenderer, x, y, width, height);
     }
@@ -35,8 +35,8 @@ public class TagKeyComponent<T> extends ClickableWidget implements ConfigCompone
 
     @Override
     public TagKey<T> getValue() {
-        Identifier val = delegate.getValue();
-        return val == null ? null : TagKey.of(registry, val);
+        ResourceLocation val = delegate.getValue();
+        return val == null ? null : TagKey.create(registry, val);
     }
 
     @Override
@@ -47,11 +47,11 @@ public class TagKeyComponent<T> extends ClickableWidget implements ConfigCompone
 
     @Override
     public void setValue(TagKey<T> value) {
-        delegate.setValue(value.id());
+        delegate.setValue(value.location());
     }
 
     @Override
-    public Text getInstructionText() {
+    public Component getInstructionText() {
         return DESC_TEXT;
     }
 
@@ -101,8 +101,8 @@ public class TagKeyComponent<T> extends ClickableWidget implements ConfigCompone
     public void setFocused(boolean focused) {
         delegate.setFocused(focused);
         if (!focused) {
-            delegate.setSelectionStart(0);
-            delegate.setSelectionEnd(0);
+            delegate.setCursorPosition(0);
+            delegate.setHighlightPos(0);
         }
     }
 
@@ -112,12 +112,12 @@ public class TagKeyComponent<T> extends ClickableWidget implements ConfigCompone
     }
 
     @Override
-    protected void renderButton(DrawContext context, int mouseX, int mouseY, float delta) {
+    protected void renderWidget(GuiGraphics context, int mouseX, int mouseY, float delta) {
         delegate.render(context, mouseX, mouseY, delta);
     }
 
     @Override
-    protected void appendClickableNarrations(NarrationMessageBuilder builder) {
+    protected void updateWidgetNarration(NarrationElementOutput builder) {
 
     }
 }

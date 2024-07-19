@@ -13,9 +13,9 @@ import dev.architectury.event.events.common.LifecycleEvent;
 import dev.architectury.networking.NetworkChannel;
 import dev.architectury.utils.Env;
 import dev.architectury.utils.EnvExecutor;
-import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,12 +45,12 @@ public class Nucleus {
         registerPacket(PlaySoundPacket.class, PlaySoundPacket::new);
     }
 
-    public static <T extends SimplePacket> void registerPacket(Class<T> cls, Function<PacketByteBuf, T> decoder) {
+    public static <T extends SimplePacket> void registerPacket(Class<T> cls, Function<FriendlyByteBuf, T> decoder) {
         CHANNEL.register(cls, T::toBuffer, decoder, T::wrappedHandle);
     }
 
-    public static Identifier loc(String str) {
-        return new Identifier(MOD_ID, str);
+    public static ResourceLocation loc(String str) {
+        return new ResourceLocation(MOD_ID, str);
     }
 
     public static Logger getLogger() {

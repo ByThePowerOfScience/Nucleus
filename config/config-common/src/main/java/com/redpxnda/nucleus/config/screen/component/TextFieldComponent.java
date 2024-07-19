@@ -2,29 +2,29 @@ package com.redpxnda.nucleus.config.screen.component;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.text.Text;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.network.chat.Component;
 
 @Environment(EnvType.CLIENT)
-public class TextFieldComponent extends TextFieldWidget implements ConfigComponent<String> {
-    public static final Text DESC_TEXT = Text.translatable("nucleus.config_screen.text.description");
+public class TextFieldComponent extends EditBox implements ConfigComponent<String> {
+    public static final Component DESC_TEXT = Component.translatable("nucleus.config_screen.text.description");
 
     public ConfigComponent<?> widget;
 
-    public TextFieldComponent(TextRenderer textRenderer, int x, int y, int width, int height) {
-        super(textRenderer, x, y, width, height, Text.empty());
+    public TextFieldComponent(Font textRenderer, int x, int y, int width, int height) {
+        super(textRenderer, x, y, width, height, Component.empty());
         setMaxLength(1024);
     }
 
     @Override
-    public void renderButton(DrawContext context, int mouseX, int mouseY, float delta) {
-        super.renderButton(context, mouseX, mouseY, delta);
+    public void renderWidget(GuiGraphics context, int mouseX, int mouseY, float delta) {
+        super.renderWidget(context, mouseX, mouseY, delta);
     }
 
     @Override
-    public Text getInstructionText() {
+    public Component getInstructionText() {
         return DESC_TEXT;
     }
 
@@ -35,10 +35,10 @@ public class TextFieldComponent extends TextFieldWidget implements ConfigCompone
 
     @Override
     public String getValue() {
-        return getText();
+        return getValue();
     }
     public void setValue(String value) {
-        super.setText(value);
+        super.setValue(value);
     }
 
     @Override
@@ -55,8 +55,8 @@ public class TextFieldComponent extends TextFieldWidget implements ConfigCompone
     public void setFocused(boolean focused) {
         super.setFocused(focused);
         if (!focused) {
-            setSelectionStart(0);
-            setSelectionEnd(0);
+            setCursorPosition(0);
+            setHighlightPos(0);
         }
     }
 }

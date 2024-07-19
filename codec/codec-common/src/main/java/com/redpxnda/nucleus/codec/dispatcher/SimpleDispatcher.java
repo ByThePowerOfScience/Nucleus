@@ -3,21 +3,21 @@ package com.redpxnda.nucleus.codec.dispatcher;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.*;
 import com.redpxnda.nucleus.Nucleus;
-import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
+import net.minecraft.resources.ResourceLocation;
 
 public class SimpleDispatcher<T extends Dispatchable> extends MapCodec<T> {
     private static final Logger LOGGER = Nucleus.getLogger();
 
-    public final Map<Identifier, MapCodec<T>> types;
+    public final Map<ResourceLocation, MapCodec<T>> types;
     public final String typeKey;
     public final DispatcherCodec<T> codec = new DispatcherCodec<>(this);
 
-    public SimpleDispatcher(Map<Identifier, MapCodec<T>> types, String typeKey) {
+    public SimpleDispatcher(Map<ResourceLocation, MapCodec<T>> types, String typeKey) {
         this.types = types;
         this.typeKey = typeKey;
     }
@@ -32,11 +32,11 @@ public class SimpleDispatcher<T extends Dispatchable> extends MapCodec<T> {
         this.typeKey = "type";
     }
 
-    public void registerType(Identifier id, Codec<T> codec) {
+    public void registerType(ResourceLocation id, Codec<T> codec) {
         types.put(id, codec.fieldOf("value"));
     }
 
-    public void registerType(Identifier id, MapCodec<T> codec) {
+    public void registerType(ResourceLocation id, MapCodec<T> codec) {
         types.put(id, codec);
     }
 
@@ -45,26 +45,26 @@ public class SimpleDispatcher<T extends Dispatchable> extends MapCodec<T> {
         return Stream.of(ops.createString("type"));
     }
 
-    public <A> DataResult<Identifier> getIdentifierFromData(DynamicOps<A> ops, MapLike<A> input) {
+    public <A> DataResult<ResourceLocation> getIdentifierFromData(DynamicOps<A> ops, MapLike<A> input) {
         A value = input.get(typeKey);
         if (value == null) return DataResult.error(() -> "Could not find key '" + typeKey + "' in data provided to SimpleDispatcher#getIdentifierFromData: " + input);
-        return ops.getStringValue(value).map(Identifier::new);
+        return ops.getStringValue(value).map(ResourceLocation::new);
     }
 
     @Override
     public <A> DataResult<T> decode(DynamicOps<A> ops, MapLike<A> input) {
-        DataResult<Identifier> idResult = getIdentifierFromData(ops, input);
+        DataResult<ResourceLocation> idResult = getIdentifierFromData(ops, input);
         if (idResult.error().isPresent()) {
             String message = idResult.error().get().message();
             return DataResult.error(() -> message);
         }
-        Identifier id = idResult.result().get();
+        ResourceLocation id = idResult.result().get();
         return types.get(id).decode(ops, input);
     }
 
     @Override
     public <A> RecordBuilder<A> encode(T input, DynamicOps<A> ops, RecordBuilder<A> prefix) {
-        Identifier id = input.getId();
+        ResourceLocation id = input.getId();
         MapCodec<T> codec = types.get(id);
         if (codec != null) {
             prefix.add(typeKey, ops.createString(id.toString()));

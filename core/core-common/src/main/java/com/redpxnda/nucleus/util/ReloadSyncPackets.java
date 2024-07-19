@@ -12,7 +12,7 @@ public class ReloadSyncPackets extends ArrayList<Supplier<SimplePacket>> {
 
     public static void init() {
         ServerEvents.END_DATA_PACK_RELOAD.register(((server, resourceManager, successful) -> instance.forEach(sup -> {
-            if (successful) sup.get().send(server.getPlayerManager().getPlayerList());
+            if (successful) sup.get().send(server.getPlayerList().getPlayers());
         })));
         PlayerEvent.PLAYER_JOIN.register(sp -> instance.forEach(sup -> sup.get().send(sp)));
     }

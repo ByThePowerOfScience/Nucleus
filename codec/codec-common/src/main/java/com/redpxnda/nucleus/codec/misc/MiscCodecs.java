@@ -7,7 +7,6 @@ import com.mojang.datafixers.util.Either;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.*;
 import com.redpxnda.nucleus.util.MiscUtil;
-import net.minecraft.util.dynamic.Codecs;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 
@@ -20,6 +19,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.stream.Stream;
+import net.minecraft.util.ExtraCodecs;
 
 public class MiscCodecs {
     public static final ColorCodec COLOR = ColorCodec.INSTANCE;
@@ -61,11 +61,11 @@ public class MiscCodecs {
         });
     }
 
-    public static <T> T quickParse(JsonElement element, Codec<T> codec, Consumer<String> ifFailed) {
-        return codec.parse(JsonOps.INSTANCE, element).getOrThrow(false, ifFailed);
+    public static <T> T quickParse(JsonElement element, Codec<T> codec, Function<String, RuntimeException> ifFailed) {
+        return codec.parse(JsonOps.INSTANCE, element).getOrThrow(ifFailed);
     }
-    public static <T, O> T quickParse(DynamicOps<O> ops, O element, Codec<T> codec, Consumer<String> ifFailed) {
-        return codec.parse(ops, element).getOrThrow(false, ifFailed);
+    public static <T, O> T quickParse(DynamicOps<O> ops, O element, Codec<T> codec, Function<String, RuntimeException> ifFailed) {
+        return codec.parse(ops, element).getOrThrow(ifFailed);
     }
 
     public static final Codec<DoubleRange> DOUBLE_RANGE = Codec.either(
@@ -91,7 +91,7 @@ public class MiscCodecs {
     }
 
     public static <T extends Consumer<JsonElement>> Codec<ConsumerHolder<T>> consumerMapCodec(String typeKey, Map<String, T> map) {
-        return Codecs.JSON_ELEMENT.comapFlatMap(json -> {
+        return ExtraCodecs.JSON.comapFlatMap(json -> {
             if (json instanceof JsonPrimitive prim) {
                 String name = prim.getAsString();
                 return DataResult.success(new ConsumerHolder<>(map.get(name), null, name));
@@ -107,7 +107,7 @@ public class MiscCodecs {
     public record ConsumerHolder<T extends Consumer<JsonElement>>(T consumer, @Nullable JsonElement element, String name) {}
 
     public static <A, T extends Function<JsonElement, A>> Codec<FunctionHolder<A, T>> functionMapCodec(String typeKey, Map<String, T> map) {
-        return Codecs.JSON_ELEMENT.comapFlatMap(json -> {
+        return ExtraCodecs.JSON.comapFlatMap(json -> {
             if (json instanceof JsonPrimitive prim) {
                 String name = prim.getAsString();
                 return DataResult.success(new FunctionHolder<>(map.get(name), null, name));
@@ -129,14 +129,14 @@ public class MiscCodecs {
             return func.apply(element);
         }
     }
-    public static <A, T extends Function<JsonElement, A>, O> A dispatchFunctionMap(DynamicOps<O> ops, O element, String typeKey, Map<String, T> map, Consumer<String> errorMessage) {
+    public static <A, T extends Function<JsonElement, A>, O> A dispatchFunctionMap(DynamicOps<O> ops, O element, String typeKey, Map<String, T> map, Function<String, RuntimeException> ifError) {
         FunctionHolder<A, T> functionHolder = functionMapCodec(typeKey, map).parse(ops, element)
-                .getOrThrow(false, errorMessage);
+                .getOrThrow(ifError);
         return functionHolder.apply();
     }
-    public static <A, T extends Function<JsonElement, A>> A dispatchFunctionMap(JsonElement element, String typeKey, Map<String, T> map, Consumer<String> errorMessage) {
+    public static <A, T extends Function<JsonElement, A>> A dispatchFunctionMap(JsonElement element, String typeKey, Map<String, T> map, Function<String, RuntimeException> ifError) {
         FunctionHolder<A, T> functionHolder = functionMapCodec(typeKey, map).parse(JsonOps.INSTANCE, element)
-                .getOrThrow(false, errorMessage);
+                .getOrThrow(ifError);
         return functionHolder.apply();
     }
 

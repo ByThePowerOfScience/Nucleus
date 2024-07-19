@@ -9,18 +9,17 @@ import com.redpxnda.nucleus.config.preset.ConfigProvider;
 import com.redpxnda.nucleus.util.Color;
 import com.redpxnda.nucleus.util.Comment;
 import com.redpxnda.nucleus.util.FloatRange;
-import net.minecraft.block.Blocks;
-import net.minecraft.entity.EntityType;
-import net.minecraft.item.Item;
-import net.minecraft.item.Items;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.tag.TagKey;
-import net.minecraft.util.Identifier;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.Blocks;
 
 @ConfigAutoCodec.ConfigClassMarker
 public class TestConfig {
@@ -80,13 +79,13 @@ public class TestConfig {
     @CodecBehavior.Optional
     public String str = "aggggh!";
 
-    public Identifier identifier = new Identifier("abcd");
+    public ResourceLocation identifier = new ResourceLocation("abcd");
 
     public Item item = Items.ACACIA_LOG;
 
     public Color color = new Color();
 
-    public TagKey<EntityType<?>> entityTypeTag = TagKey.of(RegistryKeys.ENTITY_TYPE, new Identifier("sussy:tag"));
+    public TagKey<EntityType<?>> entityTypeTag = TagKey.create(Registries.ENTITY_TYPE, new ResourceLocation("sussy:tag"));
 
     public EntityTypeList entityTypeList = EntityTypeList.of();
 

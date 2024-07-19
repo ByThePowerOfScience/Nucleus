@@ -1,27 +1,28 @@
 package com.redpxnda.nucleus.config.screen.component;
 
 import com.google.gson.JsonElement;
+import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.JsonOps;
 import com.redpxnda.nucleus.Nucleus;
 import com.redpxnda.nucleus.config.screen.ConfigScreen;
 import com.redpxnda.nucleus.config.screen.JsonEditorScreen;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.toast.SystemToast;
-import net.minecraft.text.Text;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
 import java.util.Optional;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.toasts.SystemToast;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
 
-public class RawJsonComponent<T> extends ButtonWidget implements ConfigComponent<T> {
+public class RawJsonComponent<T> extends Button implements ConfigComponent<T> {
     public static final Logger LOGGER = Nucleus.getLogger("Raw Json Config Editing");
-    public static final Text DESC_TEXT = Text.translatable("nucleus.config_screen.json.description");
-    public static final Text INVALID_DESC_TEXT = Text.translatable("nucleus.config_screen.json.invalid_description");
-    public static final Text INVALID_TOAST_TITLE = Text.translatable("nucleus.config_screen.json.invalid_toast_title");
-    public static final Text INVALID_TOAST_DESC = Text.translatable("nucleus.config_screen.json.invalid_toast_description");
+    public static final Component DESC_TEXT = Component.translatable("nucleus.config_screen.json.description");
+    public static final Component INVALID_DESC_TEXT = Component.translatable("nucleus.config_screen.json.invalid_description");
+    public static final Component INVALID_TOAST_TITLE = Component.translatable("nucleus.config_screen.json.invalid_toast_title");
+    public static final Component INVALID_TOAST_DESC = Component.translatable("nucleus.config_screen.json.invalid_toast_description");
 
     protected final Codec<T> codec;
     protected T value;
@@ -29,7 +30,7 @@ public class RawJsonComponent<T> extends ButtonWidget implements ConfigComponent
     protected ConfigComponent<?> parent;
 
     protected RawJsonComponent(Codec<T> codec, int x, int y, int width, int height) {
-        super(x, y, width, height, Text.literal("+"), null, DEFAULT_NARRATION_SUPPLIER);
+        super(x, y, width, height, Component.literal("+"), null, DEFAULT_NARRATION);
         this.codec = codec;
     }
 
@@ -40,10 +41,10 @@ public class RawJsonComponent<T> extends ButtonWidget implements ConfigComponent
             Optional<JsonElement> optional = codec.encodeStart(JsonOps.INSTANCE, value).result();
             if (optional.isPresent()) initialText = optional.get().toString();
         }
-        Screen oldScreen = MinecraftClient.getInstance().currentScreen;
+        Screen oldScreen = Minecraft.getInstance().screen;
         if (oldScreen instanceof ConfigScreen<?> cs) cs.skipNextInit = true;
         JsonEditorScreen sc = new JsonEditorScreen(oldScreen, this::onJsonUpdate, initialText);
-        MinecraftClient.getInstance().setScreen(sc);
+        Minecraft.getInstance().setScreen(sc);
     }
 
     @Override
@@ -73,8 +74,8 @@ public class RawJsonComponent<T> extends ButtonWidget implements ConfigComponent
             result.ifLeft(t -> value = t);
             result.ifRight(partial -> {
                 LOGGER.error("Failed to parse JSON for unknown config field! -> {}", partial.message());
-                MinecraftClient.getInstance().getToastManager().add(new SystemToast(
-                        SystemToast.Type.PACK_LOAD_FAILURE,
+                Minecraft.getInstance().getToasts().addToast(new SystemToast(
+                        SystemToast.SystemToastIds.PACK_LOAD_FAILURE,
                         INVALID_TOAST_TITLE,
                         INVALID_TOAST_DESC));
             });
@@ -83,7 +84,7 @@ public class RawJsonComponent<T> extends ButtonWidget implements ConfigComponent
     }
 
     @Override
-    public boolean isSelected() {
+    public boolean isHoveredOrFocused() {
         return isHovered();
     }
 
@@ -104,7 +105,7 @@ public class RawJsonComponent<T> extends ButtonWidget implements ConfigComponent
     }
 
     @Override
-    public @Nullable Text getInstructionText() {
+    public @Nullable Component getInstructionText() {
         return checkValidity() ? DESC_TEXT : INVALID_DESC_TEXT;
     }
 

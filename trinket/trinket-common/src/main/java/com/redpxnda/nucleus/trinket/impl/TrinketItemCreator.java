@@ -5,7 +5,7 @@ import com.redpxnda.nucleus.trinket.curiotrinket.CurioTrinketRenderer;
 import dev.architectury.injectables.annotations.ExpectPlatform;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.item.Item;
+import net.minecraft.world.item.Item;
 
 public class TrinketItemCreator {
     @ExpectPlatform

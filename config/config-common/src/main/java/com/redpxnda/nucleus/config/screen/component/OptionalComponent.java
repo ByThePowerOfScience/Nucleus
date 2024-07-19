@@ -3,26 +3,25 @@ package com.redpxnda.nucleus.config.screen.component;
 import com.redpxnda.nucleus.Nucleus;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
-import net.minecraft.client.gui.tooltip.HoveredTooltipPositioner;
-import net.minecraft.client.gui.widget.ClickableWidget;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
-
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import java.util.function.Consumer;
 
 import static com.redpxnda.nucleus.config.screen.component.ConfigEntriesComponent.KEY_TEXT_WIDTH;
 
 @Environment(EnvType.CLIENT)
-public class OptionalComponent<T> extends ClickableWidget implements ConfigComponent<T> {
-    public static final Text ENABLED_TEXT = Text.translatable("nucleus.config_screen.optional.description.enabled");
-    public static final Text DISABLED_TEXT = Text.translatable("nucleus.config_screen.optional.description.disabled");
-    public static final Identifier BUTTON_TEXTURE = new Identifier(Nucleus.MOD_ID, "textures/gui/config/optional.png");
+public class OptionalComponent<T> extends AbstractWidget implements ConfigComponent<T> {
+    public static final Component ENABLED_TEXT = Component.translatable("nucleus.config_screen.optional.description.enabled");
+    public static final Component DISABLED_TEXT = Component.translatable("nucleus.config_screen.optional.description.disabled");
+    public static final ResourceLocation BUTTON_TEXTURE = new ResourceLocation(Nucleus.MOD_ID, "textures/gui/config/optional.png");
 
-    public final TextRenderer textRenderer;
+    public final Font textRenderer;
     public ConfigComponent<?> parent;
     public boolean enabled = true;
     public final ConfigComponent<T> child;
@@ -30,8 +29,8 @@ public class OptionalComponent<T> extends ClickableWidget implements ConfigCompo
     public int buttonX = 0;
     public boolean renderInstructions = true;
 
-    public OptionalComponent(TextRenderer textRenderer, int x, int y, int width, int height, ConfigComponent<T> child, Consumer<ConfigComponent<T>> emptyValueSetter) {
-        super(x, y, width, height, Text.empty());
+    public OptionalComponent(Font textRenderer, int x, int y, int width, int height, ConfigComponent<T> child, Consumer<ConfigComponent<T>> emptyValueSetter) {
+        super(x, y, width, height, Component.empty());
         this.textRenderer = textRenderer;
         this.child = child;
         child.setParent(this);
@@ -59,10 +58,10 @@ public class OptionalComponent<T> extends ClickableWidget implements ConfigCompo
     }
 
     @Override
-    protected void renderButton(DrawContext context, int mouseX, int mouseY, float delta) {
+    protected void renderWidget(GuiGraphics context, int mouseX, int mouseY, float delta) {
         boolean buttonHovered = mouseX >= getX()+buttonX && mouseX < getX()+buttonX+20 && mouseY >= getY() && mouseY < getY()+20;
-        context.drawTexture(BUTTON_TEXTURE, getX()+buttonX, getY(), enabled ? 0 : 20, buttonHovered ? 20 : 0, 20, 20, 64, 64);
-        if (buttonHovered && renderInstructions) context.drawTooltip(textRenderer, textRenderer.wrapLines(enabled ? ENABLED_TEXT : DISABLED_TEXT, 150), HoveredTooltipPositioner.INSTANCE, mouseX, mouseY);
+        context.blit(BUTTON_TEXTURE, getX()+buttonX, getY(), enabled ? 0 : 20, buttonHovered ? 20 : 0, 20, 20, 64, 64);
+        if (buttonHovered && renderInstructions) context.renderTooltip(textRenderer, textRenderer.split(enabled ? ENABLED_TEXT : DISABLED_TEXT, 150), DefaultTooltipPositioner.INSTANCE, mouseX, mouseY);
 
         if (enabled) {
             child.render(context, mouseX, mouseY, delta);
@@ -80,7 +79,7 @@ public class OptionalComponent<T> extends ClickableWidget implements ConfigCompo
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (mouseX >= getX()+buttonX && mouseX < getX()+buttonX+20 && mouseY >= getY() && mouseY < getY()+20) {
             setEnabled(!enabled);
-            this.playDownSound(MinecraftClient.getInstance().getSoundManager());
+            this.playDownSound(Minecraft.getInstance().getSoundManager());
             child.setFocused(false);
             return true;
         }
@@ -123,7 +122,7 @@ public class OptionalComponent<T> extends ClickableWidget implements ConfigCompo
     }
 
     @Override
-    protected void appendClickableNarrations(NarrationMessageBuilder builder) {
+    protected void updateWidgetNarration(NarrationElementOutput builder) {
 
     }
 

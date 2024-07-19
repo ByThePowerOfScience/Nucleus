@@ -5,16 +5,16 @@ import com.redpxnda.nucleus.facet.network.clientbound.FacetSyncPacket;
 import com.redpxnda.nucleus.pose.client.ClientPoseFacet;
 import com.redpxnda.nucleus.pose.server.ServerPoseFacet;
 import dev.architectury.networking.NetworkManager;
-import net.minecraft.entity.Entity;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.network.PacketByteBuf;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.entity.Entity;
 
-public class PoseFacetSyncPacket extends FacetSyncPacket<NbtCompound, ServerPoseFacet> {
+public class PoseFacetSyncPacket extends FacetSyncPacket<CompoundTag, ServerPoseFacet> {
     public PoseFacetSyncPacket(Entity target, ServerPoseFacet cap) {
         super(target, ServerPoseFacet.KEY, cap);
     }
 
-    public PoseFacetSyncPacket(PacketByteBuf buf) {
+    public PoseFacetSyncPacket(FriendlyByteBuf buf) {
         super(buf);
     }
 

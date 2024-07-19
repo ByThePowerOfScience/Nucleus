@@ -1,81 +1,80 @@
 package com.redpxnda.nucleus.config.screen.widget;
 
 import com.redpxnda.nucleus.util.Color;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
-import net.minecraft.client.gui.widget.ScrollableWidget;
-import net.minecraft.text.Text;
-import net.minecraft.util.Util;
-import net.minecraft.util.math.MathHelper;
-
 import java.util.Map;
 import java.util.function.BiConsumer;
+import net.minecraft.Util;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.AbstractScrollWidget;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
+import net.minecraft.util.Mth;
 
-public class SelectableOptionsWidget<T> extends ScrollableWidget {
+public class SelectableOptionsWidget<T> extends AbstractScrollWidget {
     public Map<String, T> options;
-    public final TextRenderer textRenderer;
+    public final Font textRenderer;
     public final BiConsumer<String, T> onSelected;
 
-    public SelectableOptionsWidget(TextRenderer textRenderer, Map<String, T> options, BiConsumer<String, T> onSelected, int x, int y, int width, int height) {
-        super(x, y, width, height, Text.empty());
+    public SelectableOptionsWidget(Font textRenderer, Map<String, T> options, BiConsumer<String, T> onSelected, int x, int y, int width, int height) {
+        super(x, y, width, height, Component.empty());
         this.textRenderer = textRenderer;
         this.options = options;
         this.onSelected = onSelected;
     }
 
     @Override
-    protected int getContentsHeight() {
-        return 4 + options.size()*(textRenderer.fontHeight+1);
+    protected int getInnerHeight() {
+        return 4 + options.size()*(textRenderer.lineHeight+1);
     }
 
     @Override
-    protected double getDeltaYPerScroll() {
+    protected double scrollRate() {
         return Screen.hasShiftDown() ? 8 : 4;
     }
 
     @Override
-    protected void renderContents(DrawContext context, int mouseX, int mouseY, float delta) {
+    protected void renderContents(GuiGraphics context, int mouseX, int mouseY, float delta) {
         int y = getY()+4;
         for (String option : options.keySet()) {
-            int sectionHeight = textRenderer.fontHeight+1;
-            boolean hovered = mouseY >= y-getScrollY() && mouseY < y-getScrollY()+sectionHeight && mouseX >= getX() && mouseX < getX()+getWidth();
-            drawScrollableText(context, textRenderer, Text.literal(option), getX(), y, getX()+width, y+sectionHeight, hovered ? Color.WHITE.argb() : Color.TEXT_GRAY.argb());
+            int sectionHeight = textRenderer.lineHeight+1;
+            boolean hovered = mouseY >= y-scrollAmount() && mouseY < y-scrollAmount()+sectionHeight && mouseX >= getX() && mouseX < getX()+getWidth();
+            renderScrollingString(context, textRenderer, Component.literal(option), getX(), y, getX()+width, y+sectionHeight, hovered ? Color.WHITE.argb() : Color.TEXT_GRAY.argb());
             y += sectionHeight;
         }
     }
 
-    protected static void drawScrollableText(DrawContext context, TextRenderer textRenderer, Text text, int left, int top, int right, int bottom, int color) {
-        int i = textRenderer.getWidth(text);
-        int j = (top + bottom - textRenderer.fontHeight) / 2 + 1;
+    protected static void renderScrollingString(GuiGraphics context, Font textRenderer, Component text, int left, int top, int right, int bottom, int color) {
+        int i = textRenderer.width(text);
+        int j = (top + bottom - textRenderer.lineHeight) / 2 + 1;
         int k = right - left;
         if (i > k) {
             int l = i - k;
-            double d = (double) Util.getMeasuringTimeMs() / 1000.0;
+            double d = (double) Util.getMillis() / 1000.0;
             double e = Math.max((double)l * 0.5, 3.0);
             double f = Math.sin(1.5707963267948966 * Math.cos(Math.PI * 2 * d / e)) / 2.0 + 0.5;
-            double g = MathHelper.lerp(f, 0.0, (double)l);
+            double g = Mth.lerp(f, 0.0, (double)l);
             //context.enableScissor(left, top, right, bottom);
-            context.drawTextWithShadow(textRenderer, text, left - (int)g, j, color);
+            context.drawString(textRenderer, text, left - (int)g, j, color);
             //context.disableScissor();
         } else {
-            context.drawCenteredTextWithShadow(textRenderer, text, (left + right) / 2, j, color);
+            context.drawCenteredString(textRenderer, text, (left + right) / 2, j, color);
         }
     }
 
     @Override
-    public void setScrollY(double scrollY) {
-        super.setScrollY(scrollY);
+    public void setScrollAmount(double scrollY) {
+        super.setScrollAmount(scrollY);
     }
 
     @Override
-    protected void renderOverlay(DrawContext context) {
-        if (this.overflows()) {
+    protected void renderDecorations(GuiGraphics context) {
+        if (this.scrollbarVisible()) {
             int thumbHeight = 12;
             int left = getX() + width;
             int right = getX() + width + 4;
-            int top = Math.max(getY(), (int)getScrollY() * (height - thumbHeight) / getMaxScrollY() + getY());
+            int top = Math.max(getY(), (int)scrollAmount() * (height - thumbHeight) / getMaxScrollAmount() + getY());
             int bottom = top + thumbHeight;
             context.fill(left, top, right, bottom, -8355712);
             context.fill(left, top, right - 1, bottom - 1, -4144960);
@@ -92,8 +91,8 @@ public class SelectableOptionsWidget<T> extends ScrollableWidget {
         if (isMouseOver(mouseX, mouseY) && button == 0) {
             int y = getY()+2;
             for (Map.Entry<String, T> option : options.entrySet()) {
-                int sectionHeight = textRenderer.fontHeight+1;
-                if (mouseY >= y-getScrollY() && mouseY < y-getScrollY()+sectionHeight && mouseX >= getX() && mouseX < getX()+getWidth()) {
+                int sectionHeight = textRenderer.lineHeight+1;
+                if (mouseY >= y-scrollAmount() && mouseY < y-scrollAmount()+sectionHeight && mouseX >= getX() && mouseX < getX()+getWidth()) {
                     onSelected.accept(option.getKey(), option.getValue());
                     return true;
                 }
@@ -104,7 +103,7 @@ public class SelectableOptionsWidget<T> extends ScrollableWidget {
     }
 
     @Override
-    protected void appendClickableNarrations(NarrationMessageBuilder builder) {
+    protected void updateWidgetNarration(NarrationElementOutput builder) {
 
     }
 }

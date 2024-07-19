@@ -5,7 +5,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.redpxnda.nucleus.Nucleus;
-import net.minecraft.entity.player.PlayerEntity;
 import org.slf4j.Logger;
 
 import java.io.InputStream;
@@ -16,6 +15,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import net.minecraft.world.entity.player.Player;
 
 /**
  * {@link SupporterUtil} is the main class used to manage Modding Magnificence supporters.
@@ -25,8 +25,8 @@ public class SupporterUtil {
 
     private static final Map<UUID, Integer> supporters = new HashMap<>();
 
-    public static int getTier(PlayerEntity player) {
-        return getTier(player.getUuid());
+    public static int getTier(Player player) {
+        return getTier(player.getUUID());
     }
 
     public static int getTier(UUID uuid) {

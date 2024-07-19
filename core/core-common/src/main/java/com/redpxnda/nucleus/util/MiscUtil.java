@@ -7,11 +7,6 @@ import com.google.common.reflect.TypeToken;
 import com.google.gson.internal.LinkedTreeMap;
 import com.redpxnda.nucleus.Nucleus;
 import com.redpxnda.nucleus.mixin.ItemStackAccessor;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
 import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 
@@ -27,6 +22,11 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 
 public class MiscUtil {
     private static final Logger LOGGER = Nucleus.getLogger();
@@ -44,7 +44,7 @@ public class MiscUtil {
     public static final BiMap<Class<?>, Registry<?>> objectsToRegistries = HashBiMap.create();
     static {
         try {
-            for (Field field : Registries.class.getDeclaredFields()) {
+            for (Field field : BuiltInRegistries.class.getDeclaredFields()) {
                 if (!Modifier.isStatic(field.getModifiers()) || !Modifier.isPublic(field.getModifiers()) || !Registry.class.isAssignableFrom(field.getType())) continue;
                 if (field.getGenericType() instanceof ParameterizedType type) {
                     TypeToken token = TypeToken.of(type);
@@ -253,5 +253,10 @@ public class MiscUtil {
                 return recursiveStreamMap(collection.stream(), lvl-1, mapper).collect(Collectors.toList());
             return item;
         });
+    }
+
+    public static RuntimeException logError(Logger logger, String message) {
+        logger.error(message);
+        return new RuntimeException(message);
     }
 }

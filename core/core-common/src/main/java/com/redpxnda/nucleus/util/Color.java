@@ -1,12 +1,12 @@
 package com.redpxnda.nucleus.util;
 
-import net.minecraft.util.Formatting;
-import net.minecraft.util.math.ColorHelper;
-import net.minecraft.util.math.MathHelper;
 import org.joml.Vector4f;
 import org.joml.Vector4i;
 
 import java.util.function.Function;
+import net.minecraft.ChatFormatting;
+import net.minecraft.util.FastColor;
+import net.minecraft.util.Mth;
 
 /**
  * Simple color class.
@@ -29,8 +29,8 @@ public class Color extends Vector4i {
     public static final Color MAGENTA = new Color(255, 0, 255, 255);
     public static final Color[] RAINBOW = {RED, YELLOW, GREEN, AQUA, BLUE, MAGENTA};
 
-    public static final Color TEXT_DARK_GRAY = fromRgbInt(Formatting.DARK_GRAY.getColorValue());
-    public static final Color TEXT_GRAY = fromRgbInt(Formatting.GRAY.getColorValue());
+    public static final Color TEXT_DARK_GRAY = fromRgbInt(ChatFormatting.DARK_GRAY.getColor());
+    public static final Color TEXT_GRAY = fromRgbInt(ChatFormatting.GRAY.getColor());
 
     protected Integer cachedArgb = null;
     protected String cachedHex = null;
@@ -72,10 +72,10 @@ public class Color extends Vector4i {
     }
 
     public Color(int argb) {
-        x = ColorHelper.Argb.getRed(argb);
-        z = ColorHelper.Argb.getBlue(argb);
-        y = ColorHelper.Argb.getGreen(argb);
-        w = ColorHelper.Argb.getAlpha(argb);
+        x = FastColor.ARGB32.red(argb);
+        z = FastColor.ARGB32.blue(argb);
+        y = FastColor.ARGB32.green(argb);
+        w = FastColor.ARGB32.alpha(argb);
         cachedArgb = argb;
     }
 
@@ -254,11 +254,11 @@ public class Color extends Vector4i {
     }
 
     public int argb() {
-        if (cachedArgb == null) cachedArgb = ColorHelper.Argb.getArgb(w, x, y, z);
+        if (cachedArgb == null) cachedArgb = FastColor.ARGB32.color(w, x, y, z);
         return cachedArgb;
     }
     public int abgr() {
-        return ColorHelper.Abgr.getAbgr(w, z, y, x);
+        return FastColor.ABGR32.color(w, z, y, x);
     }
 
     public String hexNoAlpha() {
@@ -279,17 +279,17 @@ public class Color extends Vector4i {
     }
 
     public void lerp(float delta, Color other) {
-        x = MathHelper.lerp(delta, x, other.x);
-        y = MathHelper.lerp(delta, y, other.y);
-        z = MathHelper.lerp(delta, z, other.z);
-        w = MathHelper.lerp(delta, w, other.w);
+        x = Mth.lerpInt(delta, x, other.x);
+        y = Mth.lerpInt(delta, y, other.y);
+        z = Mth.lerpInt(delta, z, other.z);
+        w = Mth.lerpInt(delta, w, other.w);
         resetCached();
     }
     public void lerp(float delta, Color other, Color dest) {
-        dest.x = MathHelper.lerp(delta, x, other.x);
-        dest.y = MathHelper.lerp(delta, y, other.y);
-        dest.z = MathHelper.lerp(delta, z, other.z);
-        dest.w = MathHelper.lerp(delta, w, other.w);
+        dest.x = Mth.lerpInt(delta, x, other.x);
+        dest.y = Mth.lerpInt(delta, y, other.y);
+        dest.z = Mth.lerpInt(delta, z, other.z);
+        dest.w = Mth.lerpInt(delta, w, other.w);
         dest.resetCached();
     }
 

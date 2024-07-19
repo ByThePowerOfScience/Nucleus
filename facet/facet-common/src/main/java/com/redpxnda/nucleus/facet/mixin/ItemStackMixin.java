@@ -3,9 +3,9 @@ package com.redpxnda.nucleus.facet.mixin;
 import com.redpxnda.nucleus.facet.*;
 import com.redpxnda.nucleus.facet.item.ItemStackFacet;
 import com.redpxnda.nucleus.util.MiscUtil;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -31,24 +31,24 @@ public abstract class ItemStackMixin implements FacetHolder {
     }*/
 
     @Inject(method = "writeNbt", at = @At("TAIL"))
-    private void nucleus$saveFacets(NbtCompound root, CallbackInfoReturnable<NbtCompound> cir) {
+    private void nucleus$saveFacets(CompoundTag root, CallbackInfoReturnable<CompoundTag> cir) {
         if (MiscUtil.isItemEmptyIgnoringCount((ItemStack) (Object) this)) return;
         // if (!root.contains("tag")) root.put("tag", new NbtCompound());
         ItemStackFacet.writeFacetsToNbt(root, this);
     }
 
     @Inject(method = "<init>(Lnet/minecraft/nbt/NbtCompound;)V", at = @At("RETURN"))
-    private void nucleus$readFacets(NbtCompound nbt, CallbackInfo ci) {
+    private void nucleus$readFacets(CompoundTag nbt, CallbackInfo ci) {
         if (MiscUtil.isItemEmptyIgnoringCount((ItemStack) (Object) this)) return;
         ItemStackFacet.setupFacets((ItemStack) (Object) this);
         nucleus$loadTagFacetData(nbt.getCompound("tag"));
     }
 
     @Inject(method = "setNbt", at = @At("TAIL"))
-    private void nucleus$reloadFacets(NbtCompound nbt, CallbackInfo ci) {
+    private void nucleus$reloadFacets(CompoundTag nbt, CallbackInfo ci) {
         if (MiscUtil.isItemEmptyIgnoringCount((ItemStack) (Object) this)) return;
         //nucleus$setupFacets();
-        nucleus$loadTagFacetData(nbt == null ? new NbtCompound() : nbt);
+        nucleus$loadTagFacetData(nbt == null ? new CompoundTag() : nbt);
     }
 
     @Inject(method = "copy", at = @At("TAIL"))
@@ -64,11 +64,11 @@ public abstract class ItemStackMixin implements FacetHolder {
         });
     }
 
-    private void nucleus$loadTagFacetData(NbtCompound tag) {
+    private void nucleus$loadTagFacetData(CompoundTag tag) {
         if (tag.contains(FacetRegistry.TAG_FACETS_ID)) {
-            NbtCompound facets = tag.getCompound(FacetRegistry.TAG_FACETS_ID);
+            CompoundTag facets = tag.getCompound(FacetRegistry.TAG_FACETS_ID);
             nucleus$facets.forEach((key, facet) -> {
-                NbtElement element = facets.get(key.id().toString());
+                Tag element = facets.get(key.id().toString());
                 FacetRegistry.loadNbtToFacet(element, key, facet);
             });
         }

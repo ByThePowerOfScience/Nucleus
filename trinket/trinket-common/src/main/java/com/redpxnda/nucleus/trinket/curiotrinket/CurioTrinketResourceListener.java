@@ -6,16 +6,16 @@ import com.redpxnda.nucleus.Nucleus;
 import com.redpxnda.nucleus.registry.NucleusNamespaces;
 import com.redpxnda.nucleus.util.json.JsonUtil;
 import dev.architectury.platform.Platform;
-import net.minecraft.resource.JsonDataLoader;
-import net.minecraft.resource.ResourceManager;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.profiler.Profiler;
 import org.slf4j.Logger;
 
 import java.util.HashMap;
 import java.util.Map;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
+import net.minecraft.util.profiling.ProfilerFiller;
 
-public class CurioTrinketResourceListener extends JsonDataLoader {
+public class CurioTrinketResourceListener extends SimpleJsonResourceReloadListener {
     private static final Logger LOGGER = Nucleus.getLogger();
     private static int invalidItemCount = 0;
     public static final Map<String, SlotName> slotNames = new HashMap<>();
@@ -25,7 +25,7 @@ public class CurioTrinketResourceListener extends JsonDataLoader {
     }
 
     @Override
-    protected void apply(Map<Identifier, JsonElement> object, ResourceManager resourceManager, Profiler profiler) {
+    protected void apply(Map<ResourceLocation, JsonElement> object, ResourceManager resourceManager, ProfilerFiller profiler) {
         boolean curiosLoaded = Platform.isModLoaded("curios");
         if (!Platform.isModLoaded("trinkets") && !curiosLoaded) return;
         slotNames.clear();

@@ -1,8 +1,8 @@
 package com.redpxnda.nucleus.facet;
 
-import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.Tag;
 
-public interface Facet<T extends NbtElement> {
+public interface Facet<T extends Tag> {
     T toNbt();
     void loadNbt(T nbt);
 }

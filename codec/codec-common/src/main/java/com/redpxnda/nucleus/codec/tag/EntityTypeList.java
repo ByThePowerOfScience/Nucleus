@@ -3,34 +3,33 @@ package com.redpxnda.nucleus.codec.tag;
 import com.mojang.serialization.Codec;
 import com.redpxnda.nucleus.codec.behavior.CodecBehavior;
 import com.redpxnda.nucleus.util.MiscUtil;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.Tameable;
-import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.entity.passive.AbstractDonkeyEntity;
-import net.minecraft.entity.passive.AbstractHorseEntity;
-import net.minecraft.entity.passive.AnimalEntity;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.tag.TagKey;
-import net.minecraft.village.Merchant;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.OwnableEntity;
+import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.entity.animal.horse.AbstractChestedHorse;
+import net.minecraft.world.entity.animal.horse.AbstractHorse;
+import net.minecraft.world.item.trading.Merchant;
 
 @CodecBehavior.Override()
 public class EntityTypeList extends TagList<EntityType<?>> {
     public static final Codec<EntityTypeList> CODEC = EntityTypeListCodec.INSTANCE;
     public static final Map<String, Predicate<Entity>> builtinPredicates = MiscUtil.initialize(new HashMap<>(), m -> {
-        m.put("tamables", e -> e instanceof Tameable);
-        m.put("animals", e -> e instanceof AnimalEntity);
+        m.put("tamables", e -> e instanceof OwnableEntity);
+        m.put("animals", e -> e instanceof Animal);
         m.put("merchants", e -> e instanceof Merchant);
-        m.put("mobs", e -> e instanceof MobEntity);
-        m.put("chested_horses", e -> e instanceof AbstractDonkeyEntity);
-        m.put("horse_likes", e -> e instanceof AbstractHorseEntity);
+        m.put("mobs", e -> e instanceof Mob);
+        m.put("chested_horses", e -> e instanceof AbstractChestedHorse);
+        m.put("horse_likes", e -> e instanceof AbstractHorse);
     });
 
     public static EntityTypeList of() {
@@ -49,7 +48,7 @@ public class EntityTypeList extends TagList<EntityType<?>> {
     protected final List<String> builtins;
 
     public EntityTypeList(List<EntityType<?>> objects, List<TagKey<EntityType<?>>> tags, List<String> builtins) {
-        super(objects, tags, Registries.ENTITY_TYPE, RegistryKeys.ENTITY_TYPE);
+        super(objects, tags, BuiltInRegistries.ENTITY_TYPE, Registries.ENTITY_TYPE);
         this.builtins = new ArrayList<>(builtins);
     }
 

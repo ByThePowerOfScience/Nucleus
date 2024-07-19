@@ -2,12 +2,12 @@ package com.redpxnda.nucleus.network;
 
 import com.redpxnda.nucleus.mixin.ThreadedAnvilChunkStorageAccessor;
 import com.redpxnda.nucleus.mixin.TrackedEntityAccessor;
-import net.minecraft.entity.Entity;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerChunkManager;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.server.world.ThreadedAnvilChunkStorage;
+import net.minecraft.server.level.ChunkMap;
+import net.minecraft.server.level.ServerChunkCache;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
 
 public interface PlayerSendable {
     PlayerSendable EMPTY = player -> {};
@@ -16,23 +16,23 @@ public interface PlayerSendable {
         return EMPTY;
     }
 
-    void send(ServerPlayerEntity player);
-    default void send(Iterable<ServerPlayerEntity> players) {
+    void send(ServerPlayer player);
+    default void send(Iterable<ServerPlayer> players) {
         players.forEach(this::send);
     }
-    default void send(ServerWorld level) {
-        send(level.getPlayers());
+    default void send(ServerLevel level) {
+        send(level.players());
     }
     default void send(MinecraftServer server) {
-        send(server.getPlayerManager().getPlayerList());
+        send(server.getPlayerList().getPlayers());
     }
 
     /**
      * send to all players tracking the trackedEntity
      */
     default void sendToTrackers(Entity trackedEntity) {
-        if (trackedEntity.getWorld().getChunkManager() instanceof ServerChunkManager chunkCache) {
-            ThreadedAnvilChunkStorage.EntityTracker tracked = ((ThreadedAnvilChunkStorageAccessor) chunkCache.threadedAnvilChunkStorage).getEntityTrackers().get(trackedEntity.getId());
+        if (trackedEntity.level().getChunkSource() instanceof ServerChunkCache chunkCache) {
+            ChunkMap.TrackedEntity tracked = ((ThreadedAnvilChunkStorageAccessor) chunkCache.chunkMap).getEntityTrackers().get(trackedEntity.getId());
             if (tracked != null) ((TrackedEntityAccessor) tracked).getListeners().forEach(cnct -> send(cnct.getPlayer()));
         }
     }

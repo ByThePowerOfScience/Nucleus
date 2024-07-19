@@ -1,13 +1,13 @@
 package com.redpxnda.nucleus.facet;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiConsumer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.item.ItemStack;
 
 public class FacetInventory {
     private final Map<FacetKey<?>, Facet<?>> facets = new HashMap<>();

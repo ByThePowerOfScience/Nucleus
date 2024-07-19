@@ -6,23 +6,23 @@ import net.fabricmc.mappingio.MappingReader;
 import net.fabricmc.mappingio.format.MappingFormat;
 import net.fabricmc.mappingio.tree.MappingTree;
 import net.fabricmc.mappingio.tree.MemoryMappingTree;
-import net.minecraft.resource.Resource;
-import net.minecraft.resource.ResourceManager;
-import net.minecraft.resource.SinglePreparationResourceReloader;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.profiler.Profiler;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.Resource;
+import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
+import net.minecraft.util.profiling.ProfilerFiller;
 import org.slf4j.Logger;
 
 import java.io.BufferedReader;
 import java.util.HashMap;
 import java.util.Map;
 
-public class MappingsDataLoader extends SinglePreparationResourceReloader<Map<Identifier, MappingTree>> {
+public class MappingsDataLoader extends SimplePreparableReloadListener<Map<ResourceLocation, MappingTree>> {
     private static final Logger LOGGER = Nucleus.getLogger();
     public static MappingsDataLoader INSTANCE = new MappingsDataLoader();
 
     protected final Map<String, MappingFormat> extensionToFormat = new HashMap<>();
-    protected Map<Identifier, MappingTree> loadedMappings;
+    protected Map<ResourceLocation, MappingTree> loadedMappings;
 
     public MappingsDataLoader() {
         for (MappingFormat format : MappingFormat.values()) {
@@ -30,11 +30,11 @@ public class MappingsDataLoader extends SinglePreparationResourceReloader<Map<Id
         }
     }
 
-    public MappingTree getMappings(Identifier id) {
+    public MappingTree getMappings(ResourceLocation id) {
         return loadedMappings.get(id);
     }
 
-    public Map<Identifier, MappingTree> getAllLoadedMappings() {
+    public Map<ResourceLocation, MappingTree> getAllLoadedMappings() {
         return loadedMappings;
     }
 
@@ -45,17 +45,17 @@ public class MappingsDataLoader extends SinglePreparationResourceReloader<Map<Id
     }
 
     @Override
-    protected Map<Identifier, MappingTree> prepare(ResourceManager manager, Profiler profiler) {
-        Map<Identifier, MappingTree> result = new HashMap<>();
-        for (Map.Entry<Identifier, Resource> entry : manager.findResources("mappings", id -> NucleusNamespaces.isNamespaceValid(id.getNamespace()) && extensionToFormat.containsKey(getFileExtension(id.getPath()))).entrySet()) {
-            Identifier location = entry.getKey();
+    protected Map<ResourceLocation, MappingTree> prepare(ResourceManager manager, ProfilerFiller profiler) {
+        Map<ResourceLocation, MappingTree> result = new HashMap<>();
+        for (Map.Entry<ResourceLocation, Resource> entry : manager.listResources("mappings", id -> NucleusNamespaces.isNamespaceValid(id.getNamespace()) && extensionToFormat.containsKey(getFileExtension(id.getPath()))).entrySet()) {
+            ResourceLocation location = entry.getKey();
 
             String string = location.getPath();
             String fileExtension = getFileExtension(location.getPath());
-            Identifier id = location.withPath(string.substring("mappings".length() + 1, string.length() - fileExtension.length() - 1));
+            ResourceLocation id = location.withPath(string.substring("mappings".length() + 1, string.length() - fileExtension.length() - 1));
 
             try {
-                BufferedReader reader = entry.getValue().getReader();
+                BufferedReader reader = entry.getValue().openAsReader();
                 try {
                     MemoryMappingTree tree = new MemoryMappingTree();
                     MappingReader.read(reader, tree);
@@ -73,13 +73,13 @@ public class MappingsDataLoader extends SinglePreparationResourceReloader<Map<Id
     }
 
     @Override
-    protected void apply(Map<Identifier, MappingTree> prepared, ResourceManager manager, Profiler profiler) {
+    protected void apply(Map<ResourceLocation, MappingTree> prepared, ResourceManager manager, ProfilerFiller profiler) {
         loadedMappings = prepared;
         System.out.println("Mappings done .. .. " + loadedMappings);
 
         TwoStepTreeRemapper remapper = new TwoStepTreeRemapper(
-                loadedMappings.get(new Identifier("nucleus:mojmap")),
-                loadedMappings.get(new Identifier("nucleus:yarn")),
+                loadedMappings.get(new ResourceLocation("nucleus:mojmap")),
+                loadedMappings.get(new ResourceLocation("nucleus:yarn")),
                 "source",
                 "target",
                 "official",

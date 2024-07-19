@@ -1,19 +1,19 @@
 package com.redpxnda.nucleus.facet;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 import java.util.Optional;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.item.ItemStack;
 
 public class FacetKey<T extends Facet<?>> {
-    private final Identifier id;
+    private final ResourceLocation id;
     private final Class<T> cls;
 
-    protected FacetKey(Identifier id, Class<T> cls) {
+    protected FacetKey(ResourceLocation id, Class<T> cls) {
         this.id = id;
         this.cls = cls;
     }
@@ -26,7 +26,7 @@ public class FacetKey<T extends Facet<?>> {
         return getInternal(holder);
     }
 
-    public @Nullable T get(StatusEffectInstance holder) {
+    public @Nullable T get(MobEffectInstance holder) {
         return getInternal(holder);
     }
 
@@ -38,7 +38,7 @@ public class FacetKey<T extends Facet<?>> {
         return getOptionalInternal(holder);
     }
 
-    public Optional<T> getOptional(StatusEffectInstance holder) {
+    public Optional<T> getOptional(MobEffectInstance holder) {
         return getOptionalInternal(holder);
     }
 
@@ -50,7 +50,7 @@ public class FacetKey<T extends Facet<?>> {
         return FacetHolder.of(holder).getFacets().getOptional(this);
     }
 
-    public Identifier id() {
+    public ResourceLocation id() {
         return id;
     }
 

@@ -3,22 +3,21 @@ package com.redpxnda.nucleus.config.screen.widget.colorpicker;
 import com.redpxnda.nucleus.config.screen.widget.IntegerFieldWidget;
 import com.redpxnda.nucleus.math.MathUtil;
 import com.redpxnda.nucleus.util.Color;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
-import net.minecraft.client.gui.widget.ClickableWidget;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.ColorHelper;
-
 import java.util.function.Consumer;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.FastColor;
 
 import static com.redpxnda.nucleus.Nucleus.MOD_ID;
 
-public class ColorPickerWidget extends ClickableWidget {
-    public static final Identifier TEXTURE = new Identifier(MOD_ID, "textures/gui/color_picker.png");
+public class ColorPickerWidget extends AbstractWidget {
+    public static final ResourceLocation TEXTURE = new ResourceLocation(MOD_ID, "textures/gui/color_picker.png");
 
-    protected final TextRenderer textRenderer;
+    protected final Font textRenderer;
     protected final Consumer<Color> onUpdate;
     protected final ColorGrid colorGrid;
     protected final HueSlider hueSlider;
@@ -34,25 +33,25 @@ public class ColorPickerWidget extends ClickableWidget {
     protected final IntegerFieldWidget lightField;
     protected final IntegerFieldWidget alphaField;
 
-    public ColorPickerWidget(TextRenderer textR, int y, int x, Consumer<Color> updateListener) {
-        super(x, y, 128, 128, Text.empty());
+    public ColorPickerWidget(Font textR, int y, int x, Consumer<Color> updateListener) {
+        super(x, y, 128, 128, Component.empty());
         textRenderer = textR;
         onUpdate = updateListener;
         colorGrid = new ColorGrid(x+8, y+8, 76, 76, c -> updateColor());
         hueSlider = new HueSlider(x+20, y+94, 64, 8, f -> updateHue());
         alphaSlider = new AlphaSlider(x+20, y+110, 64, 8, f -> updateAlpha());
 
-        redField = new IntegerFieldWidget(textR, x+101, y+9, 30, 9, 0, 255, Text.empty(), i -> setColorAndUpdate(color.withRed(i)), "ʀ");
-        greenField = new IntegerFieldWidget(textR, x+101, y+22, 30, 9, 0, 255, Text.empty(), i -> setColorAndUpdate(color.withGreen(i)), "ɢ");
-        blueField = new IntegerFieldWidget(textR, x+101, y+35, 30, 9, 0, 255, Text.empty(), i -> setColorAndUpdate(color.withBlue(i)), "ʙ");
-        hueField = new IntegerFieldWidget(textR, x+101, y+50, 30, 9, 0, 360, Text.empty(), i -> setColorAndUpdate(i/360f, colorGrid.saturation, colorGrid.lightness), "ʜ");
-        satField = new IntegerFieldWidget(textR, x+101, y+63, 30, 9, 0, 100, Text.empty(), i -> setColorAndUpdate(hueSlider.value, i/100f, colorGrid.lightness), "ѕ");
-        lightField = new IntegerFieldWidget(textR, x+101, y+76, 30, 9, 0, 100, Text.empty(), i -> setColorAndUpdate(hueSlider.value, colorGrid.saturation, i/100f), "ʟ");
-        alphaField = new IntegerFieldWidget(textR, x+101, y+108, 30, 9, 0, 100, Text.empty(), i -> setColorAndUpdate(color.withAlpha(i/100f)), "ᴀ");
+        redField = new IntegerFieldWidget(textR, x+101, y+9, 30, 9, 0, 255, Component.empty(), i -> setColorAndUpdate(color.withRed(i)), "ʀ");
+        greenField = new IntegerFieldWidget(textR, x+101, y+22, 30, 9, 0, 255, Component.empty(), i -> setColorAndUpdate(color.withGreen(i)), "ɢ");
+        blueField = new IntegerFieldWidget(textR, x+101, y+35, 30, 9, 0, 255, Component.empty(), i -> setColorAndUpdate(color.withBlue(i)), "ʙ");
+        hueField = new IntegerFieldWidget(textR, x+101, y+50, 30, 9, 0, 360, Component.empty(), i -> setColorAndUpdate(i/360f, colorGrid.saturation, colorGrid.lightness), "ʜ");
+        satField = new IntegerFieldWidget(textR, x+101, y+63, 30, 9, 0, 100, Component.empty(), i -> setColorAndUpdate(hueSlider.value, i/100f, colorGrid.lightness), "ѕ");
+        lightField = new IntegerFieldWidget(textR, x+101, y+76, 30, 9, 0, 100, Component.empty(), i -> setColorAndUpdate(hueSlider.value, colorGrid.saturation, i/100f), "ʟ");
+        alphaField = new IntegerFieldWidget(textR, x+101, y+108, 30, 9, 0, 100, Component.empty(), i -> setColorAndUpdate(color.withAlpha(i/100f)), "ᴀ");
     }
 
-    public ColorPickerWidget(TextRenderer textRenderer, int x, int y, Consumer<Color> onUpdate, ColorGrid ColorGrid, HueSlider hueSlider, AlphaSlider alphaSlider, IntegerFieldWidget redField, IntegerFieldWidget greenField, IntegerFieldWidget blueField, IntegerFieldWidget hueField, IntegerFieldWidget satField, IntegerFieldWidget lightField, IntegerFieldWidget alphaField) {
-        super(x, y, 128, 128, Text.empty());
+    public ColorPickerWidget(Font textRenderer, int x, int y, Consumer<Color> onUpdate, ColorGrid ColorGrid, HueSlider hueSlider, AlphaSlider alphaSlider, IntegerFieldWidget redField, IntegerFieldWidget greenField, IntegerFieldWidget blueField, IntegerFieldWidget hueField, IntegerFieldWidget satField, IntegerFieldWidget lightField, IntegerFieldWidget alphaField) {
+        super(x, y, 128, 128, Component.empty());
         this.textRenderer = textRenderer;
         this.onUpdate = onUpdate;
         this.colorGrid = ColorGrid;
@@ -170,8 +169,8 @@ public class ColorPickerWidget extends ClickableWidget {
     }
 
     @Override
-    protected void renderButton(DrawContext context, int mouseX, int mouseY, float delta) {
-        context.drawTexture(TEXTURE, getX(), getY(), 0, 0, 0, 128, 128, 128, 128);
+    protected void renderWidget(GuiGraphics context, int mouseX, int mouseY, float delta) {
+        context.blit(TEXTURE, getX(), getY(), 0, 0, 0, 128, 128, 128, 128);
 
         colorGrid.render(context, mouseX, mouseY, delta);
         hueSlider.render(context, mouseX, mouseY, delta);
@@ -186,7 +185,7 @@ public class ColorPickerWidget extends ClickableWidget {
         alphaField.render(context, mouseX, mouseY, delta);
 
         context.fill(getX()+8, getY()+94, getX()+14, getY()+100, hueColor.argb());
-        context.fill(getX()+8, getY()+110, getX()+14, getY()+116, ColorHelper.Argb.getArgb((int) (alphaSlider.value * 255), 255, 255, 255));
+        context.fill(getX()+8, getY()+110, getX()+14, getY()+116, FastColor.ARGB32.color((int) (alphaSlider.value * 255), 255, 255, 255));
         context.fill(getX()+90, getY()+93, getX()+120, getY()+101, color.argb());
     }
 
@@ -288,7 +287,7 @@ public class ColorPickerWidget extends ClickableWidget {
     }
 
     @Override
-    protected void appendClickableNarrations(NarrationMessageBuilder builder) {
+    protected void updateWidgetNarration(NarrationElementOutput builder) {
 
     }
 }

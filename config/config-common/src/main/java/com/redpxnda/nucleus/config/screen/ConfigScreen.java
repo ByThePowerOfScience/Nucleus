@@ -5,12 +5,12 @@ import com.redpxnda.nucleus.config.screen.component.ConfigComponent;
 import com.redpxnda.nucleus.config.screen.component.ConfigEntriesComponent;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.toast.SystemToast;
-import net.minecraft.text.Text;
-import net.minecraft.util.Pair;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.toasts.SystemToast;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
+import net.minecraft.util.Tuple;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Field;
@@ -19,26 +19,26 @@ import java.util.function.Supplier;
 
 @Environment(EnvType.CLIENT)
 public class ConfigScreen<T> extends Screen {
-    protected final Map<String, Pair<Field, ConfigComponent<?>>> components;
+    protected final Map<String, Tuple<Field, ConfigComponent<?>>> components;
     protected ConfigEntriesComponent<T> widget;
-    protected ButtonWidget discardButton;
-    protected ButtonWidget saveButton;
-    protected ButtonWidget instructionsButton;
+    protected Button discardButton;
+    protected Button saveButton;
+    protected Button instructionsButton;
     protected final @Nullable ConfigObject<T> config;
     protected final Screen parent;
     public boolean renderInstructions = true;
     public boolean skipNextInit = false;
     protected @Nullable ConfigComponent<?> oldWidgetParent;
 
-    public ConfigScreen(Screen parent, Map<String, Pair<Field, ConfigComponent<?>>> components, ConfigObject<T> config) {
-        super(Text.translatable("nucleus.config_screen.title", config.id + ".jsonc"));
+    public ConfigScreen(Screen parent, Map<String, Tuple<Field, ConfigComponent<?>>> components, ConfigObject<T> config) {
+        super(Component.translatable("nucleus.config_screen.title", config.id + ".jsonc"));
         this.parent = parent;
         this.config = config;
         this.components = components;
     }
 
     public ConfigScreen(Screen parent, ConfigEntriesComponent<T> component) {
-        super(Text.translatable("nucleus.config_screen.inner_title"));
+        super(Component.translatable("nucleus.config_screen.inner_title"));
         this.parent = parent;
         this.config = null;
         this.components = null;
@@ -55,7 +55,7 @@ public class ConfigScreen<T> extends Screen {
             widget.performPositionUpdate();
         } else {
             if (widget == null) {
-                widget = new ConfigEntriesComponent<>(components, client.textRenderer, 0, 32, width - 6, height - 64);
+                widget = new ConfigEntriesComponent<>(components, minecraft.font, 0, 32, width - 6, height - 64);
                 widget.performPositionUpdate();
                 widget.setValue(config.getInstance());
             } else {
@@ -67,64 +67,64 @@ public class ConfigScreen<T> extends Screen {
                 widget.performPositionUpdate();
             }
 
-            discardButton = ButtonWidget.builder(config != null ? Text.translatable("nucleus.config_screen.discard") : Text.translatable("nucleus.config_screen.back"), wid -> {
-                close();
-            }).dimensions(16, height - 26, 96, 20).build();
+            discardButton = Button.builder(config != null ? Component.translatable("nucleus.config_screen.discard") : Component.translatable("nucleus.config_screen.back"), wid -> {
+                onClose();
+            }).bounds(16, height - 26, 96, 20).build();
 
             if (config != null) {
-                saveButton = ButtonWidget.builder(Text.translatable("nucleus.config_screen.save"), wid -> {
+                saveButton = Button.builder(Component.translatable("nucleus.config_screen.save"), wid -> {
                     if (widget.checkValidity()) {
                         config.setInstance(widget.getValue());
                         config.save();
                         config.load();
-                        close();
+                        onClose();
                     } else {
-                        client.getToastManager().add(new SystemToast(
-                                SystemToast.Type.PACK_LOAD_FAILURE,
-                                Text.translatable("nucleus.config_screen.save_fail"),
-                                Text.translatable("nucleus.config_screen.save_fail.description")));
+                        minecraft.getToasts().addToast(new SystemToast(
+                                SystemToast.SystemToastIds.PACK_LOAD_FAILURE,
+                                Component.translatable("nucleus.config_screen.save_fail"),
+                                Component.translatable("nucleus.config_screen.save_fail.description")));
                     }
-                }).dimensions(128, height - 26, 96, 20).build();
+                }).bounds(128, height - 26, 96, 20).build();
             }
 
-            Text enabledText = Text.translatable("nucleus.config_screen.tips_toggle.enabled");
-            Text disabledText = Text.translatable("nucleus.config_screen.tips_toggle.disabled");
-            instructionsButton = new ButtonWidget(width - 104, height - 26, 96, 20, enabledText, wid -> {
+            Component enabledText = Component.translatable("nucleus.config_screen.tips_toggle.enabled");
+            Component disabledText = Component.translatable("nucleus.config_screen.tips_toggle.disabled");
+            instructionsButton = new Button(width - 104, height - 26, 96, 20, enabledText, wid -> {
                 renderInstructions = !renderInstructions;
                 widget.renderInstructions = renderInstructions;
                 wid.setMessage(renderInstructions ? enabledText : disabledText);
             }, Supplier::get) {
                 @Override
-                public boolean isSelected() {
+                public boolean isHoveredOrFocused() {
                     return isHovered();
                 }
             };
         }
 
-        addDrawableChild(discardButton);
-        if (saveButton != null) addDrawableChild(saveButton);
-        addDrawableChild(instructionsButton);
-        addDrawableChild(widget);
+        addRenderableWidget(discardButton);
+        if (saveButton != null) addRenderableWidget(saveButton);
+        addRenderableWidget(instructionsButton);
+        addRenderableWidget(widget);
 
         setInitialFocus(widget);
     }
 
     @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+    public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
         if (saveButton != null) saveButton.active = widget.invalids.isEmpty();
-        context.drawText(textRenderer, title, 8, 16 - textRenderer.fontHeight/2, -11184811, true);
-        if (widget.overflows())
+        context.drawString(font, title, 8, 16 - font.lineHeight/2, -11184811, true);
+        if (widget.scrollbarVisible())
             context.fill(widget.getX() + widget.getWidth(), widget.getY(), widget.getX() + widget.getWidth() + 8, widget.getY() + widget.getHeight(), -16777216);
-        context.getMatrices().push();
-        context.getMatrices().translate(0, 0, -15);
-        renderBackgroundTexture(context);
-        context.getMatrices().pop();
+        context.pose().pushPose();
+        context.pose().translate(0, 0, -15);
+        renderDirtBackground(context);
+        context.pose().popPose();
         super.render(context, mouseX, mouseY, delta);
     }
 
     @Override
-    public void close() {
+    public void onClose() {
         widget.setParent(oldWidgetParent);
-        client.setScreen(parent);
+        minecraft.setScreen(parent);
     }
 }

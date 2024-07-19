@@ -1,11 +1,11 @@
 accessWidener   v2  named
-transitive-accessible method net/minecraft/particle/DefaultParticleType <init> (Z)V
-transitive-accessible method net/minecraft/client/render/WorldRenderer spawnParticle (Lnet/minecraft/particle/ParticleEffect;ZZDDDDDD)Lnet/minecraft/client/particle/Particle;
-transitive-accessible method net/minecraft/client/util/math/MatrixStack$Entry <init> (Lorg/joml/Matrix4f;Lorg/joml/Matrix3f;)V
-transitive-accessible class net/minecraft/server/MinecraftServer$ResourceManagerHolder
-transitive-accessible method net/minecraft/client/particle/CrackParticle <init> (Lnet/minecraft/client/world/ClientWorld;DDDDDDLnet/minecraft/item/ItemStack;)V
-transitive-accessible method net/minecraft/nbt/NbtIo read (Ljava/io/DataInput;ILnet/minecraft/nbt/NbtTagSizeTracker;)Lnet/minecraft/nbt/NbtElement;
-transitive-accessible method net/minecraft/client/render/RenderLayer of (Lnet/minecraft/client/render/RenderPhase$ShaderProgram;)Lnet/minecraft/client/render/RenderLayer$MultiPhaseParameters;
+#transitive-accessible method net/minecraft/core/particles/SimpleParticleType <init> (Z)V
+transitive-accessible method net/minecraft/client/renderer/LevelRenderer addParticleInternal (Lnet/minecraft/core/particles/ParticleOptions;ZZDDDDDD)Lnet/minecraft/client/particle/Particle;
+transitive-accessible method com/mojang/blaze3d/vertex/PoseStack$Pose <init> (Lorg/joml/Matrix4f;Lorg/joml/Matrix3f;)V
+transitive-accessible class net/minecraft/server/MinecraftServer$ReloadableResources
+#transitive-accessible method net/minecraft/client/particle/CrackParticle <init> (Lnet/minecraft/client/world/ClientWorld;DDDDDDLnet/minecraft/item/ItemStack;)V
+transitive-accessible method net/minecraft/nbt/NbtIo read (Ljava/io/DataInput;Lnet/minecraft/nbt/NbtAccounter;)Lnet/minecraft/nbt/CompoundTag;
+transitive-accessible method net/minecraft/client/renderer/RenderType translucentState (Lnet/minecraft/client/renderer/RenderStateShard$ShaderStateShard;)Lnet/minecraft/client/renderer/RenderType$CompositeState;
 transitive-accessible class net/minecraft/client/render/item/HeldItemRenderer$HandRenderType
 transitive-accessible class net/minecraft/server/world/ThreadedAnvilChunkStorage$EntityTracker
 transitive-accessible field net/minecraft/client/particle/Particle MAX_SQUARED_COLLISION_CHECK_DISTANCE D

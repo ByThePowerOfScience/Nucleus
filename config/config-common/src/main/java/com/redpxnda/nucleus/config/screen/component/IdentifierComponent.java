@@ -2,21 +2,21 @@ package com.redpxnda.nucleus.config.screen.component;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 
 @Environment(EnvType.CLIENT)
-public class IdentifierComponent extends TextFieldWidget implements ConfigComponent<Identifier> {
-    public static final Text DESC_TEXT = Text.translatable("nucleus.config_screen.identifier.description");
+public class IdentifierComponent extends EditBox implements ConfigComponent<ResourceLocation> {
+    public static final Component DESC_TEXT = Component.translatable("nucleus.config_screen.identifier.description");
 
     public ConfigComponent<?> parent;
-    public final TextRenderer textRenderer;
+    public final Font textRenderer;
     public boolean isValid = true;
 
-    public IdentifierComponent(TextRenderer textRenderer, int x, int y, int width, int height) {
-        super(textRenderer, x, y, width, height, Text.empty());
+    public IdentifierComponent(Font textRenderer, int x, int y, int width, int height) {
+        super(textRenderer, x, y, width, height, Component.empty());
         this.textRenderer = textRenderer;
         setMaxLength(1024);
     }
@@ -28,7 +28,7 @@ public class IdentifierComponent extends TextFieldWidget implements ConfigCompon
 
     public void updateValidity() {
         if (parent != null) {
-            if (getText().isEmpty()) {
+            if (getValue().isEmpty()) {
                 if (isValid) {
                     parent.invalidateChild(this);
                     isValid = false;
@@ -43,7 +43,7 @@ public class IdentifierComponent extends TextFieldWidget implements ConfigCompon
     }
 
     @Override
-    public Text getInstructionText() {
+    public Component getInstructionText() {
         return DESC_TEXT;
     }
 
@@ -53,20 +53,20 @@ public class IdentifierComponent extends TextFieldWidget implements ConfigCompon
     }
 
     @Override
-    public Identifier getValue() {
-        return Identifier.tryParse(getText());
+    public ResourceLocation getValue() {
+        return ResourceLocation.tryParse(getValue());
     }
-    public void setValue(Identifier value) {
-        setText(value.toString());
+    public void setValue(ResourceLocation value) {
+        setValue(value.toString());
         updateValidity();
     }
 
     @Override
-    public void write(String text) {
-        String old = getText();
-        super.write(text);
-        if (!Identifier.isValid(getText()))
-            setText(old);
+    public void insertText(String text) {
+        String old = getValue();
+        super.insertText(text);
+        if (!ResourceLocation.isValidResourceLocation(getValue()))
+            setValue(old);
         updateValidity();
     }
 
@@ -92,8 +92,8 @@ public class IdentifierComponent extends TextFieldWidget implements ConfigCompon
     public void setFocused(boolean focused) {
         super.setFocused(focused);
         if (!focused) {
-            setSelectionStart(0);
-            setSelectionEnd(0);
+            setCursorPosition(0);
+            setHighlightPos(0);
         }
     }
 }

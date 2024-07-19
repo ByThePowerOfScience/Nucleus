@@ -7,10 +7,9 @@ import com.google.gson.JsonPrimitive;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.redpxnda.nucleus.util.json.JsonUtil;
-import net.minecraft.util.dynamic.Codecs;
-
 import java.util.HashMap;
 import java.util.Map;
+import net.minecraft.util.ExtraCodecs;
 
 public interface InterpolateMode {
     InterpolateMode NONE = (delta, last, current) -> current;
@@ -21,7 +20,7 @@ public interface InterpolateMode {
     };
 
     Map<String, Creator> interpolateModes = new HashMap<>();
-    Codec<InterpolateMode> codec = Codecs.JSON_ELEMENT.flatComapMap(
+    Codec<InterpolateMode> codec = ExtraCodecs.JSON.flatComapMap(
             element -> {
                 String key;
                 if (element instanceof JsonPrimitive primitive)

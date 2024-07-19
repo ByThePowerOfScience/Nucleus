@@ -7,64 +7,64 @@ import com.redpxnda.nucleus.config.screen.widget.SelectableOptionsWidget;
 import com.redpxnda.nucleus.util.Color;
 import com.redpxnda.nucleus.util.Comment;
 import com.redpxnda.nucleus.util.MiscUtil;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.tooltip.HoveredTooltipPositioner;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.gui.widget.ScrollableWidget;
-import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.text.Text;
-import net.minecraft.util.Pair;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.AbstractScrollWidget;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner;
+import net.minecraft.network.chat.Component;
+import net.minecraft.util.Tuple;
 
-public class DropdownComponent<E> extends TextFieldWidget implements ConfigComponent<E> { // todo colored when invalid
-    public static final Text OPEN_TEXT = Text.literal("∨");
-    public static final Text CLOSED_TEXT = Text.literal(">");
-    public static final Text DESC_TEXT = Text.translatable("nucleus.config_screen.dropdown.description");
+public class DropdownComponent<E> extends EditBox implements ConfigComponent<E> { // todo colored when invalid
+    public static final Component OPEN_TEXT = Component.literal("∨");
+    public static final Component CLOSED_TEXT = Component.literal(">");
+    public static final Component DESC_TEXT = Component.translatable("nucleus.config_screen.dropdown.description");
 
     public ConfigComponent<?> parent;
-    public final TextRenderer textRenderer;
+    public final Font textRenderer;
     public final BiMap<String, E> entries;
-    public final Map<String, Text> comments;
+    public final Map<String, Component> comments;
     public E selected;
     public boolean isValid = false;
     public boolean isOpen = false;
-    public final ButtonWidget dropdownOpener;
-    public final ScrollableWidget dropdown;
+    public final Button dropdownOpener;
+    public final AbstractScrollWidget dropdown;
     public Consumer<E> onSet = (e) -> {};
 
-    public DropdownComponent(TextRenderer textRenderer, int x, int y, int width, int height, Class<E> enumClass) {
+    public DropdownComponent(Font textRenderer, int x, int y, int width, int height, Class<E> enumClass) {
         this(textRenderer, x, y, width, height, MiscUtil.evaluateSupplier(() -> {
             assert enumClass.isEnum() : "Inputted class must be an enum!";
             E[] constants = enumClass.getEnumConstants();
             BiMap<String, E> map = HashBiMap.create();
-            Map<String, Text> comments = new HashMap<>();
+            Map<String, Component> comments = new HashMap<>();
             for (E constant : constants) {
                 String name = ((Enum) constant).name();
                 try {
                     Field f = enumClass.getField(name);
                     Comment comment = f.getAnnotation(Comment.class);
-                    if (comment != null) comments.put(name, Text.literal(comment.value()));
+                    if (comment != null) comments.put(name, Component.literal(comment.value()));
                 } catch (NoSuchFieldException ignored) {}
                 map.put(name, constant);
             }
-            return new Pair<>(map, comments);
+            return new Tuple<>(map, comments);
         }));
     }
 
-    public DropdownComponent(TextRenderer textRenderer, int x, int y, int width, int height, BiMap<String, E> entries) {
-        this(textRenderer, x, y, width, height, new Pair<>(entries, new HashMap<>()));
+    public DropdownComponent(Font textRenderer, int x, int y, int width, int height, BiMap<String, E> entries) {
+        this(textRenderer, x, y, width, height, new Tuple<>(entries, new HashMap<>()));
     }
 
-    public DropdownComponent(TextRenderer textRenderer, int x, int y, int width, int height, Pair<BiMap<String, E>, Map<String, Text>> entriesAndComments) {
-        super(textRenderer, x, y, width, height, Text.empty());
-        this.entries = entriesAndComments.getLeft();
-        this.comments = entriesAndComments.getRight();
+    public DropdownComponent(Font textRenderer, int x, int y, int width, int height, Tuple<BiMap<String, E>, Map<String, Component>> entriesAndComments) {
+        super(textRenderer, x, y, width, height, Component.empty());
+        this.entries = entriesAndComments.getA();
+        this.comments = entriesAndComments.getB();
         this.textRenderer = textRenderer;
 
         this.dropdownOpener = new EmptyButtonWidget(x+width-20, y, 20, 20, CLOSED_TEXT, wid -> {
@@ -74,7 +74,7 @@ public class DropdownComponent<E> extends TextFieldWidget implements ConfigCompo
         this.dropdown = getDropdownWidget();
 
         setEditable(false);
-        setUneditableColor(Color.WHITE.argb());
+        setTextColorUneditable(Color.WHITE.argb());
     }
 
     @Override
@@ -96,21 +96,21 @@ public class DropdownComponent<E> extends TextFieldWidget implements ConfigCompo
         }
     }
 
-    public ScrollableWidget getDropdownWidget() {
+    public AbstractScrollWidget getDropdownWidget() {
         return new SelectableOptionsWidget<>(textRenderer, entries, (op, e) -> {
             setValue(e);
             dropdownOpener.onPress();
-        }, getX(), getY(), getWidth(), (textRenderer.fontHeight+1)*(Math.min(entries.size(), 5)) + 8);
+        }, getX(), getY(), getWidth(), (textRenderer.lineHeight+1)*(Math.min(entries.size(), 5)) + 8);
     }
 
     @Override
-    public void drawInstructionText(DrawContext context, int mouseX, int mouseY) {
-        if (getComment(getText()) == null && !isOpen)
+    public void drawInstructionText(GuiGraphics context, int mouseX, int mouseY) {
+        if (getComment(getValue()) == null && !isOpen)
             ConfigComponent.super.drawInstructionText(context, mouseX, mouseY);
     }
 
     @Override
-    public @Nullable Text getInstructionText() {
+    public @Nullable Component getInstructionText() {
         return DESC_TEXT;
     }
 
@@ -121,19 +121,19 @@ public class DropdownComponent<E> extends TextFieldWidget implements ConfigCompo
     }
 
     @Override
-    public void renderButton(DrawContext context, int mouseX, int mouseY, float delta) {
+    public void renderWidget(GuiGraphics context, int mouseX, int mouseY, float delta) {
         if (isOpen) {
-            context.getMatrices().push();
-            context.getMatrices().translate(0, 0, 5);
+            context.pose().pushPose();
+            context.pose().translate(0, 0, 5);
             dropdown.render(context, mouseX, mouseY, delta);
-            context.getMatrices().pop();
+            context.pose().popPose();
         } else {
             dropdownOpener.render(context, mouseX, mouseY, delta);
-            super.renderButton(context, mouseX, mouseY, delta);
+            super.renderWidget(context, mouseX, mouseY, delta);
             if (isValid && isHovered()) {
-                if (!getText().isEmpty()) {
-                    Text text = getComment(getText());
-                    if (text != null) context.drawTooltip(textRenderer, textRenderer.wrapLines(text, 150), HoveredTooltipPositioner.INSTANCE, mouseX, mouseY);
+                if (!getValue().isEmpty()) {
+                    Component text = getComment(getValue());
+                    if (text != null) context.renderTooltip(textRenderer, textRenderer.split(text, 150), DefaultTooltipPositioner.INSTANCE, mouseX, mouseY);
                 }
             }
         }
@@ -170,7 +170,7 @@ public class DropdownComponent<E> extends TextFieldWidget implements ConfigCompo
         return super.keyPressed(keyCode, scanCode, modifiers);
     }
 
-    public @Nullable Text getComment(String key) {
+    public @Nullable Component getComment(String key) {
         return comments.get(key);
     }
 
@@ -195,7 +195,7 @@ public class DropdownComponent<E> extends TextFieldWidget implements ConfigCompo
     @Override
     public void setValue(E value) {
         selected = value;
-        setText(getKey(value));
+        setValue(getKey(value));
         updateValidity();
         onSet.accept(value);
     }

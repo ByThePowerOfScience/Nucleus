@@ -3,9 +3,9 @@ package com.redpxnda.nucleus.registration.forge;
 import com.redpxnda.nucleus.registration.NucleusRegistration;
 import com.redpxnda.nucleus.registration.RegistrationListener;
 import dev.architectury.platform.forge.EventBuses;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.Pair;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Tuple;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
@@ -26,13 +26,13 @@ public class NucleusRegistrationForge {
 
     @SubscribeEvent
     public static void register(RegisterEvent event) {
-        for (Map.Entry<String, Pair<Supplier<Map<RegistryKey<?>, Map<Identifier, Object>>>, Consumer<Object>>> entry : RegistryAnalyzerImpl.registrationListeners.entries()) {
-            var supplier = entry.getValue().getLeft();
-            Consumer<Object> finishListener = entry.getValue().getRight();
-            Map<RegistryKey<?>, Map<Identifier, Object>> map = supplier.get();
+        for (Map.Entry<String, Tuple<Supplier<Map<ResourceKey<?>, Map<ResourceLocation, Object>>>, Consumer<Object>>> entry : RegistryAnalyzerImpl.registrationListeners.entries()) {
+            var supplier = entry.getValue().getA();
+            Consumer<Object> finishListener = entry.getValue().getB();
+            Map<ResourceKey<?>, Map<ResourceLocation, Object>> map = supplier.get();
 
-            RegistryKey key = event.getRegistryKey();
-            Map<Identifier, Object> objects = map.get(key);
+            ResourceKey key = event.getRegistryKey();
+            Map<ResourceLocation, Object> objects = map.get(key);
             if (objects != null)
                 objects.forEach((id, obj) -> {
                     event.register(key, id, () -> obj);

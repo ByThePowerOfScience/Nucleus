@@ -12,14 +12,14 @@ import com.redpxnda.nucleus.config.preset.ConfigPreset;
 import com.redpxnda.nucleus.util.*;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.tag.TagKey;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.Pair;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
+import net.minecraft.util.Tuple;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
@@ -67,17 +67,17 @@ public class ConfigComponentBehavior {
 
         registerDynamic((field, cls, raw, params, root) -> {
             if (cls.isEnum() && !getUnsafeOutline().statics.containsKey(cls))
-                return new DropdownComponent(MinecraftClient.getInstance().textRenderer, 0, 0, 150, 20, cls);
+                return new DropdownComponent(Minecraft.getInstance().font, 0, 0, 150, 20, cls);
             return null;
         });
 
         registerDynamic((field, cls, raw, params, root) -> {
             if (cls.isAnnotationPresent(ConfigAutoCodec.ConfigClassMarker.class)) {
-                Screen screen = MinecraftClient.getInstance().currentScreen;
+                Screen screen = Minecraft.getInstance().screen;
                 return new ConfigEntriesComponent(ConfigAutoCodec.performFieldSearch(cls).entrySet().stream()
-                        .map(entry -> Map.entry(entry.getKey(), new Pair<>(entry.getValue(), getComponent(entry.getValue(), new ArrayList<>()))))
+                        .map(entry -> Map.entry(entry.getKey(), new Tuple<>(entry.getValue(), getComponent(entry.getValue(), new ArrayList<>()))))
                         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)),
-                        MinecraftClient.getInstance().textRenderer, 0, 0, screen == null ? 200 : screen.width, 20); // height updated later
+                        Minecraft.getInstance().font, 0, 0, screen == null ? 200 : screen.width, 20); // height updated later
             }
             return null;
         });
@@ -86,34 +86,34 @@ public class ConfigComponentBehavior {
             if (!passes.contains("optional")) {
                 passes.add("optional");
                 ConfigComponent<?> child = getComponent(field, cls, raw, params, passes);
-                return new OptionalComponent(MinecraftClient.getInstance().textRenderer, 0, 0, child.getWidth(), child.getHeight(), child, c -> {});
+                return new OptionalComponent(Minecraft.getInstance().font, 0, 0, child.getWidth(), child.getHeight(), child, c -> {});
             }
             return null;
         });
 
-        registerAnnotator(IntegerRange.class, (annotation, field, cls, raw, params, passes) -> new NumberFieldComponent<>(MinecraftClient.getInstance().textRenderer, 0, 0, 100, 20, Integer::parseInt, false, annotation.min(), annotation.max()));
-        registerAnnotator(DoubleRange.class, (annotation, field, cls, raw, params, passes) -> new NumberFieldComponent<>(MinecraftClient.getInstance().textRenderer, 0, 0, 100, 20, Double::parseDouble, true, annotation.min(), annotation.max()));
-        registerAnnotator(FloatRange.class, (annotation, field, cls, raw, params, passes) -> new NumberFieldComponent<>(MinecraftClient.getInstance().textRenderer, 0, 0, 100, 20, Float::parseFloat, true, annotation.min(), annotation.max()));
+        registerAnnotator(IntegerRange.class, (annotation, field, cls, raw, params, passes) -> new NumberFieldComponent<>(Minecraft.getInstance().font, 0, 0, 100, 20, Integer::parseInt, false, annotation.min(), annotation.max()));
+        registerAnnotator(DoubleRange.class, (annotation, field, cls, raw, params, passes) -> new NumberFieldComponent<>(Minecraft.getInstance().font, 0, 0, 100, 20, Double::parseDouble, true, annotation.min(), annotation.max()));
+        registerAnnotator(FloatRange.class, (annotation, field, cls, raw, params, passes) -> new NumberFieldComponent<>(Minecraft.getInstance().font, 0, 0, 100, 20, Float::parseFloat, true, annotation.min(), annotation.max()));
 
-        registerClass(String.class, () -> new TextFieldComponent(MinecraftClient.getInstance().textRenderer, 0, 0, 150, 20));
-        registerClass(int.class, () -> new NumberFieldComponent<>(MinecraftClient.getInstance().textRenderer, 0, 0, 100, 20, Integer::parseInt, false));
-        registerClass(Integer.class, () -> new NumberFieldComponent<>(MinecraftClient.getInstance().textRenderer, 0, 0, 100, 20, Integer::parseInt, false));
-        registerClass(byte.class, () -> new NumberFieldComponent<>(MinecraftClient.getInstance().textRenderer, 0, 0, 100, 20, Byte::parseByte, false));
-        registerClass(Byte.class, () -> new NumberFieldComponent<>(MinecraftClient.getInstance().textRenderer, 0, 0, 100, 20, Byte::parseByte, false));
-        registerClass(short.class, () -> new NumberFieldComponent<>(MinecraftClient.getInstance().textRenderer, 0, 0, 100, 20, Short::parseShort, false));
-        registerClass(Short.class, () -> new NumberFieldComponent<>(MinecraftClient.getInstance().textRenderer, 0, 0, 100, 20, Short::parseShort, false));
-        registerClass(long.class, () -> new NumberFieldComponent<>(MinecraftClient.getInstance().textRenderer, 0, 0, 100, 20, Long::parseLong, false));
-        registerClass(Long.class, () -> new NumberFieldComponent<>(MinecraftClient.getInstance().textRenderer, 0, 0, 100, 20, Long::parseLong, false));
-        registerClass(double.class, () -> new NumberFieldComponent<>(MinecraftClient.getInstance().textRenderer, 0, 0, 100, 20, Double::parseDouble, true));
-        registerClass(Double.class, () -> new NumberFieldComponent<>(MinecraftClient.getInstance().textRenderer, 0, 0, 100, 20, Double::parseDouble, true));
-        registerClass(float.class, () -> new NumberFieldComponent<>(MinecraftClient.getInstance().textRenderer, 0, 0, 100, 20, Float::parseFloat, true));
-        registerClass(Float.class, () -> new NumberFieldComponent<>(MinecraftClient.getInstance().textRenderer, 0, 0, 100, 20, Float::parseFloat, true));
+        registerClass(String.class, () -> new TextFieldComponent(Minecraft.getInstance().font, 0, 0, 150, 20));
+        registerClass(int.class, () -> new NumberFieldComponent<>(Minecraft.getInstance().font, 0, 0, 100, 20, Integer::parseInt, false));
+        registerClass(Integer.class, () -> new NumberFieldComponent<>(Minecraft.getInstance().font, 0, 0, 100, 20, Integer::parseInt, false));
+        registerClass(byte.class, () -> new NumberFieldComponent<>(Minecraft.getInstance().font, 0, 0, 100, 20, Byte::parseByte, false));
+        registerClass(Byte.class, () -> new NumberFieldComponent<>(Minecraft.getInstance().font, 0, 0, 100, 20, Byte::parseByte, false));
+        registerClass(short.class, () -> new NumberFieldComponent<>(Minecraft.getInstance().font, 0, 0, 100, 20, Short::parseShort, false));
+        registerClass(Short.class, () -> new NumberFieldComponent<>(Minecraft.getInstance().font, 0, 0, 100, 20, Short::parseShort, false));
+        registerClass(long.class, () -> new NumberFieldComponent<>(Minecraft.getInstance().font, 0, 0, 100, 20, Long::parseLong, false));
+        registerClass(Long.class, () -> new NumberFieldComponent<>(Minecraft.getInstance().font, 0, 0, 100, 20, Long::parseLong, false));
+        registerClass(double.class, () -> new NumberFieldComponent<>(Minecraft.getInstance().font, 0, 0, 100, 20, Double::parseDouble, true));
+        registerClass(Double.class, () -> new NumberFieldComponent<>(Minecraft.getInstance().font, 0, 0, 100, 20, Double::parseDouble, true));
+        registerClass(float.class, () -> new NumberFieldComponent<>(Minecraft.getInstance().font, 0, 0, 100, 20, Float::parseFloat, true));
+        registerClass(Float.class, () -> new NumberFieldComponent<>(Minecraft.getInstance().font, 0, 0, 100, 20, Float::parseFloat, true));
         registerClass(boolean.class, () -> new BooleanComponent(0, 0, 100, 20));
         registerClass(Boolean.class, () -> new BooleanComponent(0, 0, 100, 20));
 
-        registerClass(Color.class, () -> new ColorComponent(MinecraftClient.getInstance().textRenderer, 0, 0, 150, 20));
+        registerClass(Color.class, () -> new ColorComponent(Minecraft.getInstance().font, 0, 0, 150, 20));
 
-        registerClass(Identifier.class, () -> new IdentifierComponent(MinecraftClient.getInstance().textRenderer, 0, 0, 150, 20));
+        registerClass(ResourceLocation.class, () -> new IdentifierComponent(Minecraft.getInstance().font, 0, 0, 150, 20));
 
         registerClass(TagKey.class, (field, cls, raw, params, root) -> {
             if (params == null) return null;
@@ -124,24 +124,24 @@ public class ConfigComponentBehavior {
             else return null;
             Registry reg = MiscUtil.objectsToRegistries.get(c);
             if (reg == null) return null;
-            return new TagKeyComponent(reg.getKey(), MinecraftClient.getInstance().textRenderer, 0, 0, 150, 20);
+            return new TagKeyComponent(reg.key(), Minecraft.getInstance().font, 0, 0, 150, 20);
         });
 
         registerClass(ConfigPreset.class, (field, cls, raw, params, root) -> {
             if (params == null || !(params[1] instanceof Class<?> clazz)) return null;
-            return new PresetComponent(MinecraftClient.getInstance().textRenderer, 0, 0, 150, 20, clazz);
+            return new PresetComponent(Minecraft.getInstance().font, 0, 0, 150, 20, clazz);
         });
 
-        registerClass(ItemList.class, () -> new TagListComponent<>(ItemList::of, Registries.ITEM, RegistryKeys.ITEM, "item", 0, 0));
-        registerClass(BlockList.class, () -> new TagListComponent<>(BlockList::of, Registries.BLOCK, RegistryKeys.BLOCK, "block", 0, 0));
+        registerClass(ItemList.class, () -> new TagListComponent<>(ItemList::of, BuiltInRegistries.ITEM, Registries.ITEM, "item", 0, 0));
+        registerClass(BlockList.class, () -> new TagListComponent<>(BlockList::of, BuiltInRegistries.BLOCK, Registries.BLOCK, "block", 0, 0));
         registerClass(EntityTypeList.class, () -> new EntityTypeListComponent(0, 0));
 
-        registerClass(TaggableItem.class, () -> new TaggableEntryComponent<>(TaggableItem::new, TaggableItem::new, Registries.ITEM, RegistryKeys.ITEM, "item", 0, 0));
-        registerClass(TaggableBlock.class, () -> new TaggableEntryComponent<>(TaggableBlock::new, TaggableBlock::new, Registries.BLOCK, RegistryKeys.BLOCK, "block", 0, 0));
-        registerClass(TaggableEntityType.class, () -> new TaggableEntryComponent<>(TaggableEntityType::new, TaggableEntityType::new, Registries.ENTITY_TYPE, RegistryKeys.ENTITY_TYPE, "entity", 0, 0));
+        registerClass(TaggableItem.class, () -> new TaggableEntryComponent<>(TaggableItem::new, TaggableItem::new, BuiltInRegistries.ITEM, Registries.ITEM, "item", 0, 0));
+        registerClass(TaggableBlock.class, () -> new TaggableEntryComponent<>(TaggableBlock::new, TaggableBlock::new, BuiltInRegistries.BLOCK, Registries.BLOCK, "block", 0, 0));
+        registerClass(TaggableEntityType.class, () -> new TaggableEntryComponent<>(TaggableEntityType::new, TaggableEntityType::new, BuiltInRegistries.ENTITY_TYPE, Registries.ENTITY_TYPE, "entity", 0, 0));
 
         /*registerClass(ParticleEffect.class, ParticleTypes.TYPE_CODEC);*/ // tod-o dispatches(?)
-        MiscUtil.objectsToRegistries.forEach((k, v) -> registerClassIfAbsent(k, (f, cls, raw, params, passes) -> new RegistryComponent(v, MinecraftClient.getInstance().textRenderer, 0, 0, 150, 20)));
+        MiscUtil.objectsToRegistries.forEach((k, v) -> registerClassIfAbsent(k, (f, cls, raw, params, passes) -> new RegistryComponent(v, Minecraft.getInstance().font, 0, 0, 150, 20)));
     }
 
     public static <T> ConfigComponent<T> getComponent(Type type, List<String> passes) {

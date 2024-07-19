@@ -2,25 +2,25 @@ package com.redpxnda.nucleus.config.screen.component;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.Drawable;
-import net.minecraft.client.gui.Element;
-import net.minecraft.client.gui.ScreenRect;
-import net.minecraft.client.gui.tooltip.HoveredTooltipPositioner;
-import net.minecraft.client.gui.widget.Widget;
-import net.minecraft.text.Text;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Renderable;
+import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.layouts.LayoutElement;
+import net.minecraft.client.gui.navigation.ScreenRectangle;
+import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner;
+import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.Nullable;
 
 @Environment(EnvType.CLIENT)
-public interface ConfigComponent<T> extends Drawable, Element, Widget {
-    default void drawInstructionText(DrawContext context, int mouseX, int mouseY) {
-        Text text = getInstructionText();
+public interface ConfigComponent<T> extends Renderable, GuiEventListener, LayoutElement {
+    default void drawInstructionText(GuiGraphics context, int mouseX, int mouseY) {
+        Component text = getInstructionText();
         if (isMouseOver(mouseX, mouseY) && text != null)
-            context.drawTooltip(MinecraftClient.getInstance().textRenderer, MinecraftClient.getInstance().textRenderer.wrapLines(text, 150), HoveredTooltipPositioner.INSTANCE, mouseX, mouseY);
+            context.renderTooltip(Minecraft.getInstance().font, Minecraft.getInstance().font.split(text, 150), DefaultTooltipPositioner.INSTANCE, mouseX, mouseY);
     }
 
-    default @Nullable Text getInstructionText() {
+    default @Nullable Component getInstructionText() {
         return null;
     }
 
@@ -71,7 +71,7 @@ public interface ConfigComponent<T> extends Drawable, Element, Widget {
     }
 
     @Override
-    default ScreenRect getNavigationFocus() {
-        return Element.super.getNavigationFocus();
+    default ScreenRectangle getRectangle() {
+        return GuiEventListener.super.getRectangle();
     }
 }

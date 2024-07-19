@@ -8,12 +8,12 @@ import com.redpxnda.nucleus.registration.RegistryAnalyzer;
 import dev.architectury.event.events.common.PlayerEvent;
 import dev.architectury.platform.Platform;
 import net.fabricmc.api.EnvType;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.player.Player;
 
 public class NucleusTest {
     public static final String MOD_ID = "nucleus_test";
-    public static final Identifier loc = new Identifier("nucleus", "item/blank");
+    public static final ResourceLocation loc = new ResourceLocation("nucleus", "item/blank");
 
     public static void init() {
         /*
@@ -24,10 +24,10 @@ public class NucleusTest {
         ██║     ██║  ██║╚██████╗███████╗   ██║   ███████║
         ╚═╝     ╚═╝  ╚═╝ ╚═════╝╚══════╝   ╚═╝   ╚══════╝
         */
-        CoolEntityFacet.KEY = FacetRegistry.register(new Identifier("example", "cool_entity_facet"), CoolEntityFacet.class);
+        CoolEntityFacet.KEY = FacetRegistry.register(new ResourceLocation("example", "cool_entity_facet"), CoolEntityFacet.class);
 
         FacetRegistry.ENTITY_FACET_ATTACHMENT.register((entity, attacher) -> {
-            if (entity instanceof PlayerEntity)
+            if (entity instanceof Player)
                 attacher.add(CoolEntityFacet.KEY, new CoolEntityFacet(entity));
         });
 
@@ -57,7 +57,7 @@ public class NucleusTest {
         );
 
         if (Platform.getEnv() == EnvType.CLIENT)
-            ConfigManager.CONFIG_SCREENS_REGISTRY.register(r -> r.add("nucleus_test", new Identifier("nucleus:test-common")));
+            ConfigManager.CONFIG_SCREENS_REGISTRY.register(r -> r.add("nucleus_test", new ResourceLocation("nucleus:test-common")));
 
         /*
         ██████╗ ███████╗ ██████╗ ██╗███████╗████████╗██████╗ ██╗███████╗███████╗

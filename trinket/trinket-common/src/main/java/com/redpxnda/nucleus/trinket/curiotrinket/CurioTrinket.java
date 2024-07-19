@@ -2,13 +2,12 @@ package com.redpxnda.nucleus.trinket.curiotrinket;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
-import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.attribute.EntityAttribute;
-import net.minecraft.entity.attribute.EntityAttributeModifier;
-import net.minecraft.item.ItemStack;
-
 import java.util.UUID;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 
 /**
  * A simple class for abstracting trinket behavior to be compatible for both Trinkets and Curios.
@@ -89,7 +88,7 @@ public interface CurioTrinket {
      * @param uuid The generated UUID for use in attribute modifiers (See ICurioItem's and Trinket's getAttributeModifiers, they explain it better)
      * @return A multimap holding every attribute modifier that should be applied when wearing this trinket.
      */
-    default Multimap<EntityAttribute, EntityAttributeModifier> getAttributeModifiers(ItemStack stack, LivingEntity entity, CommonSlotReference slotIndex, UUID uuid) {
+    default Multimap<Attribute, AttributeModifier> getAttributeModifiers(ItemStack stack, LivingEntity entity, CommonSlotReference slotIndex, UUID uuid) {
         return HashMultimap.create();
     }
 

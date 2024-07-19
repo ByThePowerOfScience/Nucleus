@@ -3,70 +3,70 @@ package com.redpxnda.nucleus.config.screen.component;
 import com.google.common.collect.HashBiMap;
 import com.redpxnda.nucleus.codec.tag.TagList;
 import com.redpxnda.nucleus.util.MiscUtil;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.gui.widget.ClickableWidget;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.tag.TagKey;
-import net.minecraft.text.Text;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.core.Registry;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.tags.TagKey;
 
 import static com.redpxnda.nucleus.config.screen.component.ConfigEntriesComponent.KEY_TEXT_WIDTH;
 
 @SuppressWarnings({"unchecked", "rawtypes"})
-public class TagListComponent<E, T extends TagList<E>> extends ClickableWidget implements ConfigComponent<T> {
-    public static final Text UP_ICON = Text.literal("∧");
-    public static final Text DOWN_ICON = Text.literal("∨");
-    public static final Text REMOVE_ICON = Text.literal("×");
+public class TagListComponent<E, T extends TagList<E>> extends AbstractWidget implements ConfigComponent<T> {
+    public static final Component UP_ICON = Component.literal("∧");
+    public static final Component DOWN_ICON = Component.literal("∨");
+    public static final Component REMOVE_ICON = Component.literal("×");
 
     public final TagEntryType tagEntryType = new TagEntryType();
     public final ObjectEntryType objectEntryType = new ObjectEntryType();
     public final Supplier<T> creator;
     public final Registry<E> registry;
-    public final RegistryKey<? extends Registry<E>> registryKey;
+    public final ResourceKey<? extends Registry<E>> registryKey;
     public final HashBiMap<String, EntryType<?>> entryTypes;
     public final List<Entry> components = new ArrayList<>();
-    public final ButtonWidget adder;
-    public final ButtonWidget minimizer;
+    public final Button adder;
+    public final Button minimizer;
     public ConfigComponent<?> parent;
     public boolean minimized = true;
     public ConfigComponent<?> focusedComponent = null;
-    public final Text description;
+    public final Component description;
 
-    public TagListComponent(Supplier<T> creator, Registry<E> registry, RegistryKey<? extends Registry<E>> registryKey, String typeIdentifier, int x, int y) {
-        super(x, y, 142, 8, Text.empty());
+    public TagListComponent(Supplier<T> creator, Registry<E> registry, ResourceKey<? extends Registry<E>> registryKey, String typeIdentifier, int x, int y) {
+        super(x, y, 142, 8, Component.empty());
         this.registry = registry;
         this.registryKey = registryKey;
         this.creator = creator;
 
-        adder = ButtonWidget.builder(Text.literal("＋"), wid -> {
+        adder = Button.builder(Component.literal("＋"), wid -> {
             components.add(new Entry());
             requestPositionUpdate();
-        }).dimensions(0, 0, 20, 20).build();
+        }).bounds(0, 0, 20, 20).build();
 
-        Text minimizedText = Text.literal(">");
-        Text maximizedText = Text.literal("∨");
-        minimizer = ButtonWidget.builder(minimizedText, wid -> {
+        Component minimizedText = Component.literal(">");
+        Component maximizedText = Component.literal("∨");
+        minimizer = Button.builder(minimizedText, wid -> {
             minimized = !minimized;
             if (minimized) focusedComponent = null;
             wid.setMessage(minimized ? minimizedText : maximizedText);
             requestPositionUpdate();
-        }).dimensions(0, 0, 20, 20).build();
+        }).bounds(0, 0, 20, 20).build();
 
         entryTypes = MiscUtil.initialize(HashBiMap.create(), l -> {
             l.put("tag", tagEntryType);
             l.put(typeIdentifier, objectEntryType);
         });
 
-        description = Text.translatable("nucleus.config_screen.tag_list.description", typeIdentifier);
+        description = Component.translatable("nucleus.config_screen.tag_list.description", typeIdentifier);
     }
 
     @Override
@@ -120,7 +120,7 @@ public class TagListComponent<E, T extends TagList<E>> extends ClickableWidget i
     }
 
     @Override
-    protected void renderButton(DrawContext context, int mouseX, int mouseY, float delta) {
+    protected void renderWidget(GuiGraphics context, int mouseX, int mouseY, float delta) {
         minimizer.render(context, mouseX, mouseY, delta);
         if (!minimized) {
             int index = 0;
@@ -128,7 +128,7 @@ public class TagListComponent<E, T extends TagList<E>> extends ClickableWidget i
                 entry.dropdown.render(context, mouseX, mouseY, delta);
                 if (entry.component != null) entry.component.render(context, mouseX, mouseY, delta);
 
-                ButtonWidget remover = entry.remover;
+                Button remover = entry.remover;
                 if (Screen.hasShiftDown()) {
                     remover.setMessage(DOWN_ICON);
                     remover.active = index != components.size()-1;
@@ -152,13 +152,13 @@ public class TagListComponent<E, T extends TagList<E>> extends ClickableWidget i
     }
 
     @Override
-    public void drawInstructionText(DrawContext context, int mouseX, int mouseY) {
+    public void drawInstructionText(GuiGraphics context, int mouseX, int mouseY) {
         if (minimizer.isMouseOver(mouseX, mouseY))
             ConfigComponent.super.drawInstructionText(context, mouseX, mouseY);
     }
 
     @Override
-    public @Nullable Text getInstructionText() {
+    public @Nullable Component getInstructionText() {
         return description;
     }
 
@@ -255,7 +255,7 @@ public class TagListComponent<E, T extends TagList<E>> extends ClickableWidget i
     }
 
     @Override
-    protected void appendClickableNarrations(NarrationMessageBuilder builder) {
+    protected void updateWidgetNarration(NarrationElementOutput builder) {
 
     }
 
@@ -267,7 +267,7 @@ public class TagListComponent<E, T extends TagList<E>> extends ClickableWidget i
     public class TagEntryType extends EntryType<TagKey<E>> {
         @Override
         public ConfigComponent<TagKey<E>> createEntry() {
-            return new TagKeyComponent<>(registryKey, MinecraftClient.getInstance().textRenderer, 0, 0, 150, 20);
+            return new TagKeyComponent<>(registryKey, Minecraft.getInstance().font, 0, 0, 150, 20);
         }
 
         @Override
@@ -279,7 +279,7 @@ public class TagListComponent<E, T extends TagList<E>> extends ClickableWidget i
     public class ObjectEntryType extends EntryType<E> {
         @Override
         public ConfigComponent<E> createEntry() {
-            return new RegistryComponent<>(registry, MinecraftClient.getInstance().textRenderer, 0, 0, 150, 20);
+            return new RegistryComponent<>(registry, Minecraft.getInstance().font, 0, 0, 150, 20);
         }
 
         @Override
@@ -291,7 +291,7 @@ public class TagListComponent<E, T extends TagList<E>> extends ClickableWidget i
     public class Entry {
         public final DropdownComponent<EntryType<?>> dropdown;
         public @Nullable ConfigComponent component;
-        public final ButtonWidget remover;
+        public final Button remover;
 
         public <A> Entry(EntryType<A> type, A val) {
             this();
@@ -300,7 +300,7 @@ public class TagListComponent<E, T extends TagList<E>> extends ClickableWidget i
         }
 
         public Entry() {
-            dropdown = new DropdownComponent<>(MinecraftClient.getInstance().textRenderer, 0, 0, 80, 20, entryTypes);
+            dropdown = new DropdownComponent<>(Minecraft.getInstance().font, 0, 0, 80, 20, entryTypes);
             dropdown.onSet = e -> {
                 if (component != null) component.onRemoved();
                 component = e.createEntry();
@@ -309,7 +309,7 @@ public class TagListComponent<E, T extends TagList<E>> extends ClickableWidget i
             };
             dropdown.setParent(TagListComponent.this);
 
-            remover = ButtonWidget.builder(REMOVE_ICON, wid -> {
+            remover = Button.builder(REMOVE_ICON, wid -> {
                 if (focusedComponent != null) focusedComponent.setFocused(false);
 
                 if (Screen.hasShiftDown())
@@ -324,7 +324,7 @@ public class TagListComponent<E, T extends TagList<E>> extends ClickableWidget i
                     components.remove(this);
                 }
                 requestPositionUpdate();
-            }).dimensions(0, 0, 20, 20).build();
+            }).bounds(0, 0, 20, 20).build();
         }
 
         public int getWidth() {

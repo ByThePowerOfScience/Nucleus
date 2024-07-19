@@ -6,7 +6,7 @@ import com.redpxnda.nucleus.codec.auto.ConfigAutoCodec;
 import com.redpxnda.nucleus.config.preset.ConfigPreset;
 import dev.architectury.platform.Platform;
 import net.fabricmc.api.EnvType;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Consumer;
@@ -15,7 +15,7 @@ import java.util.function.Supplier;
 
 public class ConfigBuilder<T> {
     protected String fileLocation;
-    protected Identifier id;
+    protected ResourceLocation id;
     protected ConfigType type;
     protected Codec<T> codec;
     protected Supplier<T> creator;
@@ -61,14 +61,14 @@ public class ConfigBuilder<T> {
      * Defines the id for this config. Every config should have a unique id.
      * This will set the file location for you, so make sure to call file location after this.
      */
-    public ConfigBuilder<T> id(Identifier id) {
+    public ConfigBuilder<T> id(ResourceLocation id) {
         this.id = id;
         this.fileLocation = id.getNamespace() + "-" + id.getPath();
         return this;
     }
 
     public ConfigBuilder<T> id(String id) {
-        return id(new Identifier(id));
+        return id(new ResourceLocation(id));
     }
 
     /**

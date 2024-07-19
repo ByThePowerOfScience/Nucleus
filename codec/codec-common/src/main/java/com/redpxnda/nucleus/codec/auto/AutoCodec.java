@@ -5,6 +5,7 @@ import com.mojang.serialization.*;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.redpxnda.nucleus.Nucleus;
 import com.redpxnda.nucleus.codec.behavior.CodecBehavior;
+import com.redpxnda.nucleus.util.MiscUtil;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
@@ -126,7 +127,7 @@ public class AutoCodec<C> extends MapCodec<C> {
             Object value = field.codec.decode(
                     ops,
                     map
-            ).getOrThrow(false, s -> LOGGER.error("Failed to parse field '{}' in AutoCodec decoding of '{}'! -> {}", field.field.getName(), cls.getSimpleName(), s));
+            ).getOrThrow(s -> MiscUtil.logError(LOGGER, STR."Failed to parse field '\{field.field.getName()}' in AutoCodec decoding of '\{cls.getSimpleName()}'! -> \{s}"));
 
             boolean setIfNull = defaultSetIfNullBehavior(field, value, instance);
             if (field.codec instanceof NullabilityHandler nh) setIfNull = nh.shouldSetToNull(ops, map);

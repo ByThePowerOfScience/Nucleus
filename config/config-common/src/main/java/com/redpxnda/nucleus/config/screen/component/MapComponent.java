@@ -1,41 +1,42 @@
 package com.redpxnda.nucleus.config.screen.component;
 
 import com.redpxnda.nucleus.util.MiscUtil;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.gui.widget.ClickableWidget;
-import net.minecraft.text.Text;
-import net.minecraft.util.Pair;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.function.Supplier;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
+import net.minecraft.util.Tuple;
 
 import static com.redpxnda.nucleus.config.screen.component.ConfigEntriesComponent.KEY_TEXT_WIDTH;
 
-public class MapComponent<K, V, M extends Map<K, V>> extends ClickableWidget implements ConfigComponent<M> {
-    public static final Text DESC_TEXT = Text.translatable("nucleus.config_screen.map.description");
-    public static final Text UP_ICON = Text.literal("∧");
-    public static final Text DOWN_ICON = Text.literal("∨");
-    public static final Text REMOVE_ICON = Text.literal("×");
+public class MapComponent<K, V, M extends Map<K, V>> extends AbstractWidget implements ConfigComponent<M> {
+    public static final Component DESC_TEXT = Component.translatable("nucleus.config_screen.map.description");
+    public static final Component UP_ICON = Component.literal("∧");
+    public static final Component DOWN_ICON = Component.literal("∨");
+    public static final Component REMOVE_ICON = Component.literal("×");
 
     public final Supplier<M> creator;
-    public final Supplier<Pair<ConfigComponent<K>, ConfigComponent<V>>> elementCreator;
-    public final Map<ConfigComponent<K>, Pair<ConfigComponent<V>, ButtonWidget>> elements = new LinkedHashMap<>();
+    public final Supplier<Tuple<ConfigComponent<K>, ConfigComponent<V>>> elementCreator;
+    public final Map<ConfigComponent<K>, Tuple<ConfigComponent<V>, Button>> elements = new LinkedHashMap<>();
     public ConfigComponent<?> parent;
     public boolean minimized = true;
     public ConfigComponent<?> focusedComponent = null;
-    public final ButtonWidget adder;
-    public final ButtonWidget minimizer;
+    public final Button adder;
+    public final Button minimizer;
 
     public MapComponent(Supplier<M> creator, Type keyType, Type valueType, int x, int y) {
-        super(x, y, 142, 8, Text.empty());
+        super(x, y, 142, 8, Component.empty());
         this.creator = creator;
 
         this.elementCreator = () -> {
@@ -45,9 +46,9 @@ public class MapComponent<K, V, M extends Map<K, V>> extends ClickableWidget imp
             comp.setParent(this);
             keyComp.setParent(this);
 
-            elements.put(keyComp, new Pair<>(
+            elements.put(keyComp, new Tuple<>(
                     comp,
-                    ButtonWidget.builder(REMOVE_ICON, wid -> {
+                    Button.builder(REMOVE_ICON, wid -> {
                         if (Screen.hasShiftDown())
                             MiscUtil.moveMapKeyDown(elements, keyComp);
                         else if (Screen.hasControlDown())
@@ -58,36 +59,36 @@ public class MapComponent<K, V, M extends Map<K, V>> extends ClickableWidget imp
                             elements.remove(keyComp);
                         }
                         requestPositionUpdate();
-                    }).dimensions(0, 0, 20, 20).build()
+                    }).bounds(0, 0, 20, 20).build()
             ));
-            return new Pair<>(keyComp, comp);
+            return new Tuple<>(keyComp, comp);
         };
 
-        adder = ButtonWidget.builder(Text.literal("＋"), wid -> {
+        adder = Button.builder(Component.literal("＋"), wid -> {
             elementCreator.get();
             requestPositionUpdate();
-        }).dimensions(0, 0, 20, 20).build();
+        }).bounds(0, 0, 20, 20).build();
 
-        Text minimizedText = Text.literal(">");
-        Text maximizedText = Text.literal("∨");
-        minimizer = ButtonWidget.builder(minimizedText, wid -> {
+        Component minimizedText = Component.literal(">");
+        Component maximizedText = Component.literal("∨");
+        minimizer = Button.builder(minimizedText, wid -> {
             minimized = !minimized;
             if (minimized) focusedComponent = null;
             wid.setMessage(minimized ? minimizedText : maximizedText);
             requestPositionUpdate();
-        }).dimensions(0, 0, 20, 20).build();
+        }).bounds(0, 0, 20, 20).build();
 
         //performPositionUpdate();
     }
 
     @Override
-    public void drawInstructionText(DrawContext context, int mouseX, int mouseY) {
+    public void drawInstructionText(GuiGraphics context, int mouseX, int mouseY) {
         if (minimizer.isMouseOver(mouseX, mouseY))
             ConfigComponent.super.drawInstructionText(context, mouseX, mouseY);
     }
 
     @Override
-    public @Nullable Text getInstructionText() {
+    public @Nullable Component getInstructionText() {
         return DESC_TEXT;
     }
 
@@ -99,7 +100,7 @@ public class MapComponent<K, V, M extends Map<K, V>> extends ClickableWidget imp
     @Override
     public boolean checkValidity() {
         for (var entry : elements.entrySet()) {
-            if (!entry.getValue().getLeft().checkValidity()) return false;
+            if (!entry.getValue().getA().checkValidity()) return false;
         }
         return true;
     }
@@ -108,7 +109,7 @@ public class MapComponent<K, V, M extends Map<K, V>> extends ClickableWidget imp
     public M getValue() {
         M result = creator.get();
         for (var entry : elements.entrySet()) {
-            result.put(entry.getKey().getValue(), entry.getValue().getLeft().getValue());
+            result.put(entry.getKey().getValue(), entry.getValue().getA().getValue());
         }
         return result;
     }
@@ -118,8 +119,8 @@ public class MapComponent<K, V, M extends Map<K, V>> extends ClickableWidget imp
         elements.clear();
         value.forEach((k, v) -> {
             var pair = elementCreator.get();
-            pair.getLeft().setValue(k);
-            pair.getRight().setValue(v);
+            pair.getA().setValue(k);
+            pair.getB().setValue(v);
         });
         requestPositionUpdate();
     }
@@ -156,8 +157,8 @@ public class MapComponent<K, V, M extends Map<K, V>> extends ClickableWidget imp
         height = 20;
         if (!minimized) {
             elements.forEach((key, pair) -> {
-                ConfigComponent<V> element = pair.getLeft();
-                ButtonWidget remover = pair.getRight();
+                ConfigComponent<V> element = pair.getA();
+                Button remover = pair.getB();
 
                 height += 8;
                 key.setPosition(getX() + 8, getY() + height);
@@ -177,17 +178,17 @@ public class MapComponent<K, V, M extends Map<K, V>> extends ClickableWidget imp
     }
 
     @Override
-    protected void renderButton(DrawContext context, int mouseX, int mouseY, float delta) {
+    protected void renderWidget(GuiGraphics context, int mouseX, int mouseY, float delta) {
         minimizer.render(context, mouseX, mouseY, delta);
         if (!minimized) {
             int index = 0;
             for (var entry : elements.entrySet()) {
                 ConfigComponent<K> key = entry.getKey();
-                ConfigComponent<V> element = entry.getValue().getLeft();
-                ButtonWidget remover = entry.getValue().getRight();
+                ConfigComponent<V> element = entry.getValue().getA();
+                Button remover = entry.getValue().getB();
 
                 key.render(context, mouseX, mouseY, delta);
-                context.drawText(MinecraftClient.getInstance().textRenderer, "=", key.getX() + key.getWidth() + 8, key.getY() + 6, -11184811, true);
+                context.drawString(Minecraft.getInstance().font, "=", key.getX() + key.getWidth() + 8, key.getY() + 6, -11184811, true);
                 element.render(context, mouseX, mouseY, delta);
                 if (Screen.hasShiftDown()) {
                     remover.setMessage(DOWN_ICON);
@@ -214,8 +215,8 @@ public class MapComponent<K, V, M extends Map<K, V>> extends ClickableWidget imp
             if (adder.isMouseOver(mX, mY)) return adder.mouseClicked(mX, mY, button);
             for (var entry : elements.entrySet()) {
                 ConfigComponent<K> key = entry.getKey();
-                ConfigComponent<V> component = entry.getValue().getLeft();
-                ButtonWidget remover = entry.getValue().getRight();
+                ConfigComponent<V> component = entry.getValue().getA();
+                Button remover = entry.getValue().getB();
                 if (focusedComponent != null && focusedComponent.mouseClicked(mX, mY, button)) {
                     return true;
                 } else if (component.isMouseOver(mX, mY)) {
@@ -280,7 +281,7 @@ public class MapComponent<K, V, M extends Map<K, V>> extends ClickableWidget imp
     }
 
     @Override
-    protected void appendClickableNarrations(NarrationMessageBuilder builder) {
+    protected void updateWidgetNarration(NarrationElementOutput builder) {
 
     }
 }

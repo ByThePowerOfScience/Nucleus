@@ -14,7 +14,7 @@ import java.util.concurrent.CompletableFuture;
 @Mixin(MinecraftServer.class)
 public class MinecraftServerMixin {
     @Shadow
-    private MinecraftServer.ResourceManagerHolder resourceManagerHolder;
+    private MinecraftServer.ReloadableResources resourceManagerHolder;
 
     @Inject(method = "reloadResources", at = @At("TAIL"))
     private void endResourceReload(Collection<String> collection, CallbackInfoReturnable<CompletableFuture<Void>> cir) {

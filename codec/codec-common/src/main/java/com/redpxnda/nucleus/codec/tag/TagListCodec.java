@@ -5,22 +5,21 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
 import com.redpxnda.nucleus.codec.tag.TagList;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.tag.TagKey;
-import net.minecraft.util.Identifier;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.stream.Stream;
+import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
 
 public class TagListCodec<C, L extends TagList<C>> implements Codec<L> {
     protected final BiFunction<List<C>, List<TagKey<C>>, L> creator;
     protected final Registry<C> registry;
-    protected final RegistryKey<? extends Registry<C>> registryKey;
+    protected final ResourceKey<? extends Registry<C>> registryKey;
 
-    public TagListCodec(BiFunction<List<C>, List<TagKey<C>>, L> creator, Registry<C> registry, RegistryKey<? extends Registry<C>> registryKey) {
+    public TagListCodec(BiFunction<List<C>, List<TagKey<C>>, L> creator, Registry<C> registry, ResourceKey<? extends Registry<C>> registryKey) {
         this.creator = creator;
         this.registry = registry;
         this.registryKey = registryKey;
@@ -40,21 +39,21 @@ public class TagListCodec<C, L extends TagList<C>> implements Codec<L> {
                 if (potentialStr.result().isPresent()) {
                     String str = potentialStr.result().get();
                     if (str.startsWith("#")) {
-                        Identifier id = Identifier.tryParse(str.substring(1));
+                        ResourceLocation id = ResourceLocation.tryParse(str.substring(1));
                         if (id == null) {
                             failedValues.add(t);
                             return;
                         }
 
-                        tags.add(TagKey.of(registryKey, id));
+                        tags.add(TagKey.create(registryKey, id));
                     } else {
-                        Identifier id = Identifier.tryParse(str);
+                        ResourceLocation id = ResourceLocation.tryParse(str);
                         if (id == null) {
                             failedValues.add(t);
                             return;
                         }
 
-                        C obj = registry.getOrEmpty(id).orElse(null);
+                        C obj = registry.getOptional(id).orElse(null);
                         if (obj == null) {
                             failedValues.add(t);
                             return;
@@ -76,15 +75,15 @@ public class TagListCodec<C, L extends TagList<C>> implements Codec<L> {
         var potentialStr = ops.getStringValue(input);
         if (potentialStr.result().isPresent()) {
             String str = potentialStr.result().get();
-            Identifier id;
+            ResourceLocation id;
             L result = null;
             if (str.startsWith("#")) {
-                id = Identifier.tryParse(str.substring(1));
-                if (id != null) result = creator.apply(List.of(), List.of(TagKey.of(registryKey, id)));
+                id = ResourceLocation.tryParse(str.substring(1));
+                if (id != null) result = creator.apply(List.of(), List.of(TagKey.create(registryKey, id)));
             } else {
-                id = Identifier.tryParse(str);
+                id = ResourceLocation.tryParse(str);
                 if (id != null) {
-                    C obj = registry.getOrEmpty(id).orElse(null);
+                    C obj = registry.getOptional(id).orElse(null);
                     if (obj != null) result = creator.apply(List.of(obj), List.of());
                 }
             }
@@ -102,12 +101,12 @@ public class TagListCodec<C, L extends TagList<C>> implements Codec<L> {
         List<T> objects = new ArrayList<>();
 
         input.getObjects().forEach(c -> {
-            Identifier id = registry.getId(c);
+            ResourceLocation id = registry.getKey(c);
             if (id != null) objects.add(ops.createString(id.toString()));
         });
 
         input.getTags().forEach(t -> {
-            Identifier id = t.id();
+            ResourceLocation id = t.location();
             objects.add(ops.createString('#' + id.toString()));
         });
 

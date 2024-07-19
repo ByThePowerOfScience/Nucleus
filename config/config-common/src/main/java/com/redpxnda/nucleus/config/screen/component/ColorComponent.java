@@ -4,20 +4,20 @@ import com.redpxnda.nucleus.config.screen.widget.colorpicker.ColorPickerWidget;
 import com.redpxnda.nucleus.util.Color;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
-import net.minecraft.client.gui.widget.ClickableWidget;
-import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.text.Text;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.Nullable;
 
 @Environment(EnvType.CLIENT)
-public class ColorComponent extends ClickableWidget implements ConfigComponent<Color> { // todo color picking
-    public static final Text DESC_TEXT = Text.translatable("nucleus.config_screen.color.description");
+public class ColorComponent extends AbstractWidget implements ConfigComponent<Color> { // todo color picking
+    public static final Component DESC_TEXT = Component.translatable("nucleus.config_screen.color.description");
 
-    public final TextRenderer textRenderer;
-    public final TextFieldWidget textWidget;
+    public final Font textRenderer;
+    public final EditBox textWidget;
     public final ColorPickerWidget picker;
     public ConfigComponent<?> parent;
     public boolean isValid = true;
@@ -25,10 +25,10 @@ public class ColorComponent extends ClickableWidget implements ConfigComponent<C
     public @Nullable Color color;
     protected int oldWidth;
 
-    public ColorComponent(TextRenderer textR, int x, int y, int width, int height) {
-        super(x, y, width, height, Text.empty());
+    public ColorComponent(Font textR, int x, int y, int width, int height) {
+        super(x, y, width, height, Component.empty());
         textRenderer = textR;
-        textWidget = new TextFieldWidget(textR, x+28, y, width-28, height, Text.empty());
+        textWidget = new EditBox(textR, x+28, y, width-28, height, Component.empty());
         picker = new ColorPickerWidget(textR, y+28, x, this::setValueNoUpdate);
         oldWidth = width;
     }
@@ -40,7 +40,7 @@ public class ColorComponent extends ClickableWidget implements ConfigComponent<C
 
     public void updateValidity() {
         if (parent != null) {
-            if (!Color.isValidHexString(textWidget.getText())) {
+            if (!Color.isValidHexString(textWidget.getValue())) {
                 if (isValid) {
                     parent.invalidateChild(this);
                     isValid = false;
@@ -80,7 +80,7 @@ public class ColorComponent extends ClickableWidget implements ConfigComponent<C
     }
 
     @Override
-    public void renderButton(DrawContext context, int mouseX, int mouseY, float delta) {
+    public void renderWidget(GuiGraphics context, int mouseX, int mouseY, float delta) {
         Color contrastingColor = Color.WHITE;
         if (color != null) {
             contrastingColor = (color.r() + color.g() + color.b() + (color.a()*2))/5 >= 127 ? Color.BLACK : Color.WHITE;
@@ -96,22 +96,22 @@ public class ColorComponent extends ClickableWidget implements ConfigComponent<C
         int left = getX();
         int right = getX() + 20;
         String icon = pickerOpen ? "∨" : ">";
-        context.drawText(textRenderer, icon, (left+right)/2 - textRenderer.getWidth(icon) / 2, (top + bottom - textRenderer.fontHeight) / 2 + 1, contrastingColor.argb(), false);
+        context.drawString(textRenderer, icon, (left+right)/2 - textRenderer.width(icon) / 2, (top + bottom - textRenderer.lineHeight) / 2 + 1, contrastingColor.argb(), false);
 
-        textWidget.renderButton(context, mouseX, mouseY, delta);
+        textWidget.renderWidget(context, mouseX, mouseY, delta);
 
         if (pickerOpen)
             picker.render(context, mouseX, mouseY, delta);
     }
 
     @Override
-    public void drawInstructionText(DrawContext context, int mouseX, int mouseY) {
+    public void drawInstructionText(GuiGraphics context, int mouseX, int mouseY) {
         if (!pickerOpen || (mouseX >= getX() && mouseX <= getX()+getWidth()-picker.getWidth() && mouseY >= getY() && mouseY <= getY()+getHeight()-picker.getHeight()))
             ConfigComponent.super.drawInstructionText(context, mouseX, mouseY);
     }
 
     @Override
-    public Text getInstructionText() {
+    public Component getInstructionText() {
         return DESC_TEXT;
     }
 
@@ -123,7 +123,7 @@ public class ColorComponent extends ClickableWidget implements ConfigComponent<C
     @Override
     public Color getValue() {
         try {
-            return new Color(textWidget.getText());
+            return new Color(textWidget.getValue());
         } catch (Exception e) {
             return null;
         }
@@ -133,18 +133,18 @@ public class ColorComponent extends ClickableWidget implements ConfigComponent<C
         picker.setColor(value);
     }
     public void setValueNoUpdate(Color value) {
-        textWidget.setText(value.hex());
+        textWidget.setValue(value.hex());
         color = value;
     }
 
     @Override
     public boolean charTyped(char chr, int modifiers) {
         if (pickerOpen && picker.charTyped(chr, modifiers)) return true;
-        if (!textWidget.isActive()) {
+        if (!textWidget.canConsumeInput()) {
             return false;
         }
         if ((chr >= '0' && chr <= '9') || (chr >= 'a' && chr <= 'f') || (chr >= 'A' && chr <= 'F')) {
-            textWidget.write(Character.toString(chr));
+            textWidget.insertText(Character.toString(chr));
             updateValidity();
             return true;
         }
@@ -200,13 +200,13 @@ public class ColorComponent extends ClickableWidget implements ConfigComponent<C
     public void setFocused(boolean focused) {
         textWidget.setFocused(focused);
         if (!focused) {
-            textWidget.setSelectionStart(0);
-            textWidget.setSelectionEnd(0);
+            textWidget.setCursorPosition(0);
+            textWidget.setHighlightPos(0);
         }
     }
 
     @Override
-    protected void appendClickableNarrations(NarrationMessageBuilder builder) {
+    protected void updateWidgetNarration(NarrationElementOutput builder) {
 
     }
 }

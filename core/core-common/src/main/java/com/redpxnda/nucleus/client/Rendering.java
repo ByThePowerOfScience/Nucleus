@@ -2,6 +2,12 @@ package com.redpxnda.nucleus.client;
 
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import com.redpxnda.nucleus.event.RenderEvents;
 import com.redpxnda.nucleus.impl.MiscAbstraction;
 import com.redpxnda.nucleus.impl.ShaderRegistry;
@@ -10,27 +16,29 @@ import com.redpxnda.nucleus.registry.effect.RenderingMobEffect;
 import dev.architectury.event.EventResult;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gl.ShaderProgram;
+import net.minecraft.CrashReport;
+import net.minecraft.CrashReportCategory;
+import net.minecraft.ReportedException;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
-import net.minecraft.client.particle.ParticleFactory;
-import net.minecraft.client.particle.ParticleTextureSheet;
+import net.minecraft.client.particle.ParticleProvider;
+import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.render.*;
-import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
-import net.minecraft.client.texture.SpriteAtlasTexture;
-import net.minecraft.client.texture.TextureManager;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.entity.effect.StatusEffect;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.particle.ParticleEffect;
-import net.minecraft.registry.Registries;
-import net.minecraft.text.Text;
-import net.minecraft.util.crash.CrashException;
-import net.minecraft.util.crash.CrashReport;
-import net.minecraft.util.crash.CrashReportSection;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderStateShard;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.ShaderInstance;
+import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.client.renderer.texture.TextureAtlas;
+import net.minecraft.client.renderer.texture.TextureManager;
+import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.util.Mth;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectInstance;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -40,7 +48,7 @@ import java.util.OptionalDouble;
 import java.util.function.BiFunction;
 
 import static com.redpxnda.nucleus.Nucleus.loc;
-import static net.minecraft.client.render.RenderPhase.*;
+import static net.minecraft.client.renderer.RenderStateShard.*;
 
 @Environment(EnvType.CLIENT)
 public class Rendering {
@@ -61,39 +69,39 @@ public class Rendering {
             new Vector3f(-1, -1, 0), new Vector3f(-1, 1, 0), new Vector3f(1, 1, 0), new Vector3f(1, -1, 0)
     };
 
-    public static ShaderProgram alphaAnimationShader;
-    public static ShaderProgram trailShader;
+    public static ShaderInstance alphaAnimationShader;
+    public static ShaderInstance trailShader;
 
-    public static RenderLayer transparentTriangleStrip = RenderLayer.of(
-            "nucleus_triangle_strip", VertexFormats.POSITION_COLOR_LIGHT, VertexFormat.DrawMode.TRIANGLE_STRIP,
-            256, RenderLayer.MultiPhaseParameters.builder().program(LEASH_PROGRAM).texture(NO_TEXTURE)
-            .transparency(TRANSLUCENT_TRANSPARENCY).cull(DISABLE_CULLING).lightmap(ENABLE_LIGHTMAP)
-            .build(false));
+    public static RenderType transparentTriangleStrip = RenderType.create(
+            "nucleus_triangle_strip", DefaultVertexFormat.POSITION_COLOR_LIGHTMAP, VertexFormat.Mode.TRIANGLE_STRIP,
+            256, RenderType.CompositeState.builder().setShaderState(RENDERTYPE_LEASH_SHADER).setTextureState(NO_TEXTURE)
+            .setTransparencyState(TRANSLUCENT_TRANSPARENCY).setCullState(NO_CULL).setLightmapState(LIGHTMAP)
+            .createCompositeState(false));
 
-    public static RenderLayer alphaAnimation = RenderLayer.of(
-            "nucleus_alpha_animation_translucent", VertexFormats.POSITION_COLOR_TEXTURE_LIGHT_NORMAL, VertexFormat.DrawMode.QUADS,
-            0x200000, true, true, RenderLayer.of(new RenderPhase.ShaderProgram(() -> alphaAnimationShader)));
+    public static RenderType alphaAnimation = RenderType.create(
+            "nucleus_alpha_animation_translucent", DefaultVertexFormat.BLOCK, VertexFormat.Mode.QUADS,
+            0x200000, true, true, RenderType.translucentState(new RenderStateShard.ShaderStateShard(() -> alphaAnimationShader)));
 
-    public static final RenderLayer.MultiPhase trail = RenderLayer.of(
-            "nucleus_trail", VertexFormats.LINES, VertexFormat.DrawMode.LINES,
-            256, RenderLayer.MultiPhaseParameters.builder().program(new RenderPhase.ShaderProgram(() -> trailShader))
-            .lineWidth(new RenderPhase.LineWidth(OptionalDouble.of(4))).layering(VIEW_OFFSET_Z_LAYERING)
-            .transparency(TRANSLUCENT_TRANSPARENCY).target(ITEM_ENTITY_TARGET).writeMaskState(ALL_MASK)
-            .cull(DISABLE_CULLING).build(false));
+    public static final RenderType.CompositeRenderType trail = RenderType.create(
+            "nucleus_trail", DefaultVertexFormat.POSITION_COLOR_NORMAL, VertexFormat.Mode.LINES,
+            256, RenderType.CompositeState.builder().setShaderState(new RenderStateShard.ShaderStateShard(() -> trailShader))
+            .setLineState(new RenderStateShard.LineStateShard(OptionalDouble.of(4))).setLayeringState(VIEW_OFFSET_Z_LAYERING)
+            .setTransparencyState(TRANSLUCENT_TRANSPARENCY).setOutputState(ITEM_ENTITY_TARGET).setWriteMaskState(COLOR_DEPTH_WRITE)
+            .setCullState(NO_CULL).createCompositeState(false));
 
-    public static final ParticleTextureSheet blockSheetTranslucent = new ParticleTextureSheet(){
+    public static final ParticleRenderType blockSheetTranslucent = new ParticleRenderType(){
         @Override
         public void begin(BufferBuilder bufferBuilder, TextureManager textureManager) {
             RenderSystem.depthMask(true);
-            RenderSystem.setShaderTexture(0, SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE);
+            RenderSystem.setShaderTexture(0, TextureAtlas.LOCATION_BLOCKS);
             RenderSystem.enableBlend();
-            RenderSystem.blendFunc(GlStateManager.SrcFactor.SRC_ALPHA, GlStateManager.DstFactor.ONE_MINUS_SRC_ALPHA);
-            bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR_LIGHT);
+            RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
+            bufferBuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.PARTICLE);
         }
 
         @Override
-        public void draw(Tessellator tesselator) {
-            tesselator.draw();
+        public void end(Tesselator tesselator) {
+            tesselator.end();
         }
 
         public String toString() {
@@ -102,15 +110,15 @@ public class Rendering {
     };
 
     public static void init() {
-        ShaderRegistry.register(loc("rendertype_alpha_animation"), VertexFormats.POSITION_COLOR_TEXTURE_LIGHT_NORMAL, i -> alphaAnimationShader = i);
-        ShaderRegistry.register(loc("rendertype_trail"), VertexFormats.LINES, i -> trailShader = i);
+        ShaderRegistry.register(loc("rendertype_alpha_animation"), DefaultVertexFormat.BLOCK, i -> alphaAnimationShader = i);
+        ShaderRegistry.register(loc("rendertype_trail"), DefaultVertexFormat.POSITION_COLOR_NORMAL, i -> trailShader = i);
 
         RenderEvents.LIVING_ENTITY_RENDER.register((stage, model, entity, entityYaw, partialTick, matrixStack, multiBufferSource, packedLight) -> {
             if (stage != RenderEvents.EntityRenderStage.PRE) return EventResult.pass();
-            for (Map.Entry<StatusEffect, StatusEffectInstance> entry : entity.getActiveStatusEffects().entrySet()) {
-                StatusEffectInstance instance = entry.getValue();
-                StatusEffect effect = entry.getKey();
-                if (effect instanceof RenderingMobEffect rendering && (instance.getDuration() > 0 || instance.isInfinite())) {
+            for (Map.Entry<MobEffect, MobEffectInstance> entry : entity.getActiveEffectsMap().entrySet()) {
+                MobEffectInstance instance = entry.getValue();
+                MobEffect effect = entry.getKey();
+                if (effect instanceof RenderingMobEffect rendering && (instance.getDuration() > 0 || instance.isInfiniteDuration())) {
                     boolean result = rendering.renderPre(instance, entity, entityYaw, partialTick, matrixStack, multiBufferSource, packedLight);
                     if (result)
                         return EventResult.interruptFalse();
@@ -120,15 +128,15 @@ public class Rendering {
         });
         RenderEvents.LIVING_ENTITY_RENDER.register((stage, model, entity, entityYaw, partialTick, matrixStack, multiBufferSource, packedLight) -> {
             if (stage != RenderEvents.EntityRenderStage.POST) return EventResult.pass();
-            entity.getActiveStatusEffects().forEach((effect, instance) -> {
-                if (effect instanceof RenderingMobEffect rendering && (instance.getDuration() > 0 || instance.isInfinite())) {
+            entity.getActiveEffectsMap().forEach((effect, instance) -> {
+                if (effect instanceof RenderingMobEffect rendering && (instance.getDuration() > 0 || instance.isInfiniteDuration())) {
                     rendering.renderPost(instance, entity, entityYaw, partialTick, matrixStack, multiBufferSource, packedLight);
                 }
             });
             return EventResult.pass();
         });
         RenderEvents.HUD_RENDER_PRE.register((minecraft, graphics, partialTick) -> {
-            for (Map.Entry<StatusEffect, StatusEffectInstance> entry : minecraft.player.getActiveStatusEffects().entrySet()) {
+            for (Map.Entry<MobEffect, MobEffectInstance> entry : minecraft.player.getActiveEffectsMap().entrySet()) {
                 if (entry.getKey() instanceof RenderingMobEffect rendering) {
                     boolean result = rendering.renderHud(entry.getValue(), minecraft, graphics, partialTick);
                     if (result)
@@ -139,37 +147,37 @@ public class Rendering {
         });
     }
 
-    public static <T extends ParticleEffect> Particle createParticle(ClientWorld level, T options, double x, double y, double z, double xs, double ys, double zs) {
-        ParticleFactory<T> provider = (ParticleFactory<T>) MiscAbstraction.getProviderFromType(options.getType());
+    public static <T extends ParticleOptions> Particle createParticle(ClientLevel level, T options, double x, double y, double z, double xs, double ys, double zs) {
+        ParticleProvider<T> provider = (ParticleProvider<T>) MiscAbstraction.getProviderFromType(options.getType());
         if (provider == null) return null;
         return provider.createParticle(options, level, x, y, z, xs, ys, zs);
     }
-    public static Particle addParticleToWorld(ClientWorld level, ParticleEffect options, boolean overrideLimiter, boolean canSpawnOnMinimal, double x, double y, double z, double xs, double ys, double zs) {
+    public static Particle addParticleToWorld(ClientLevel level, ParticleOptions options, boolean overrideLimiter, boolean canSpawnOnMinimal, double x, double y, double z, double xs, double ys, double zs) {
         try {
-            return ((ClientWorldAccessor) level).getWorldRenderer().spawnParticle(
+            return ((ClientWorldAccessor) level).getWorldRenderer().addParticleInternal(
                     options, overrideLimiter, canSpawnOnMinimal,
                     x, y, z, xs, ys, zs);
         } catch (Throwable throwable) {
-            CrashReport crashReport = CrashReport.create(throwable, "Exception while adding particle");
-            CrashReportSection crashReportCategory = crashReport.addElement("Particle being added");
-            crashReportCategory.add("ID", Registries.PARTICLE_TYPE.getId(options.getType()));
-            crashReportCategory.add("Parameters", options.asString());
-            crashReportCategory.add("Position", () -> CrashReportSection.createPositionString(level, x, y, z));
-            throw new CrashException(crashReport);
+            CrashReport crashReport = CrashReport.forThrowable(throwable, "Exception while adding particle");
+            CrashReportCategory crashReportCategory = crashReport.addCategory("Particle being added");
+            crashReportCategory.setDetail("ID", BuiltInRegistries.PARTICLE_TYPE.getKey(options.getType()));
+            crashReportCategory.setDetail("Parameters", options.writeToString());
+            crashReportCategory.setDetail("Position", () -> CrashReportCategory.formatLocation(level, x, y, z));
+            throw new ReportedException(crashReport);
         }
     }
 
     public static long getGameTime() {
-        MinecraftClient mc = MinecraftClient.getInstance();
-        return mc.world == null ? -100 : mc.world.getTime();
+        Minecraft mc = Minecraft.getInstance();
+        return mc.level == null ? -100 : mc.level.getGameTime();
     }
     public static double getGameAndDeltaTime() {
-        MinecraftClient mc = MinecraftClient.getInstance();
-        return mc.world == null ? -100 : mc.world.getTime()+mc.getLastFrameDuration();
+        Minecraft mc = Minecraft.getInstance();
+        return mc.level == null ? -100 : mc.level.getGameTime()+mc.getDeltaFrameTime();
     }
     public static double getGameAndPartialTime() {
-        MinecraftClient mc = MinecraftClient.getInstance();
-        return mc.world == null ? -100 : mc.world.getTime()+mc.getTickDelta();
+        Minecraft mc = Minecraft.getInstance();
+        return mc.level == null ? -100 : mc.level.getGameTime()+mc.getFrameTime();
     }
 
     public static float[] lerpColors(long gameTime, int duration, float[][] colors) {
@@ -182,9 +190,9 @@ public class Rendering {
 
         boolean tooLarge = colorIndex+1 >= colors.length;
         return new float[] {
-                MathHelper.lerp(progress, colors[colorIndex][0], colors[tooLarge ? 0 : colorIndex+1][0])/255f,
-                MathHelper.lerp(progress, colors[colorIndex][1], colors[tooLarge ? 0 : colorIndex+1][1])/255f,
-                MathHelper.lerp(progress, colors[colorIndex][2], colors[tooLarge ? 0 : colorIndex+1][2])/255f
+                Mth.lerp(progress, colors[colorIndex][0], colors[tooLarge ? 0 : colorIndex+1][0])/255f,
+                Mth.lerp(progress, colors[colorIndex][1], colors[tooLarge ? 0 : colorIndex+1][1])/255f,
+                Mth.lerp(progress, colors[colorIndex][2], colors[tooLarge ? 0 : colorIndex+1][2])/255f
         };
     }
 
@@ -204,45 +212,45 @@ public class Rendering {
         }
     }
 
-    public static void renderNameTag(BlockEntityRendererFactory.Context context, boolean increaseHeight, Text component, MatrixStack poseStack, VertexConsumerProvider multiBufferSource, int i) {
-        poseStack.push();
+    public static void renderNameTag(BlockEntityRendererProvider.Context context, boolean increaseHeight, Component component, PoseStack poseStack, MultiBufferSource multiBufferSource, int i) {
+        poseStack.pushPose();
         poseStack.translate(0.5, increaseHeight ? 3.35 : 2.5, 0.5);
-        poseStack.multiply(MinecraftClient.getInstance().gameRenderer.getCamera().getRotation());
+        poseStack.mulPose(Minecraft.getInstance().gameRenderer.getMainCamera().rotation());
         poseStack.scale(-0.025f, -0.025f, 0.025f);
-        Matrix4f matrix4f = poseStack.peek().getPositionMatrix();
-        float g = MinecraftClient.getInstance().options.getTextBackgroundOpacity(0.25f);
+        Matrix4f matrix4f = poseStack.last().pose();
+        float g = Minecraft.getInstance().options.getBackgroundOpacity(0.25f);
         int k = (int)(g * 255.0f) << 24;
-        TextRenderer font = context.getTextRenderer();
-        float h = -font.getWidth(component) / 2f;
+        Font font = context.getFont();
+        float h = -font.width(component) / 2f;
         //font.drawInBatch(component, h, 0, 0x20FFFFFF, false, matrix4f, multiBufferSource, true, k, i);
-        font.draw(component, h, 0, -1, false, matrix4f, multiBufferSource, TextRenderer.TextLayerType.NORMAL, k, i);
-        poseStack.pop();
+        font.drawInBatch(component, h, 0, -1, false, matrix4f, multiBufferSource, Font.DisplayMode.NORMAL, k, i);
+        poseStack.popPose();
     }
 
-    public static void addDoubleQuad(MatrixStack stack, VertexConsumer vc, float red, float green, float blue, float alpha, float x, float y, float z, float xOffset, float u0, float u1, float v0, float v1, int light) {
+    public static void addDoubleQuad(PoseStack stack, VertexConsumer vc, float red, float green, float blue, float alpha, float x, float y, float z, float xOffset, float u0, float u1, float v0, float v1, int light) {
         addQuad(false, stack, vc, red, green, blue, alpha, x, y, z, xOffset, u0, u1, v0, v1, light);
         addQuad(true, stack, vc, red, green, blue, alpha, x, y, z, xOffset, u0, u1, v0, v1, light);
     }
 
-    public static void addQuad(boolean reverse, MatrixStack stack, VertexConsumer vc, float red, float green, float blue, float alpha, float x, float y, float z, float xOffset, float u0, float u1, float v0, float v1, int light) {
+    public static void addQuad(boolean reverse, PoseStack stack, VertexConsumer vc, float red, float green, float blue, float alpha, float x, float y, float z, float xOffset, float u0, float u1, float v0, float v1, int light) {
         if (reverse)
             addQuad((f, bl) -> bl ? f : -f+xOffset, (f, bl) -> bl ? -f : f+xOffset, stack, vc, red, green, blue, alpha, x, y, z, u1, u0, v0, v1, light);
         else
             addQuad((f, bl) -> bl ? f : f+xOffset, (f, bl) -> bl ? -f : -f+xOffset, stack, vc, red, green, blue, alpha, x, y, z, u0, u1, v0, v1, light);
     }
-    public static void addQuad(BiFunction<Float, Boolean, Float> primary, BiFunction<Float, Boolean, Float> secondary, MatrixStack poseStack, VertexConsumer vc, float red, float green, float blue, float alpha, float x, float y, float z, float u0, float u1, float v0, float v1, int light) {
+    public static void addQuad(BiFunction<Float, Boolean, Float> primary, BiFunction<Float, Boolean, Float> secondary, PoseStack poseStack, VertexConsumer vc, float red, float green, float blue, float alpha, float x, float y, float z, float u0, float u1, float v0, float v1, int light) {
         addVertex(poseStack, vc, red, green, blue, alpha, primary.apply(x, false), primary.apply(y, true), z, u0, v0, light);
         addVertex(poseStack, vc, red, green, blue, alpha, primary.apply(x, false), secondary.apply(y, true), z, u0, v1, light);
         addVertex(poseStack, vc, red, green, blue, alpha, secondary.apply(x, false), secondary.apply(y, true), z, u1, v1, light);
         addVertex(poseStack, vc, red, green, blue, alpha, secondary.apply(x, false), primary.apply(y, true), z, u1, v0, light);
     }
-    public static void addQuad(Vector3f[] vertices, MatrixStack poseStack, VertexConsumer vc, float red, float green, float blue, float alpha, float xMult, float yMult, float zMult, float u0, float u1, float v0, float v1, int light) {
+    public static void addQuad(Vector3f[] vertices, PoseStack poseStack, VertexConsumer vc, float red, float green, float blue, float alpha, float xMult, float yMult, float zMult, float u0, float u1, float v0, float v1, int light) {
         addVertex(poseStack, vc, red, green, blue, alpha, vertices[0].x()*xMult, vertices[0].y()*yMult, vertices[0].z()*zMult, u0, v0, light);
         addVertex(poseStack, vc, red, green, blue, alpha, vertices[1].x()*xMult, vertices[1].y()*yMult, vertices[1].z()*zMult, u0, v1, light);
         addVertex(poseStack, vc, red, green, blue, alpha, vertices[2].x()*xMult, vertices[2].y()*yMult, vertices[2].z()*zMult, u1, v1, light);
         addVertex(poseStack, vc, red, green, blue, alpha, vertices[3].x()*xMult, vertices[3].y()*yMult, vertices[3].z()*zMult, u1, v0, light);
     }
-    public static void addDoubleQuad(BiFunction<Float, Boolean, Float> primary, BiFunction<Float, Boolean, Float> secondary, MatrixStack poseStack, VertexConsumer vc, float red, float green, float blue, float alpha, float x, float y, float z, float u0, float u1, float v0, float v1, int light) {
+    public static void addDoubleQuad(BiFunction<Float, Boolean, Float> primary, BiFunction<Float, Boolean, Float> secondary, PoseStack poseStack, VertexConsumer vc, float red, float green, float blue, float alpha, float x, float y, float z, float u0, float u1, float v0, float v1, int light) {
         addVertex(poseStack, vc, red, green, blue, alpha, primary.apply(x, false), primary.apply(y, true), z, u0, v0, light);
         addVertex(poseStack, vc, red, green, blue, alpha, primary.apply(x, false), secondary.apply(y, true), z, u0, v1, light);
         addVertex(poseStack, vc, red, green, blue, alpha, secondary.apply(x, false), secondary.apply(y, true), z, u1, v1, light);
@@ -260,13 +268,13 @@ public class Rendering {
         addParticleVertex(vc, red, green, blue, alpha, vertices[2].x(), vertices[2].y(), vertices[2].z(), u1, v1, light);
         addParticleVertex(vc, red, green, blue, alpha, vertices[3].x(), vertices[3].y(), vertices[3].z(), u1, v0, light);
     }
-    public static void addParticleQuad(Vector3f[] vertices, MatrixStack poseStack, VertexConsumer vc, float red, float green, float blue, float alpha, float xMult, float yMult, float zMult, float u0, float u1, float v0, float v1, int light) {
+    public static void addParticleQuad(Vector3f[] vertices, PoseStack poseStack, VertexConsumer vc, float red, float green, float blue, float alpha, float xMult, float yMult, float zMult, float u0, float u1, float v0, float v1, int light) {
         addParticleVertex(poseStack, vc, red, green, blue, alpha, vertices[0].x()*xMult, vertices[0].y()*yMult, vertices[0].z()*zMult, u0, v0, light);
         addParticleVertex(poseStack, vc, red, green, blue, alpha, vertices[1].x()*xMult, vertices[1].y()*yMult, vertices[1].z()*zMult, u0, v1, light);
         addParticleVertex(poseStack, vc, red, green, blue, alpha, vertices[2].x()*xMult, vertices[2].y()*yMult, vertices[2].z()*zMult, u1, v1, light);
         addParticleVertex(poseStack, vc, red, green, blue, alpha, vertices[3].x()*xMult, vertices[3].y()*yMult, vertices[3].z()*zMult, u1, v0, light);
     }
-    public static void addDoubleParticleQuad(Vector3f[] vertices, MatrixStack poseStack, VertexConsumer vc, float red, float green, float blue, float alpha, float xMult, float yMult, float zMult, float u0, float u1, float v0, float v1, int light) {
+    public static void addDoubleParticleQuad(Vector3f[] vertices, PoseStack poseStack, VertexConsumer vc, float red, float green, float blue, float alpha, float xMult, float yMult, float zMult, float u0, float u1, float v0, float v1, int light) {
         addParticleVertex(poseStack, vc, red, green, blue, alpha, vertices[0].x()*xMult, vertices[0].y()*yMult, vertices[0].z()*zMult, u0, v0, light);
         addParticleVertex(poseStack, vc, red, green, blue, alpha, vertices[1].x()*xMult, vertices[1].y()*yMult, vertices[1].z()*zMult, u0, v1, light);
         addParticleVertex(poseStack, vc, red, green, blue, alpha, vertices[2].x()*xMult, vertices[2].y()*yMult, vertices[2].z()*zMult, u1, v1, light);
@@ -291,13 +299,13 @@ public class Rendering {
     }
 
     public static void addParticleVertex(VertexConsumer vc, float red, float green, float blue, float alpha, float x, float y, float z, float u, float v, int light) {
-        vc.vertex(x, y, z).texture(u, v).color(red, green, blue, alpha).light(light).next();
+        vc.vertex(x, y, z).uv(u, v).color(red, green, blue, alpha).uv2(light).endVertex();
     }
-    public static void addParticleVertex(MatrixStack stack, VertexConsumer vc, float red, float green, float blue, float alpha, float x, float y, float z, float u, float v, int light) {
-        vc.vertex(stack.peek().getPositionMatrix(), x, y, z).texture(u, v).color(red, green, blue, alpha).light(light).next();
+    public static void addParticleVertex(PoseStack stack, VertexConsumer vc, float red, float green, float blue, float alpha, float x, float y, float z, float u, float v, int light) {
+        vc.vertex(stack.last().pose(), x, y, z).uv(u, v).color(red, green, blue, alpha).uv2(light).endVertex();
     }
 
-    public static void addVertex(MatrixStack stack, VertexConsumer vc, float red, float green, float blue, float alpha, float x, float y, float z, float u, float v, int light) {
-        vc.vertex(stack.peek().getPositionMatrix(), x, y, z).color(red, green, blue, alpha).texture(u, v).light(light).normal(stack.peek().getNormalMatrix(), 1, 0, 0).next();
+    public static void addVertex(PoseStack stack, VertexConsumer vc, float red, float green, float blue, float alpha, float x, float y, float z, float u, float v, int light) {
+        vc.vertex(stack.last().pose(), x, y, z).color(red, green, blue, alpha).uv(u, v).uv2(light).normal(stack.last().normal(), 1, 0, 0).endVertex();
     }
 }

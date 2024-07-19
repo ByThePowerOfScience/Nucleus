@@ -2,9 +2,8 @@ package com.redpxnda.nucleus.config;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.util.Identifier;
-
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.resources.ResourceLocation;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
@@ -38,7 +37,7 @@ public interface ConfigScreensEvent {
          * @param modId    the id of the mod
          * @param configId the id of the config object to use
          */
-        public void add(String modId, Identifier configId) {
+        public void add(String modId, ResourceLocation configId) {
             add(modId, () -> ConfigManager.getConfigObject(configId));
         }
 

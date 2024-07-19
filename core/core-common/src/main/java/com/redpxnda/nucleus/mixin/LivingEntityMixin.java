@@ -3,7 +3,7 @@ package com.redpxnda.nucleus.mixin;
 import com.redpxnda.nucleus.event.MiscEvents;
 import dev.architectury.event.CompoundEventResult;
 import dev.architectury.event.EventResult;
-import net.minecraft.entity.LivingEntity;
+import net.minecraft.world.entity.LivingEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;

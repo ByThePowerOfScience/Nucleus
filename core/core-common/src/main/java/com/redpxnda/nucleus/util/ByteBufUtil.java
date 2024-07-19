@@ -4,11 +4,11 @@ import com.mojang.serialization.Codec;
 import com.redpxnda.nucleus.Nucleus;
 import io.netty.buffer.ByteBufInputStream;
 import io.netty.buffer.ByteBufOutputStream;
-import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtAccounter;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.NbtTagSizeTracker;
-import net.minecraft.network.PacketByteBuf;
+import net.minecraft.nbt.Tag;
+import net.minecraft.network.FriendlyByteBuf;
 import org.slf4j.Logger;
 
 import java.io.IOException;
@@ -20,30 +20,30 @@ import java.util.function.Supplier;
 public class ByteBufUtil {
     private static final Logger LOGGER = Nucleus.getLogger();
 
-    public static <T> void writeWithCodec(PacketByteBuf buf, T instance, Codec<T> codec) {
-        NbtElement tag = codec.encodeStart(NbtOps.INSTANCE, instance).getOrThrow(false, s ->
+    public static <T> void writeWithCodec(FriendlyByteBuf buf, T instance, Codec<T> codec) {
+        Tag tag = codec.encodeStart(NbtOps.INSTANCE, instance).getOrThrow(false, s ->
                 LOGGER.error("Failed to encode {} into a FriendlyByteBuf using codec -> {}", instance, s)
         );
         writeTag(tag, buf);
     }
-    public static <T> T readWithCodec(PacketByteBuf buf, Codec<T> codec) {
-        NbtElement tag = readTag(buf);
+    public static <T> T readWithCodec(FriendlyByteBuf buf, Codec<T> codec) {
+        Tag tag = readTag(buf);
         return codec.parse(NbtOps.INSTANCE, tag).getOrThrow(false, s ->
                 LOGGER.error("Failed to decode tag '{}' from FriendlyByteBuf using codec -> {}", tag, s)
         );
     }
 
-    public static void writeTag(NbtElement tag, PacketByteBuf buf) {
+    public static void writeTag(Tag tag, FriendlyByteBuf buf) {
         try {
-            NbtIo.write(tag, new ByteBufOutputStream(buf));
+            NbtIo.writeUnnamedTag(tag, new ByteBufOutputStream(buf));
         } catch (IOException e) {
             LOGGER.error("Failed to write Nbt tag '{}' to byte buffer!", tag);
             throw new RuntimeException(e);
         }
     }
-    public static NbtElement readTag(PacketByteBuf buf) {
+    public static Tag readTag(FriendlyByteBuf buf) {
         try {
-            return NbtIo.read(new ByteBufInputStream(buf), 0, NbtTagSizeTracker.EMPTY);
+            return NbtIo.readUnnamedTag(new ByteBufInputStream(buf), 0, NbtAccounter.UNLIMITED);
         } catch (IOException e) {
             LOGGER.error("Failed to read Nbt from byte buffer!");
             throw new RuntimeException(e);
@@ -56,11 +56,11 @@ public class ByteBufUtil {
      * @param writer the consumer defining how to write this object to a buffer
      * @param buf the buffer to write to
      */
-    public static <T> void writeMap(Map<String, T> map, BiConsumer<PacketByteBuf, T> writer, PacketByteBuf buf) {
+    public static <T> void writeMap(Map<String, T> map, BiConsumer<FriendlyByteBuf, T> writer, FriendlyByteBuf buf) {
         buf.writeInt(map.size());
         map.forEach((key, value) -> {
             assert value != null : "No null values allowed for map byte buffer writing.";
-            buf.writeString(key);
+            buf.writeUtf(key);
             writer.accept(buf, value);
         });
     }
@@ -71,28 +71,28 @@ public class ByteBufUtil {
      * @param reader the function defining how to read this object
      * @param buf the buffer to read from
      */
-    public static <T, M extends Map<String, T>> Map<String, T> readMap(Supplier<M> creator, Function<PacketByteBuf, T> reader, PacketByteBuf buf) {
+    public static <T, M extends Map<String, T>> Map<String, T> readMap(Supplier<M> creator, Function<FriendlyByteBuf, T> reader, FriendlyByteBuf buf) {
         M map = creator.get();
         int size = buf.readInt();
         for (int i = 0; i < size; i++) {
-            map.put(buf.readString(), reader.apply(buf));
+            map.put(buf.readUtf(), reader.apply(buf));
         }
         return map;
     }
 
-    public static Map<String, Long> readLongMap(Supplier<Map<String, Long>> creator, PacketByteBuf buf) {
+    public static Map<String, Long> readLongMap(Supplier<Map<String, Long>> creator, FriendlyByteBuf buf) {
         Map<String, Long> map = creator.get();
         int size = buf.readInt();
         for (int i = 0; i < size; i++) {
-            map.put(buf.readString(), buf.readLong());
+            map.put(buf.readUtf(), buf.readLong());
         }
         return map;
     }
-    public static void writeLongMap(Map<String, Long> map, PacketByteBuf buf) {
+    public static void writeLongMap(Map<String, Long> map, FriendlyByteBuf buf) {
         buf.writeInt(map.size());
         map.forEach((key, value) -> {
             assert value != null : "No null values allowed for long map byte buffer writing.";
-            buf.writeString(key);
+            buf.writeUtf(key);
             buf.writeLong(value);
         });
     }

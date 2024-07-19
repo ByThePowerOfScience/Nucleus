@@ -1,7 +1,7 @@
 package com.redpxnda.nucleus.codec.dispatcher;
 
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.ResourceLocation;
 
 public interface Dispatchable {
-    Identifier getId();
+    ResourceLocation getId();
 }

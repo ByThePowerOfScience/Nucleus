@@ -2,19 +2,19 @@ package com.redpxnda.nucleus.trinket.impl.forge;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.redpxnda.nucleus.trinket.curiotrinket.CurioTrinket;
 import com.redpxnda.nucleus.trinket.curiotrinket.CurioTrinketRenderer;
 import com.redpxnda.nucleus.trinket.forge.SlotReferenceCreator;
-import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.render.entity.feature.FeatureRendererContext;
-import net.minecraft.client.render.entity.model.EntityModel;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.attribute.EntityAttribute;
-import net.minecraft.entity.attribute.EntityAttributeModifier;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
+import net.minecraft.client.model.EntityModel;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.entity.RenderLayerParent;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
@@ -63,8 +63,8 @@ public class TrinketItemCreatorImpl {
             }
 
             @Override
-            public Multimap<EntityAttribute, EntityAttributeModifier> getAttributeModifiers(SlotContext slotContext, UUID uuid, ItemStack stack) {
-                Multimap<EntityAttribute, EntityAttributeModifier> map = trinket.useNbtAttributeBehavior(stack, slotContext.entity(), SlotReferenceCreator.get(slotContext), uuid) ?
+            public Multimap<Attribute, AttributeModifier> getAttributeModifiers(SlotContext slotContext, UUID uuid, ItemStack stack) {
+                Multimap<Attribute, AttributeModifier> map = trinket.useNbtAttributeBehavior(stack, slotContext.entity(), SlotReferenceCreator.get(slotContext), uuid) ?
                         ICurioItem.super.getAttributeModifiers(slotContext, uuid, stack) :
                         HashMultimap.create();
                 map.putAll(trinket.getAttributeModifiers(stack, slotContext.entity(), SlotReferenceCreator.get(slotContext), uuid));
@@ -104,8 +104,8 @@ public class TrinketItemCreatorImpl {
     private record CustomCurioRenderer(CurioTrinketRenderer delegate) implements ICurioRenderer {
         @Override
         public <T extends LivingEntity, M extends EntityModel<T>> void render(
-                ItemStack stack, SlotContext slotContext, MatrixStack matrixStack,
-                FeatureRendererContext<T, M> renderLayerParent, VertexConsumerProvider renderTypeBuffer, int light,
+                ItemStack stack, SlotContext slotContext, PoseStack matrixStack,
+                RenderLayerParent<T, M> renderLayerParent, MultiBufferSource renderTypeBuffer, int light,
                 float limbSwing, float limbSwingAmount,
                 float partialTicks, float ageInTicks, float netHeadYaw, float headPitch) {
             delegate.render(

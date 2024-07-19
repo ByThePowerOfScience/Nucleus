@@ -2,17 +2,16 @@ package com.redpxnda.nucleus.codec.tag;
 
 import com.mojang.serialization.Codec;
 import com.redpxnda.nucleus.codec.behavior.CodecBehavior;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.tag.TagKey;
-
 import java.util.List;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 
 @CodecBehavior.Override()
 public class ItemList extends TagList<Item> {
-    public static final Codec<ItemList> CODEC = getCodec(ItemList::new, Registries.ITEM, RegistryKeys.ITEM);
+    public static final Codec<ItemList> CODEC = getCodec(ItemList::new, BuiltInRegistries.ITEM, Registries.ITEM);
 
     public static ItemList of() {
         return new ItemList(List.of(), List.of());
@@ -28,7 +27,7 @@ public class ItemList extends TagList<Item> {
     }
 
     public ItemList(List<Item> objects, List<TagKey<Item>> tags) {
-        super(objects, tags, Registries.ITEM, RegistryKeys.ITEM);
+        super(objects, tags, BuiltInRegistries.ITEM, Registries.ITEM);
     }
 
     public boolean contains(ItemStack stack) {

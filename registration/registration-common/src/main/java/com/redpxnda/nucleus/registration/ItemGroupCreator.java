@@ -1,13 +1,12 @@
 package com.redpxnda.nucleus.registration;
 
 import dev.architectury.registry.CreativeTabRegistry;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemGroup;
-
 import java.util.function.Supplier;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.Item;
 
 public class ItemGroupCreator {
-    public static ItemGroup populate(ItemGroup group, Item... items) {
+    public static CreativeModeTab populate(CreativeModeTab group, Item... items) {
         RegistrationListener.ALL.put(group, () -> {
             CreativeTabRegistry.appendBuiltin(group, items);
         });
@@ -15,14 +14,14 @@ public class ItemGroupCreator {
     }
 
     @SafeVarargs
-    public static ItemGroup populate(ItemGroup group, Supplier<Item>... items) {
+    public static CreativeModeTab populate(CreativeModeTab group, Supplier<Item>... items) {
         RegistrationListener.ALL.put(group, () -> {
             CreativeTabRegistry.appendBuiltin(group, items);
         });
         return group;
     }
 
-    public static ItemGroup populate(ItemGroup group, Supplier<Item[]> items) {
+    public static CreativeModeTab populate(CreativeModeTab group, Supplier<Item[]> items) {
         RegistrationListener.ALL.put(group, () -> {
             CreativeTabRegistry.appendBuiltin(group, items.get());
         });

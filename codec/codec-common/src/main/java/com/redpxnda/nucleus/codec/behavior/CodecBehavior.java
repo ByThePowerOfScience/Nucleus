@@ -15,13 +15,6 @@ import com.redpxnda.nucleus.codec.tag.TaggableEntryCodec;
 import com.redpxnda.nucleus.math.InterpolateMode;
 import com.redpxnda.nucleus.math.MathUtil;
 import com.redpxnda.nucleus.util.*;
-import net.minecraft.particle.ParticleEffect;
-import net.minecraft.particle.ParticleTypes;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.tag.TagKey;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.dynamic.Codecs;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 import org.slf4j.Logger;
@@ -33,6 +26,13 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
 import java.util.function.Supplier;
+import net.minecraft.core.Registry;
+import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
+import net.minecraft.util.ExtraCodecs;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
 public class CodecBehavior {
@@ -205,9 +205,9 @@ public class CodecBehavior {
         registerClass(long.class, Codec.LONG);
         registerClass(String.class, Codec.STRING);
 
-        registerClass(Identifier.class, Identifier.CODEC);
+        registerClass(ResourceLocation.class, ResourceLocation.CODEC);
         registerClass(DoubleSupplier.Instance.class, DoubleSupplier.CODEC);
-        registerClass(Text.class, Codecs.TEXT);
+        registerClass(Component.class, ExtraCodecs.COMPONENT);
         registerClass(Color.class, MiscCodecs.COLOR);
         registerClass(InterpolateMode.class, InterpolateMode.codec);
         registerClass(Vector3f.class, MiscCodecs.VECTOR_3F);
@@ -228,7 +228,7 @@ public class CodecBehavior {
             else return null;
             Registry reg = MiscUtil.objectsToRegistries.get(c);
             if (reg == null) return null;
-            return Identifier.CODEC.xmap(id -> TagKey.of(reg.getKey(), id), TagKey::id);
+            return ResourceLocation.CODEC.xmap(id -> TagKey.create(reg.key(), id), TagKey::location);
         });
         registerClass(TaggableEntry.class, (field, cls, raw, params, passes) -> {
             if (params == null) return null;
@@ -239,7 +239,7 @@ public class CodecBehavior {
             else return null;
             Registry reg = MiscUtil.objectsToRegistries.get(c);
             if (reg == null) return null;
-            return new TaggableEntryCodec(tag -> new TaggableEntry<>(tag, reg, reg.getKey()), obj -> new TaggableEntry<>(obj, reg, reg.getKey()), reg, reg.getKey());
+            return new TaggableEntryCodec(tag -> new TaggableEntry<>(tag, reg, reg.key()), obj -> new TaggableEntry<>(obj, reg, reg.key()), reg, reg.key());
         });
         registerClass(TagList.class, (field, cls, raw, params, passes) -> {
             if (params == null) return null;
@@ -250,12 +250,12 @@ public class CodecBehavior {
             else return null;
             Registry reg = MiscUtil.objectsToRegistries.get(c);
             if (reg == null) return null;
-            return new TagListCodec<>((objs, tags) -> new TagList<>(objs, tags, reg, reg.getKey()), reg, reg.getKey());
+            return new TagListCodec<>((objs, tags) -> new TagList<>(objs, tags, reg, reg.key()), reg, reg.key());
         });
 
         try {
-            registerClass(ParticleEffect.class, ParticleTypes.TYPE_CODEC);
-            MiscUtil.objectsToRegistries.forEach((k, v) -> registerClassIfAbsent((Class) k, Getter.fromSupplier(v::getCodec)));
+            registerClass(ParticleOptions.class, ParticleTypes.CODEC);
+            MiscUtil.objectsToRegistries.forEach((k, v) -> registerClassIfAbsent((Class) k, Getter.fromSupplier(v::byNameCodec)));
         } catch (Throwable ignored) {
             LOGGER.warn("Failed to setup codecs for vanilla registries. Not yet bootstrapped?");
         }

@@ -4,15 +4,14 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
-import net.minecraft.entity.EntityType;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.tag.TagKey;
-import net.minecraft.util.Identifier;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.entity.EntityType;
 
 public class EntityTypeListCodec implements Codec<EntityTypeList> {
     public static final EntityTypeListCodec INSTANCE = new EntityTypeListCodec();
@@ -35,23 +34,23 @@ public class EntityTypeListCodec implements Codec<EntityTypeList> {
                 if (potentialStr.result().isPresent()) {
                     String str = potentialStr.result().get();
                     if (str.startsWith("#")) {
-                        Identifier id = Identifier.tryParse(str.substring(1));
+                        ResourceLocation id = ResourceLocation.tryParse(str.substring(1));
                         if (id == null) {
                             failedValues.add(t);
                             return;
                         }
 
-                        tags.add(TagKey.of(RegistryKeys.ENTITY_TYPE, id));
+                        tags.add(TagKey.create(Registries.ENTITY_TYPE, id));
                     } else if (str.startsWith("$"))
                         builtins.add(str.substring(1));
                     else {
-                        Identifier id = Identifier.tryParse(str);
+                        ResourceLocation id = ResourceLocation.tryParse(str);
                         if (id == null) {
                             failedValues.add(t);
                             return;
                         }
 
-                        EntityType<?> obj = Registries.ENTITY_TYPE.getOrEmpty(id).orElse(null);
+                        EntityType<?> obj = BuiltInRegistries.ENTITY_TYPE.getOptional(id).orElse(null);
                         if (obj == null) {
                             failedValues.add(t);
                             return;
@@ -73,18 +72,18 @@ public class EntityTypeListCodec implements Codec<EntityTypeList> {
         var potentialStr = ops.getStringValue(input);
         if (potentialStr.result().isPresent()) {
             String str = potentialStr.result().get();
-            Identifier id;
+            ResourceLocation id;
             EntityTypeList result = null;
             if (str.startsWith("#")) {
-                id = Identifier.tryParse(str.substring(1));
+                id = ResourceLocation.tryParse(str.substring(1));
                 if (id != null)
-                    result = new EntityTypeList(List.of(), List.of(TagKey.of(RegistryKeys.ENTITY_TYPE, id)), List.of());
+                    result = new EntityTypeList(List.of(), List.of(TagKey.create(Registries.ENTITY_TYPE, id)), List.of());
             } else if (str.startsWith("$"))
                 result = new EntityTypeList(List.of(), List.of(), List.of(str.substring(1)));
             else {
-                id = Identifier.tryParse(str);
+                id = ResourceLocation.tryParse(str);
                 if (id != null) {
-                    EntityType<?> obj = Registries.ENTITY_TYPE.getOrEmpty(id).orElse(null);
+                    EntityType<?> obj = BuiltInRegistries.ENTITY_TYPE.getOptional(id).orElse(null);
                     if (obj != null) result = new EntityTypeList(List.of(obj), List.of(), List.of());
                 }
             }
@@ -102,12 +101,12 @@ public class EntityTypeListCodec implements Codec<EntityTypeList> {
         List<T> objects = new ArrayList<>();
 
         input.getObjects().forEach(c -> {
-            Identifier id = Registries.ENTITY_TYPE.getId(c);
+            ResourceLocation id = BuiltInRegistries.ENTITY_TYPE.getKey(c);
             objects.add(ops.createString(id.toString()));
         });
 
         input.getTags().forEach(t -> {
-            Identifier id = t.id();
+            ResourceLocation id = t.location();
             objects.add(ops.createString('#' + id.toString()));
         });
 

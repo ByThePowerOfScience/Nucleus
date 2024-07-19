@@ -4,20 +4,19 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.tag.TagKey;
-import net.minecraft.util.Identifier;
-
 import java.util.function.Function;
+import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
 
 public class TaggableEntryCodec<E, P extends TaggableEntry<E>> implements Codec<P> {
     protected final Function<TagKey<E>, P> fromTag;
     protected final Function<E, P> fromObject;
     protected final Registry<E> registry;
-    protected final RegistryKey<? extends Registry<E>> registryKey;
+    protected final ResourceKey<? extends Registry<E>> registryKey;
 
-    public TaggableEntryCodec(Function<TagKey<E>, P> fromTag, Function<E, P> fromObject, Registry<E> registry, RegistryKey<? extends Registry<E>> registryKey) {
+    public TaggableEntryCodec(Function<TagKey<E>, P> fromTag, Function<E, P> fromObject, Registry<E> registry, ResourceKey<? extends Registry<E>> registryKey) {
         this.fromTag = fromTag;
         this.fromObject = fromObject;
         this.registry = registry;
@@ -30,16 +29,16 @@ public class TaggableEntryCodec<E, P extends TaggableEntry<E>> implements Codec<
         if (potentialStr.result().isPresent()) {
             String str = potentialStr.result().get();
             if (str.startsWith("#")) {
-                Identifier id = Identifier.tryParse(str.substring(1));
+                ResourceLocation id = ResourceLocation.tryParse(str.substring(1));
                 if (id == null)
                     return DataResult.error(() -> "Failed to create identifier for taggable entry(tag) '" + str + "'! Make sure it's correctly formatted.");
-                return DataResult.success(Pair.of(fromTag.apply(TagKey.of(registryKey, id)), input));
+                return DataResult.success(Pair.of(fromTag.apply(TagKey.create(registryKey, id)), input));
             } else {
-                Identifier id = Identifier.tryParse(str);
+                ResourceLocation id = ResourceLocation.tryParse(str);
                 if (id == null)
                     return DataResult.error(() -> "Failed to create identifier for taggable entry(object) '" + str + "'! Make sure it's correctly formatted.");
 
-                E obj = registry.getOrEmpty(id).orElse(null);
+                E obj = registry.getOptional(id).orElse(null);
                 if (obj == null)
                     return DataResult.error(() -> "Failed to object of id '" + str + "' for taggable entry! Make sure it's a valid id.");
                 return DataResult.success(Pair.of(fromObject.apply(obj), input));
@@ -51,11 +50,11 @@ public class TaggableEntryCodec<E, P extends TaggableEntry<E>> implements Codec<
     @Override
     public <T> DataResult<T> encode(P input, DynamicOps<T> ops, T prefix) {
         if (input.getObject() != null) {
-            Identifier id = registry.getId(input.getObject());
-            return Identifier.CODEC.encode(id, ops, prefix);
+            ResourceLocation id = registry.getKey(input.getObject());
+            return ResourceLocation.CODEC.encode(id, ops, prefix);
         }
 
         assert input.getTag() != null : "tag and object of taggable entry cannot both be null";
-        return DataResult.success(ops.createString("#" + input.getTag().id().toString()));
+        return DataResult.success(ops.createString("#" + input.getTag().location().toString()));
     }
 }

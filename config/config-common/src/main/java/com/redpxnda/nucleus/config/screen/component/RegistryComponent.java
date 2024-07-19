@@ -3,22 +3,21 @@ package com.redpxnda.nucleus.config.screen.component;
 import com.redpxnda.nucleus.config.screen.widget.EmptyButtonWidget;
 import com.redpxnda.nucleus.config.screen.widget.SelectableOptionsWidget;
 import com.redpxnda.nucleus.util.Color;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
-import net.minecraft.client.gui.widget.ClickableWidget;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
-
 import java.util.HashMap;
 import java.util.Map;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.core.Registry;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 
-public class RegistryComponent<T> extends ClickableWidget implements ConfigComponent<T> {
-    public static final Text OPEN_TEXT = Text.literal("∨");
-    public static final Text CLOSED_TEXT = Text.literal(">");
-    public static final Text DESC_TEXT = Text.translatable("nucleus.config_screen.registry.description");
+public class RegistryComponent<T> extends AbstractWidget implements ConfigComponent<T> {
+    public static final Component OPEN_TEXT = Component.literal("∨");
+    public static final Component CLOSED_TEXT = Component.literal(">");
+    public static final Component DESC_TEXT = Component.translatable("nucleus.config_screen.registry.description");
 
     public ConfigComponent<?> parent;
     public boolean isValid = true;
@@ -28,10 +27,10 @@ public class RegistryComponent<T> extends ClickableWidget implements ConfigCompo
     public final EmptyButtonWidget suggestionsOpener;
     public final SelectableOptionsWidget<T> suggestions;
 
-    public RegistryComponent(Registry<T> reg, TextRenderer textRenderer, int x, int y, int width, int height) {
-        super(x, y, width, height, Text.empty());
+    public RegistryComponent(Registry<T> reg, Font textRenderer, int x, int y, int width, int height) {
+        super(x, y, width, height, Component.empty());
         idComp = new IdentifierComponent(textRenderer, x, y, width, height);
-        idComp.setChangedListener(s -> {
+        idComp.setResponder(s -> {
             updateValidity();
             updateSuggestions();
         });
@@ -58,13 +57,13 @@ public class RegistryComponent<T> extends ClickableWidget implements ConfigCompo
                 if (isValid) {
                     parent.invalidateChild(this);
                     isValid = false;
-                    idComp.setEditableColor(0xFF5555);
+                    idComp.setTextColor(0xFF5555);
                 }
             } else {
                 if (!isValid) {
                     parent.validateChild(this);
                     isValid = true;
-                    idComp.setEditableColor(0xE0E0E0);
+                    idComp.setTextColor(0xE0E0E0);
                 }
             }
         }
@@ -73,12 +72,12 @@ public class RegistryComponent<T> extends ClickableWidget implements ConfigCompo
     public void updateSuggestions() {
         Map<String, T> options = new HashMap<>();
 
-        String text = idComp.getText();
+        String text = idComp.getValue();
         boolean separated = text.contains(":");
 
         if (!text.isEmpty()) {
-            for (Map.Entry<RegistryKey<T>, T> entry : registry.getEntrySet()) {
-                Identifier key = entry.getKey().getValue();
+            for (Map.Entry<ResourceKey<T>, T> entry : registry.entrySet()) {
+                ResourceLocation key = entry.getKey().location();
                 String strKey = key.toString();
                 T val = entry.getValue();
 
@@ -93,7 +92,7 @@ public class RegistryComponent<T> extends ClickableWidget implements ConfigCompo
             }
         }
 
-        suggestions.setScrollY(0);
+        suggestions.setScrollAmount(0);
         suggestions.options = options;
     }
 
@@ -107,12 +106,12 @@ public class RegistryComponent<T> extends ClickableWidget implements ConfigCompo
     }
 
     @Override
-    public Text getInstructionText() {
+    public Component getInstructionText() {
         return DESC_TEXT;
     }
 
     @Override
-    public void drawInstructionText(DrawContext context, int mouseX, int mouseY) {
+    public void drawInstructionText(GuiGraphics context, int mouseX, int mouseY) {
         if (!suggestionsOpen) ConfigComponent.super.drawInstructionText(context, mouseX, mouseY);
     }
 
@@ -123,14 +122,14 @@ public class RegistryComponent<T> extends ClickableWidget implements ConfigCompo
 
     @Override
     public T getValue() {
-        Identifier val = idComp.getValue();
+        ResourceLocation val = idComp.getValue();
         if (val == null) return null;
-        return registry.getOrEmpty(val).orElse(null);
+        return registry.getOptional(val).orElse(null);
     }
 
     @Override
     public void setValue(T value) {
-        Identifier id = registry.getId(value);
+        ResourceLocation id = registry.getKey(value);
         if (id != null) {
             idComp.setValue(id);
         }
@@ -198,14 +197,14 @@ public class RegistryComponent<T> extends ClickableWidget implements ConfigCompo
     }
 
     @Override
-    protected void renderButton(DrawContext context, int mouseX, int mouseY, float delta) {
+    protected void renderWidget(GuiGraphics context, int mouseX, int mouseY, float delta) {
         suggestionsOpener.render(context, mouseX, mouseY, delta);
         idComp.render(context, mouseX, mouseY, delta);
         if (suggestionsOpen) suggestions.render(context, mouseX, mouseY, delta);
     }
 
     @Override
-    protected void appendClickableNarrations(NarrationMessageBuilder builder) {
+    protected void updateWidgetNarration(NarrationElementOutput builder) {
 
     }
 
@@ -213,8 +212,8 @@ public class RegistryComponent<T> extends ClickableWidget implements ConfigCompo
     public void setFocused(boolean focused) {
         idComp.setFocused(focused);
         if (!focused) {
-            idComp.setSelectionStart(0);
-            idComp.setSelectionEnd(0);
+            idComp.setCursorPosition(0);
+            idComp.setHighlightPos(0);
         }
     }
 }

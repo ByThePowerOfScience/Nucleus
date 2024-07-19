@@ -6,12 +6,12 @@ import com.redpxnda.nucleus.facet.network.FacetPacketHandling;
 import com.redpxnda.nucleus.network.SimplePacket;
 import com.redpxnda.nucleus.util.ByteBufUtil;
 import dev.architectury.networking.NetworkManager;
-import net.minecraft.entity.Entity;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.util.Identifier;
+import net.minecraft.nbt.Tag;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.Entity;
 
-public class FacetSyncPacket<T extends NbtElement, C extends EntityFacet<T>> implements SimplePacket {
+public class FacetSyncPacket<T extends Tag, C extends EntityFacet<T>> implements SimplePacket {
     public final int targetId;
     public final String facetId;
     public final T facetData;
@@ -22,21 +22,21 @@ public class FacetSyncPacket<T extends NbtElement, C extends EntityFacet<T>> imp
         facetData = facet.toNbt();
     }
 
-    public FacetSyncPacket(PacketByteBuf buf) {
+    public FacetSyncPacket(FriendlyByteBuf buf) {
         targetId = buf.readInt();
-        facetId = buf.readString();
+        facetId = buf.readUtf();
         facetData = (T) ByteBufUtil.readTag(buf);
     }
 
     @Override
-    public void toBuffer(PacketByteBuf buf) {
+    public void toBuffer(FriendlyByteBuf buf) {
         buf.writeInt(targetId);
-        buf.writeString(facetId);
+        buf.writeUtf(facetId);
         ByteBufUtil.writeTag(facetData, buf);
     }
 
     @Override
     public void handle(NetworkManager.PacketContext context) {
-        FacetPacketHandling.getAndSetClientEntityFacet(targetId, new Identifier(facetId), facetData);
+        FacetPacketHandling.getAndSetClientEntityFacet(targetId, new ResourceLocation(facetId), facetData);
     }
 }
