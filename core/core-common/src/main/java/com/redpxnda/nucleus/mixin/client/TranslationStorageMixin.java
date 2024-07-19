@@ -15,7 +15,7 @@ import net.minecraft.server.packs.resources.ResourceManager;
 @Mixin(ClientLanguage.class)
 public class TranslationStorageMixin {
     @Inject(
-            method = "load(Lnet/minecraft/resource/ResourceManager;Ljava/util/List;Z)Lnet/minecraft/client/resource/language/TranslationStorage;",
+            method = "loadFrom",
             at = @At(value = "INVOKE", target = "Lcom/google/common/collect/ImmutableMap;copyOf(Ljava/util/Map;)Lcom/google/common/collect/ImmutableMap;", remap = false))
     private static void nucleus$adjustTranslationsEvent(ResourceManager resourceManager, List<String> definitions, boolean rightToLeft, CallbackInfoReturnable<ClientLanguage> cir, @Local Map<String, String> map) {
         ClientEvents.TRANSLATIONS_RELOADED.invoker().adjust(map);

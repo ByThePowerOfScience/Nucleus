@@ -19,8 +19,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(ItemInHandLayer.class)
 public class HeldItemFeatureRendererMixin<T extends LivingEntity, M extends EntityModel<T> & ArmedModel> {
     @Inject(
-            method = "renderItem",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/util/math/MatrixStack;translate(FFF)V", shift = At.Shift.AFTER),
+            method = "renderArmWithItem",
+            at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;translate(FFF)V", shift = At.Shift.AFTER),
             cancellable = true
     )
     private void nucleus$thirdPersonItemRenderEvent(

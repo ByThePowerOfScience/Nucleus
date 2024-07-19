@@ -18,7 +18,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class MouseMixin {
 
     @Inject(
-            method = "updateMouse",
+            method = "turnPlayer",
             at = @At("HEAD"),
             cancellable = true
     )
@@ -30,8 +30,8 @@ public class MouseMixin {
     }
 
     @WrapOperation(
-            method = "updateMouse",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/network/ClientPlayerEntity;changeLookDirection(DD)V")
+            method = "turnPlayer",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;turn(DD)V")
     )
     private void nucleus$modifyCameraMotionEvent(LocalPlayer instance, double xMotion, double yMotion, Operation<Void> original) {
         ClientEvents.CameraMotion motion = new ClientEvents.CameraMotion(xMotion, yMotion);

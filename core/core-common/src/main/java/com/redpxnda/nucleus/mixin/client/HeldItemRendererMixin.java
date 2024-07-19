@@ -39,8 +39,8 @@ public abstract class HeldItemRendererMixin {
     }*/
 
     @Inject(
-            method = "renderFirstPersonItem",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/util/math/MatrixStack;push()V", shift = At.Shift.AFTER),
+            method = "renderArmWithItem",
+            at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;pushPose()V", shift = At.Shift.AFTER),
             cancellable = true
     )
     private void nucleus$renderArmEventPushStage(AbstractClientPlayer player, float partialTicks, float pitch, InteractionHand hand, float swingProgress, ItemStack stack, float equippedProgress, PoseStack poseStack, MultiBufferSource buffer, int combinedLight, CallbackInfo ci) {
@@ -49,8 +49,8 @@ public abstract class HeldItemRendererMixin {
     }
 
     @Inject(
-            method = "renderFirstPersonItem",
-            at = @At(value = "INVOKE", ordinal = 0, target = "Lnet/minecraft/item/ItemStack;isEmpty()Z"),
+            method = "renderArmWithItem",
+            at = @At(value = "INVOKE", ordinal = 0, target = "Lnet/minecraft/world/item/ItemStack;isEmpty()Z"),
             cancellable = true
     )
     private void nucleus$renderArmEventArmStage(AbstractClientPlayer player, float partialTicks, float pitch, InteractionHand hand, float swingProgress, ItemStack stack, float equippedProgress, PoseStack poseStack, MultiBufferSource buffer, int combinedLight, CallbackInfo ci) {
@@ -60,8 +60,8 @@ public abstract class HeldItemRendererMixin {
     }
 
     @Inject(
-            method = "renderFirstPersonItem",
-            at = @At(value = "INVOKE", ordinal = 1, target = "Lnet/minecraft/client/render/item/HeldItemRenderer;renderItem(Lnet/minecraft/entity/LivingEntity;Lnet/minecraft/item/ItemStack;Lnet/minecraft/client/render/model/json/ModelTransformationMode;ZLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;I)V"),
+            method = "renderArmWithItem",
+            at = @At(value = "INVOKE", ordinal = 1, target = "Lnet/minecraft/client/renderer/ItemInHandRenderer;renderItem(Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemDisplayContext;ZLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V"),
             cancellable = true
     )
     private void nucleus$renderArmEventItemStage(AbstractClientPlayer player, float partialTicks, float pitch, InteractionHand hand, float swingProgress, ItemStack stack, float equippedProgress, PoseStack poseStack, MultiBufferSource buffer, int combinedLight, CallbackInfo ci) {

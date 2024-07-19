@@ -2,6 +2,7 @@ package com.redpxnda.nucleus.mixin.client;
 
 import com.redpxnda.nucleus.event.RenderEvents;
 import dev.architectury.event.EventResult;
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphics;
@@ -20,9 +21,9 @@ public class GuiMixin {
             at = @At("HEAD"),
             cancellable = true
     )
-    private void nucleus$renderHudEvent(GuiGraphics guiGraphics, float f, CallbackInfo ci) {
+    private void nucleus$renderHudEvent(GuiGraphics guiGraphics, DeltaTracker deltaTracker, CallbackInfo ci) {
         Minecraft client = Minecraft.getInstance();
-        EventResult result = RenderEvents.HUD_RENDER_PRE.invoker().render(client, guiGraphics, f);
+        EventResult result = RenderEvents.HUD_RENDER_PRE.invoker().render(client, guiGraphics, deltaTracker.getRealtimeDeltaTicks());
         if (result.interruptsFurtherEvaluation())
             ci.cancel();
     }
