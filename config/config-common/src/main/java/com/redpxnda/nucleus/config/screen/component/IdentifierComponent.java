@@ -49,14 +49,14 @@ public class IdentifierComponent extends EditBox implements ConfigComponent<Reso
 
     @Override
     public boolean checkValidity() {
-        return getValue() != null;
+        return getConfigValue() != null;
     }
 
     @Override
-    public ResourceLocation getValue() {
+    public ResourceLocation getConfigValue() {
         return ResourceLocation.tryParse(getValue());
     }
-    public void setValue(ResourceLocation value) {
+    public void setConfigValue(ResourceLocation value) {
         setValue(value.toString());
         updateValidity();
     }
@@ -65,8 +65,7 @@ public class IdentifierComponent extends EditBox implements ConfigComponent<Reso
     public void insertText(String text) {
         String old = getValue();
         super.insertText(text);
-        if (!ResourceLocation.isValidResourceLocation(getValue()))
-            setValue(old);
+        setValue(old);
         updateValidity();
     }
 

@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
+
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
@@ -109,20 +110,20 @@ public class ArrayComponent extends AbstractWidget implements ConfigComponent {
     }
 
     @Override
-    public Object getValue() {
+    public Object getConfigValue() {
         Object arr = MiscUtil.arrayToPrimitive(Array.newInstance(cls, elements.size()));
         for (int i = 0; i < elements.size(); i++) {
-            Array.set(arr, i, elements.get(i).getValue());
+            Array.set(arr, i, elements.get(i).getConfigValue());
         }
         return arr;
     }
 
     @Override
-    public void setValue(Object value) {
+    public void setConfigValue(Object value) {
         elements.clear();
         for (int i = 0; i < Array.getLength(value); i++) {
             var element = elementCreator.get();
-            element.setValue(Array.get(value, i));
+            element.setConfigValue(Array.get(value, i));
         }
         requestPositionUpdate();
     }
@@ -148,8 +149,8 @@ public class ArrayComponent extends AbstractWidget implements ConfigComponent {
 
     @Override
     public void performPositionUpdate() {
-        minimizer.setPosition(getX()+KEY_TEXT_WIDTH-38, getY());
-        width = KEY_TEXT_WIDTH-18;
+        minimizer.setPosition(getX() + KEY_TEXT_WIDTH - 38, getY());
+        width = KEY_TEXT_WIDTH - 18;
         height = 20;
         if (!minimized) {
             elements.forEach(element -> {
@@ -177,7 +178,7 @@ public class ArrayComponent extends AbstractWidget implements ConfigComponent {
                 Button remover = removers.get(element);
                 if (Screen.hasShiftDown()) {
                     remover.setMessage(DOWN_ICON);
-                    remover.active = index != elements.size()-1;
+                    remover.active = index != elements.size() - 1;
                 } else if (Screen.hasControlDown()) {
                     remover.setMessage(UP_ICON);
                     remover.active = index != 0;
@@ -232,21 +233,23 @@ public class ArrayComponent extends AbstractWidget implements ConfigComponent {
     }
 
     @Override
-    public boolean mouseScrolled(double mX, double mY, double amount) {
-        if (!minimized && focusedComponent != null && focusedComponent.mouseScrolled(mX, mY, amount))
+    public boolean mouseScrolled(double mX, double mY, double amount, double xAmount) {
+        if (!minimized && focusedComponent != null && focusedComponent.mouseScrolled(mX, mY, amount, xAmount))
             return true;
-        return super.mouseScrolled(mX, mY, amount);
+        return super.mouseScrolled(mX, mY, amount, xAmount);
     }
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        if (!minimized && focusedComponent != null && focusedComponent.keyPressed(keyCode, scanCode, modifiers)) return true;
+        if (!minimized && focusedComponent != null && focusedComponent.keyPressed(keyCode, scanCode, modifiers))
+            return true;
         return super.keyPressed(keyCode, scanCode, modifiers);
     }
 
     @Override
     public boolean keyReleased(int keyCode, int scanCode, int modifiers) {
-        if (!minimized && focusedComponent != null && focusedComponent.keyReleased(keyCode, scanCode, modifiers)) return true;
+        if (!minimized && focusedComponent != null && focusedComponent.keyReleased(keyCode, scanCode, modifiers))
+            return true;
         return super.keyReleased(keyCode, scanCode, modifiers);
     }
 

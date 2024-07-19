@@ -17,7 +17,7 @@ import static com.redpxnda.nucleus.Nucleus.MOD_ID;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 
 public class HueSlider extends AbstractWidget {
-    public static final ResourceLocation SCROLLBAR_TEXTURE = new ResourceLocation(MOD_ID, "textures/gui/small_scrollbars.png");
+    public static final ResourceLocation SCROLLBAR_TEXTURE = ResourceLocation.fromNamespaceAndPath(MOD_ID, "textures/gui/small_scrollbars.png");
 
     public float value;
     public boolean dragging = false;
@@ -74,10 +74,10 @@ public class HueSlider extends AbstractWidget {
             float startX = getX()+i*segmentSize;
             float endX = getX()+(i+1)*segmentSize;
 
-            vc.vertex(matrix4f, startX, startY, 0).color(current.r(), current.g(), current.b(), current.a()).endVertex();
-            vc.vertex(matrix4f, startX, endY, 0).color(current.r(), current.g(), current.b(), current.a()).endVertex();
-            vc.vertex(matrix4f, endX, endY, 0).color(next.r(), next.g(), next.b(), next.a()).endVertex();
-            vc.vertex(matrix4f, endX, startY, 0).color(next.r(), next.g(), next.b(), next.a()).endVertex();
+            vc.addVertex(matrix4f, startX, startY, 0).setColor(current.r(), current.g(), current.b(), current.a());
+            vc.addVertex(matrix4f, startX, endY, 0).setColor(current.r(), current.g(), current.b(), current.a());
+            vc.addVertex(matrix4f, endX, endY, 0).setColor(next.r(), next.g(), next.b(), next.a());
+            vc.addVertex(matrix4f, endX, startY, 0).setColor(next.r(), next.g(), next.b(), next.a());
         }
     }
 

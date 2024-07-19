@@ -70,12 +70,12 @@ public class RawJsonComponent<T> extends Button implements ConfigComponent<T> {
 
     public void onJsonUpdate(@Nullable JsonElement element) {
         if (element != null) {
-            var result = codec.parse(JsonOps.INSTANCE, element).get();
-            result.ifLeft(t -> value = t);
-            result.ifRight(partial -> {
+            var result = codec.decode(JsonOps.INSTANCE, element);
+            result.ifSuccess(t -> value = t.getFirst());
+            result.ifError(partial -> {
                 LOGGER.error("Failed to parse JSON for unknown config field! -> {}", partial.message());
                 Minecraft.getInstance().getToasts().addToast(new SystemToast(
-                        SystemToast.SystemToastIds.PACK_LOAD_FAILURE,
+                        SystemToast.SystemToastId.PACK_LOAD_FAILURE,
                         INVALID_TOAST_TITLE,
                         INVALID_TOAST_DESC));
             });
@@ -94,12 +94,12 @@ public class RawJsonComponent<T> extends Button implements ConfigComponent<T> {
     }
 
     @Override
-    public T getValue() {
+    public T getConfigValue() {
         return value;
     }
 
     @Override
-    public void setValue(T value) {
+    public void setConfigValue(T value) {
         this.value = value;
         updateValidity();
     }

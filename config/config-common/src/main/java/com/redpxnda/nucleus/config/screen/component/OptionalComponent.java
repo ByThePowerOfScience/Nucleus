@@ -11,6 +11,7 @@ import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+
 import java.util.function.Consumer;
 
 import static com.redpxnda.nucleus.config.screen.component.ConfigEntriesComponent.KEY_TEXT_WIDTH;
@@ -19,7 +20,7 @@ import static com.redpxnda.nucleus.config.screen.component.ConfigEntriesComponen
 public class OptionalComponent<T> extends AbstractWidget implements ConfigComponent<T> {
     public static final Component ENABLED_TEXT = Component.translatable("nucleus.config_screen.optional.description.enabled");
     public static final Component DISABLED_TEXT = Component.translatable("nucleus.config_screen.optional.description.disabled");
-    public static final ResourceLocation BUTTON_TEXTURE = new ResourceLocation(Nucleus.MOD_ID, "textures/gui/config/optional.png");
+    public static final ResourceLocation BUTTON_TEXTURE = ResourceLocation.fromNamespaceAndPath(Nucleus.MOD_ID, "textures/gui/config/optional.png");
 
     public final Font textRenderer;
     public ConfigComponent<?> parent;
@@ -54,14 +55,15 @@ public class OptionalComponent<T> extends AbstractWidget implements ConfigCompon
         child.performPositionUpdate();
         width = child.getWidth();
         height = child.getHeight();
-        buttonX = getInlineMode() == InlineMode.INLINE ? -28 : KEY_TEXT_WIDTH-66;
+        buttonX = getInlineMode() == InlineMode.INLINE ? -28 : KEY_TEXT_WIDTH - 66;
     }
 
     @Override
     protected void renderWidget(GuiGraphics context, int mouseX, int mouseY, float delta) {
-        boolean buttonHovered = mouseX >= getX()+buttonX && mouseX < getX()+buttonX+20 && mouseY >= getY() && mouseY < getY()+20;
-        context.blit(BUTTON_TEXTURE, getX()+buttonX, getY(), enabled ? 0 : 20, buttonHovered ? 20 : 0, 20, 20, 64, 64);
-        if (buttonHovered && renderInstructions) context.renderTooltip(textRenderer, textRenderer.split(enabled ? ENABLED_TEXT : DISABLED_TEXT, 150), DefaultTooltipPositioner.INSTANCE, mouseX, mouseY);
+        boolean buttonHovered = mouseX >= getX() + buttonX && mouseX < getX() + buttonX + 20 && mouseY >= getY() && mouseY < getY() + 20;
+        context.blit(BUTTON_TEXTURE, getX() + buttonX, getY(), enabled ? 0 : 20, buttonHovered ? 20 : 0, 20, 20, 64, 64);
+        if (buttonHovered && renderInstructions)
+            context.renderTooltip(textRenderer, textRenderer.split(enabled ? ENABLED_TEXT : DISABLED_TEXT, 150), DefaultTooltipPositioner.INSTANCE, mouseX, mouseY);
 
         if (enabled) {
             child.render(context, mouseX, mouseY, delta);
@@ -72,12 +74,12 @@ public class OptionalComponent<T> extends AbstractWidget implements ConfigCompon
 
     @Override
     public boolean isMouseOver(double mouseX, double mouseY) {
-        return super.isMouseOver(mouseX, mouseY) || (mouseX >= getX()+buttonX && mouseX < getX()+buttonX+20 && mouseY >= getY() && mouseY < getY()+20);
+        return super.isMouseOver(mouseX, mouseY) || (mouseX >= getX() + buttonX && mouseX < getX() + buttonX + 20 && mouseY >= getY() && mouseY < getY() + 20);
     }
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (mouseX >= getX()+buttonX && mouseX < getX()+buttonX+20 && mouseY >= getY() && mouseY < getY()+20) {
+        if (mouseX >= getX() + buttonX && mouseX < getX() + buttonX + 20 && mouseY >= getY() && mouseY < getY() + 20) {
             setEnabled(!enabled);
             this.playDownSound(Minecraft.getInstance().getSoundManager());
             child.setFocused(false);
@@ -102,8 +104,8 @@ public class OptionalComponent<T> extends AbstractWidget implements ConfigCompon
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
-        return enabled && child.mouseScrolled(mouseX, mouseY, amount);
+    public boolean mouseScrolled(double mouseX, double mouseY, double amount, double xAmount) {
+        return enabled && child.mouseScrolled(mouseX, mouseY, amount, xAmount);
     }
 
     @Override
@@ -132,16 +134,16 @@ public class OptionalComponent<T> extends AbstractWidget implements ConfigCompon
     }
 
     @Override
-    public T getValue() {
-        return enabled ? child.getValue() : null;
+    public T getConfigValue() {
+        return enabled ? child.getConfigValue() : null;
     }
 
-    public void setValue(T value) {
+    public void setConfigValue(T value) {
         if (value == null) {
             setEnabled(false);
             emptyValueSetter.accept(child);
         } else
-            child.setValue(value);
+            child.setConfigValue(value);
     }
 
     public void setEnabled(boolean enabled) {

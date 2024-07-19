@@ -77,7 +77,7 @@ public class NumberFieldComponent<N extends Number> extends EditBox implements C
 
     @Override
     public boolean checkValidity() {
-        return getValue() != null;
+        return getConfigValue() != null;
     }
 
     public N clamp(N value) {
@@ -87,14 +87,14 @@ public class NumberFieldComponent<N extends Number> extends EditBox implements C
     }
 
     @Override
-    public N getValue() {
+    public N getConfigValue() {
         try {
             return clamp(parser.parse(getValue()));
         } catch (Exception e) {
             return null;
         }
     }
-    public void setValue(N value) {
+    public void setConfigValue(N value) {
         value = clamp(value);
         setValue(value.toString());
         updateValidity();
@@ -118,9 +118,9 @@ public class NumberFieldComponent<N extends Number> extends EditBox implements C
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
+    public boolean mouseScrolled(double mouseX, double mouseY, double amount,double xAmount) {
         if (!isMouseOver(mouseX, mouseY)) return false;
-        N val = getValue();
+        N val = getConfigValue();
         if (val != null) {
             int increment = 0;
             if (Screen.hasShiftDown()) increment+=5;

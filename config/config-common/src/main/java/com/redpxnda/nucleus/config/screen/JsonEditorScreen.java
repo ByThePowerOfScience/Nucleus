@@ -5,6 +5,7 @@ import com.redpxnda.nucleus.Nucleus;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Consumer;
+
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineEditBox;
@@ -35,7 +36,7 @@ public class JsonEditorScreen extends Screen {
     protected void init() {
         discardButton = Button.builder(Component.translatable("nucleus.config_screen.discard"), wid -> {
             onClose();
-        }).bounds(16, height-26, 96, 20).build();
+        }).bounds(16, height - 26, 96, 20).build();
         saveButton = Button.builder(Component.translatable("nucleus.config_screen.save"), wid -> {
             JsonElement element = getJson();
             if (element != null) {
@@ -43,13 +44,13 @@ public class JsonEditorScreen extends Screen {
                 closeNoUpdate();
             } else {
                 minecraft.getToasts().addToast(new SystemToast(
-                        SystemToast.SystemToastIds.PACK_LOAD_FAILURE,
+                        SystemToast.SystemToastId.PACK_LOAD_FAILURE,
                         Component.translatable("nucleus.json_editor.save_fail"),
                         Component.translatable("nucleus.json_editor.save_fail.description")));
             }
-        }).bounds(128, height-26, 96, 20).build();
+        }).bounds(128, height - 26, 96, 20).build();
 
-        editBox = new MultiLineEditBox(minecraft.font, 8, 8, width-8, height-40, Component.empty(), Component.empty());
+        editBox = new MultiLineEditBox(minecraft.font, 8, 8, width - 8, height - 40, Component.empty(), Component.empty());
 
         addRenderableWidget(discardButton);
         addRenderableWidget(saveButton);
@@ -71,7 +72,7 @@ public class JsonEditorScreen extends Screen {
     public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
         context.pose().pushPose();
         context.pose().translate(0, 0, -15);
-        renderDirtBackground(context);
+        renderBackground(context, mouseX, mouseY, delta);
         context.pose().popPose();
         super.render(context, mouseX, mouseY, delta);
     }

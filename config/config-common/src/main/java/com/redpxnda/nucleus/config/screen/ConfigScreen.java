@@ -57,7 +57,7 @@ public class ConfigScreen<T> extends Screen {
             if (widget == null) {
                 widget = new ConfigEntriesComponent<>(components, minecraft.font, 0, 32, width - 6, height - 64);
                 widget.performPositionUpdate();
-                widget.setValue(config.getInstance());
+                widget.setConfigValue(config.getInstance());
             } else {
                 oldWidgetParent = widget.getParent();
                 widget.setParent(null);
@@ -74,13 +74,13 @@ public class ConfigScreen<T> extends Screen {
             if (config != null) {
                 saveButton = Button.builder(Component.translatable("nucleus.config_screen.save"), wid -> {
                     if (widget.checkValidity()) {
-                        config.setInstance(widget.getValue());
+                        config.setInstance(widget.getConfigValue());
                         config.save();
                         config.load();
                         onClose();
                     } else {
                         minecraft.getToasts().addToast(new SystemToast(
-                                SystemToast.SystemToastIds.PACK_LOAD_FAILURE,
+                                SystemToast.SystemToastId.PACK_LOAD_FAILURE,
                                 Component.translatable("nucleus.config_screen.save_fail"),
                                 Component.translatable("nucleus.config_screen.save_fail.description")));
                     }
@@ -117,7 +117,7 @@ public class ConfigScreen<T> extends Screen {
             context.fill(widget.getX() + widget.getWidth(), widget.getY(), widget.getX() + widget.getWidth() + 8, widget.getY() + widget.getHeight(), -16777216);
         context.pose().pushPose();
         context.pose().translate(0, 0, -15);
-        renderDirtBackground(context);
+        renderBackground(context, mouseX, mouseY, delta);
         context.pose().popPose();
         super.render(context, mouseX, mouseY, delta);
     }

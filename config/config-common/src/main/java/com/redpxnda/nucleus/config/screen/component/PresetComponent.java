@@ -19,7 +19,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Tuple;
 
 public class PresetComponent<C, E extends Enum<E> & ConfigProvider<C>> extends DropdownComponent<ConfigPreset<C, E>> {
-    public static final ResourceLocation WARNING = new ResourceLocation("textures/gui/report_button.png");
+    public static final ResourceLocation WARNING = ResourceLocation.parse("textures/gui/report_button.png");
     public static final Component DESC_TEXT = Component.translatable("nucleus.config_screen.preset.description");
     public static final Component WARNING_TEXT = Component.translatable("nucleus.config_screen.preset.warning");
 

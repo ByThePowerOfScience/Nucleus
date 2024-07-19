@@ -8,6 +8,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -92,7 +93,7 @@ public class TagListComponent<E, T extends TagList<E>> extends AbstractWidget im
     }
 
     @Override
-    public T getValue() {
+    public T getConfigValue() {
         T list = creator.get();
         components.forEach(e -> {
             Object obj = e.getValue();
@@ -103,7 +104,7 @@ public class TagListComponent<E, T extends TagList<E>> extends AbstractWidget im
     }
 
     @Override
-    public void setValue(T value) {
+    public void setConfigValue(T value) {
         components.clear();
         value.getObjects().forEach(obj -> components.add(new Entry(objectEntryType, obj)));
         value.getTags().forEach(tag -> components.add(new Entry(tagEntryType, tag)));
@@ -131,7 +132,7 @@ public class TagListComponent<E, T extends TagList<E>> extends AbstractWidget im
                 Button remover = entry.remover;
                 if (Screen.hasShiftDown()) {
                     remover.setMessage(DOWN_ICON);
-                    remover.active = index != components.size()-1;
+                    remover.active = index != components.size() - 1;
                 } else if (Screen.hasControlDown()) {
                     remover.setMessage(UP_ICON);
                     remover.active = index != 0;
@@ -164,14 +165,15 @@ public class TagListComponent<E, T extends TagList<E>> extends AbstractWidget im
 
     @Override
     public void performPositionUpdate() {
-        minimizer.setPosition(getX()+KEY_TEXT_WIDTH-38, getY());
-        width = KEY_TEXT_WIDTH-18;
+        minimizer.setPosition(getX() + KEY_TEXT_WIDTH - 38, getY());
+        width = KEY_TEXT_WIDTH - 18;
         height = 20;
         if (!minimized) {
             components.forEach(entry -> {
                 height += 8;
                 entry.dropdown.setPosition(getX() + 8, getY() + height);
-                if (entry.component != null) entry.component.setPosition(getX() + entry.dropdown.getWidth() + 12, getY() + height);
+                if (entry.component != null)
+                    entry.component.setPosition(getX() + entry.dropdown.getWidth() + 12, getY() + height);
                 if (entry.getWidth() + 28 > width) width = entry.getWidth() + 28;
                 height += entry.getHeight();
                 entry.remover.setPosition(entry.dropdown.getX() + entry.getWidth() + 8, entry.dropdown.getY());
@@ -230,21 +232,23 @@ public class TagListComponent<E, T extends TagList<E>> extends AbstractWidget im
     }
 
     @Override
-    public boolean mouseScrolled(double mX, double mY, double amount) {
-        if (!minimized && focusedComponent != null && focusedComponent.mouseScrolled(mX, mY, amount))
+    public boolean mouseScrolled(double mX, double mY, double amount, double xAmount) {
+        if (!minimized && focusedComponent != null && focusedComponent.mouseScrolled(mX, mY, amount, xAmount))
             return true;
-        return super.mouseScrolled(mX, mY, amount);
+        return super.mouseScrolled(mX, mY, amount, xAmount);
     }
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        if (!minimized && focusedComponent != null && focusedComponent.keyPressed(keyCode, scanCode, modifiers)) return true;
+        if (!minimized && focusedComponent != null && focusedComponent.keyPressed(keyCode, scanCode, modifiers))
+            return true;
         return super.keyPressed(keyCode, scanCode, modifiers);
     }
 
     @Override
     public boolean keyReleased(int keyCode, int scanCode, int modifiers) {
-        if (!minimized && focusedComponent != null && focusedComponent.keyReleased(keyCode, scanCode, modifiers)) return true;
+        if (!minimized && focusedComponent != null && focusedComponent.keyReleased(keyCode, scanCode, modifiers))
+            return true;
         return super.keyReleased(keyCode, scanCode, modifiers);
     }
 
@@ -261,6 +265,7 @@ public class TagListComponent<E, T extends TagList<E>> extends AbstractWidget im
 
     public abstract class EntryType<A> {
         public abstract ConfigComponent<A> createEntry();
+
         public abstract void addToList(T list, A value);
     }
 
@@ -295,8 +300,8 @@ public class TagListComponent<E, T extends TagList<E>> extends AbstractWidget im
 
         public <A> Entry(EntryType<A> type, A val) {
             this();
-            dropdown.setValue(type);
-            component.setValue(val);
+            dropdown.setConfigValue(type);
+            component.setConfigValue(val);
         }
 
         public Entry() {
@@ -329,7 +334,7 @@ public class TagListComponent<E, T extends TagList<E>> extends AbstractWidget im
 
         public int getWidth() {
             int width = dropdown.getWidth();
-            return component == null ? width : width+component.getWidth()+4;
+            return component == null ? width : width + component.getWidth() + 4;
         }
 
         public int getHeight() {
@@ -348,12 +353,12 @@ public class TagListComponent<E, T extends TagList<E>> extends AbstractWidget im
         }
 
         public EntryType<?> getType() {
-            return dropdown.getValue();
+            return dropdown.getConfigValue();
         }
 
         public Object getValue() {
             if (component == null) return null;
-            return component.getValue();
+            return component.getConfigValue();
         }
     }
 }

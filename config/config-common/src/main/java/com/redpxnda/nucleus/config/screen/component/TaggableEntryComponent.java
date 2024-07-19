@@ -6,6 +6,7 @@ import com.redpxnda.nucleus.util.MiscUtil;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Function;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -60,12 +61,12 @@ public class TaggableEntryComponent<E, T extends TaggableEntry<E>> extends Abstr
     }
 
     @Override
-    public T getValue() {
+    public T getConfigValue() {
         return (T) ((EntryType) entry.getType()).createTaggableEntry(entry.getValue());
     }
 
     @Override
-    public void setValue(T value) {
+    public void setConfigValue(T value) {
         entry = value.getObject() != null ? new Entry(objectEntryType, value.getObject()) : new Entry(tagEntryType, value.getTag());
         requestPositionUpdate();
     }
@@ -140,10 +141,10 @@ public class TaggableEntryComponent<E, T extends TaggableEntry<E>> extends Abstr
     }
 
     @Override
-    public boolean mouseScrolled(double mX, double mY, double amount) {
-        if (focusedComponent != null && focusedComponent.mouseScrolled(mX, mY, amount))
+    public boolean mouseScrolled(double mX, double mY, double amount, double xAmount) {
+        if (focusedComponent != null && focusedComponent.mouseScrolled(mX, mY, amount, xAmount))
             return true;
-        return super.mouseScrolled(mX, mY, amount);
+        return super.mouseScrolled(mX, mY, amount, xAmount);
     }
 
     @Override
@@ -171,6 +172,7 @@ public class TaggableEntryComponent<E, T extends TaggableEntry<E>> extends Abstr
 
     public abstract class EntryType<A> {
         public abstract ConfigComponent<A> createEntry();
+
         public abstract T createTaggableEntry(A component);
     }
 
@@ -204,8 +206,8 @@ public class TaggableEntryComponent<E, T extends TaggableEntry<E>> extends Abstr
 
         public <A> Entry(EntryType<A> type, A val) {
             this();
-            dropdown.setValue(type);
-            component.setValue(val);
+            dropdown.setConfigValue(type);
+            component.setConfigValue(val);
         }
 
         public Entry() {
@@ -225,7 +227,7 @@ public class TaggableEntryComponent<E, T extends TaggableEntry<E>> extends Abstr
 
         public int getWidth() {
             int width = dropdown.getWidth();
-            return component == null ? width : width+component.getWidth()+4;
+            return component == null ? width : width + component.getWidth() + 4;
         }
 
         public int getHeight() {
@@ -244,12 +246,12 @@ public class TaggableEntryComponent<E, T extends TaggableEntry<E>> extends Abstr
         }
 
         public EntryType<?> getType() {
-            return dropdown.getValue();
+            return dropdown.getConfigValue();
         }
 
         public Object getValue() {
             if (component == null) return null;
-            return component.getValue();
+            return component.getConfigValue();
         }
     }
 }

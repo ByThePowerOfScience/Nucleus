@@ -42,11 +42,11 @@ public class BooleanComponent extends Button implements ConfigComponent<Boolean>
     }
 
     @Override
-    public Boolean getValue() {
+    public Boolean getConfigValue() {
         return checked;
     }
 
-    public void setValue(Boolean value) {
+    public void setConfigValue(Boolean value) {
         checked = value;
         setMessage(checked ? ON_TEXT : OFF_TEXT);
     }

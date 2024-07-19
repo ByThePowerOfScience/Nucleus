@@ -6,6 +6,7 @@ import org.jetbrains.annotations.Nullable;
 import java.lang.reflect.Type;
 import java.util.*;
 import java.util.function.Supplier;
+
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
@@ -102,20 +103,20 @@ public class CollectionComponent<T, C extends Collection<T>> extends AbstractWid
     }
 
     @Override
-    public C getValue() {
+    public C getConfigValue() {
         C result = creator.get();
         for (ConfigComponent<T> component : elements) {
-            result.add(component.getValue());
+            result.add(component.getConfigValue());
         }
         return result;
     }
 
     @Override
-    public void setValue(C value) {
+    public void setConfigValue(C value) {
         elements.clear();
         value.forEach(t -> {
             var element = elementCreator.get();
-            element.setValue(t);
+            element.setConfigValue(t);
         });
         requestPositionUpdate();
     }
@@ -141,8 +142,8 @@ public class CollectionComponent<T, C extends Collection<T>> extends AbstractWid
 
     @Override
     public void performPositionUpdate() {
-        minimizer.setPosition(getX()+KEY_TEXT_WIDTH-38, getY());
-        width = KEY_TEXT_WIDTH-18;
+        minimizer.setPosition(getX() + KEY_TEXT_WIDTH - 38, getY());
+        width = KEY_TEXT_WIDTH - 18;
         height = 20;
         if (!minimized) {
             elements.forEach(element -> {
@@ -170,7 +171,7 @@ public class CollectionComponent<T, C extends Collection<T>> extends AbstractWid
                 Button remover = removers.get(element);
                 if (Screen.hasShiftDown()) {
                     remover.setMessage(DOWN_ICON);
-                    remover.active = index != elements.size()-1;
+                    remover.active = index != elements.size() - 1;
                 } else if (Screen.hasControlDown()) {
                     remover.setMessage(UP_ICON);
                     remover.active = index != 0;
@@ -225,21 +226,23 @@ public class CollectionComponent<T, C extends Collection<T>> extends AbstractWid
     }
 
     @Override
-    public boolean mouseScrolled(double mX, double mY, double amount) {
-        if (!minimized && focusedComponent != null && focusedComponent.mouseScrolled(mX, mY, amount))
+    public boolean mouseScrolled(double mX, double mY, double amount, double xAmount) {
+        if (!minimized && focusedComponent != null && focusedComponent.mouseScrolled(mX, mY, amount, xAmount))
             return true;
-        return super.mouseScrolled(mX, mY, amount);
+        return super.mouseScrolled(mX, mY, amount, xAmount);
     }
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        if (!minimized && focusedComponent != null && focusedComponent.keyPressed(keyCode, scanCode, modifiers)) return true;
+        if (!minimized && focusedComponent != null && focusedComponent.keyPressed(keyCode, scanCode, modifiers))
+            return true;
         return super.keyPressed(keyCode, scanCode, modifiers);
     }
 
     @Override
     public boolean keyReleased(int keyCode, int scanCode, int modifiers) {
-        if (!minimized && focusedComponent != null && focusedComponent.keyReleased(keyCode, scanCode, modifiers)) return true;
+        if (!minimized && focusedComponent != null && focusedComponent.keyReleased(keyCode, scanCode, modifiers))
+            return true;
         return super.keyReleased(keyCode, scanCode, modifiers);
     }
 

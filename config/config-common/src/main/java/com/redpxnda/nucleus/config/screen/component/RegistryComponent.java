@@ -3,8 +3,10 @@ package com.redpxnda.nucleus.config.screen.component;
 import com.redpxnda.nucleus.config.screen.widget.EmptyButtonWidget;
 import com.redpxnda.nucleus.config.screen.widget.SelectableOptionsWidget;
 import com.redpxnda.nucleus.util.Color;
+
 import java.util.HashMap;
 import java.util.Map;
+
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -35,15 +37,15 @@ public class RegistryComponent<T> extends AbstractWidget implements ConfigCompon
             updateSuggestions();
         });
         registry = reg;
-        suggestionsOpener = new EmptyButtonWidget(x+width-20, y, 20, 20, CLOSED_TEXT, o -> {
+        suggestionsOpener = new EmptyButtonWidget(x + width - 20, y, 20, 20, CLOSED_TEXT, o -> {
             toggleSuggestions();
             if (suggestionsOpen) updateSuggestions();
             o.setMessage(suggestionsOpen ? OPEN_TEXT : CLOSED_TEXT);
         }, Color.WHITE.argb(), Color.TEXT_GRAY.argb());
         suggestions = new SelectableOptionsWidget<>(textRenderer, Map.of(), (s, t) -> {
-            setValue(t);
+            setConfigValue(t);
             suggestionsOpener.onPress();
-        }, x, y+24, width, 54);
+        }, x, y + 24, width, 54);
     }
 
     @Override
@@ -99,9 +101,9 @@ public class RegistryComponent<T> extends AbstractWidget implements ConfigCompon
     public void toggleSuggestions() {
         suggestionsOpen = !suggestionsOpen;
         if (suggestionsOpen)
-            height+=suggestions.getHeight();
+            height += suggestions.getHeight();
         else
-            height-=suggestions.getHeight();
+            height -= suggestions.getHeight();
         requestPositionUpdate();
     }
 
@@ -117,21 +119,21 @@ public class RegistryComponent<T> extends AbstractWidget implements ConfigCompon
 
     @Override
     public boolean checkValidity() {
-        return getValue() != null;
+        return getConfigValue() != null;
     }
 
     @Override
-    public T getValue() {
-        ResourceLocation val = idComp.getValue();
+    public T getConfigValue() {
+        ResourceLocation val = idComp.getConfigValue();
         if (val == null) return null;
         return registry.getOptional(val).orElse(null);
     }
 
     @Override
-    public void setValue(T value) {
+    public void setConfigValue(T value) {
         ResourceLocation id = registry.getKey(value);
         if (id != null) {
-            idComp.setValue(id);
+            idComp.setConfigValue(id);
         }
         updateValidity();
     }
@@ -141,15 +143,17 @@ public class RegistryComponent<T> extends AbstractWidget implements ConfigCompon
         idComp.setX(getX());
         idComp.setY(getY());
         suggestions.setX(getX());
-        suggestions.setY(getY()+24);
-        suggestionsOpener.setX(getX()+width-20);
+        suggestions.setY(getY() + 24);
+        suggestionsOpener.setX(getX() + width - 20);
         suggestionsOpener.setY(getY());
     }
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (suggestionsOpener.isMouseOver(mouseX, mouseY) && suggestionsOpener.mouseClicked(mouseX, mouseY, button)) return true;
-        if (suggestionsOpen && suggestions.isMouseOver(mouseX, mouseY) && suggestions.mouseClicked(mouseX, mouseY, button)) return true;
+        if (suggestionsOpener.isMouseOver(mouseX, mouseY) && suggestionsOpener.mouseClicked(mouseX, mouseY, button))
+            return true;
+        if (suggestionsOpen && suggestions.isMouseOver(mouseX, mouseY) && suggestions.mouseClicked(mouseX, mouseY, button))
+            return true;
         return idComp.mouseClicked(mouseX, mouseY, button);
     }
 
@@ -164,9 +168,10 @@ public class RegistryComponent<T> extends AbstractWidget implements ConfigCompon
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
-        if (suggestionsOpen && suggestions.isMouseOver(mouseX, mouseY) && suggestions.mouseScrolled(mouseX, mouseY, amount)) return true;
-        return super.mouseScrolled(mouseX, mouseY, amount);
+    public boolean mouseScrolled(double mouseX, double mouseY, double amount, double xAmount) {
+        if (suggestionsOpen && suggestions.isMouseOver(mouseX, mouseY) && suggestions.mouseScrolled(mouseX, mouseY, amount, xAmount))
+            return true;
+        return super.mouseScrolled(mouseX, mouseY, amount, xAmount);
     }
 
     @Override

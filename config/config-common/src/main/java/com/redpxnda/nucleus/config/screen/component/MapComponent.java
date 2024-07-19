@@ -7,8 +7,8 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.function.Supplier;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -106,21 +106,21 @@ public class MapComponent<K, V, M extends Map<K, V>> extends AbstractWidget impl
     }
 
     @Override
-    public M getValue() {
+    public M getConfigValue() {
         M result = creator.get();
         for (var entry : elements.entrySet()) {
-            result.put(entry.getKey().getValue(), entry.getValue().getA().getValue());
+            result.put(entry.getKey().getConfigValue(), entry.getValue().getA().getConfigValue());
         }
         return result;
     }
 
     @Override
-    public void setValue(M value) {
+    public void setConfigValue(M value) {
         elements.clear();
         value.forEach((k, v) -> {
             var pair = elementCreator.get();
-            pair.getA().setValue(k);
-            pair.getB().setValue(v);
+            pair.getA().setConfigValue(k);
+            pair.getB().setConfigValue(v);
         });
         requestPositionUpdate();
     }
@@ -152,8 +152,8 @@ public class MapComponent<K, V, M extends Map<K, V>> extends AbstractWidget impl
 
     @Override
     public void performPositionUpdate() {
-        minimizer.setPosition(getX()+KEY_TEXT_WIDTH-38, getY());
-        width = KEY_TEXT_WIDTH-18;
+        minimizer.setPosition(getX() + KEY_TEXT_WIDTH - 38, getY());
+        width = KEY_TEXT_WIDTH - 18;
         height = 20;
         if (!minimized) {
             elements.forEach((key, pair) -> {
@@ -192,7 +192,7 @@ public class MapComponent<K, V, M extends Map<K, V>> extends AbstractWidget impl
                 element.render(context, mouseX, mouseY, delta);
                 if (Screen.hasShiftDown()) {
                     remover.setMessage(DOWN_ICON);
-                    remover.active = index != elements.size()-1;
+                    remover.active = index != elements.size() - 1;
                 } else if (Screen.hasControlDown()) {
                     remover.setMessage(UP_ICON);
                     remover.active = index != 0;
@@ -256,21 +256,23 @@ public class MapComponent<K, V, M extends Map<K, V>> extends AbstractWidget impl
     }
 
     @Override
-    public boolean mouseScrolled(double mX, double mY, double amount) {
-        if (!minimized && focusedComponent != null && focusedComponent.mouseScrolled(mX, mY, amount))
+    public boolean mouseScrolled(double mX, double mY, double amount, double xAmount) {
+        if (!minimized && focusedComponent != null && focusedComponent.mouseScrolled(mX, mY, amount, xAmount))
             return true;
-        return super.mouseScrolled(mX, mY, amount);
+        return super.mouseScrolled(mX, mY, amount, xAmount);
     }
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        if (!minimized && focusedComponent != null && focusedComponent.keyPressed(keyCode, scanCode, modifiers)) return true;
+        if (!minimized && focusedComponent != null && focusedComponent.keyPressed(keyCode, scanCode, modifiers))
+            return true;
         return super.keyPressed(keyCode, scanCode, modifiers);
     }
 
     @Override
     public boolean keyReleased(int keyCode, int scanCode, int modifiers) {
-        if (!minimized && focusedComponent != null && focusedComponent.keyReleased(keyCode, scanCode, modifiers)) return true;
+        if (!minimized && focusedComponent != null && focusedComponent.keyReleased(keyCode, scanCode, modifiers))
+            return true;
         return super.keyReleased(keyCode, scanCode, modifiers);
     }
 

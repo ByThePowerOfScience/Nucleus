@@ -34,7 +34,7 @@ import java.util.function.Supplier;
 
 public class ConfigObject<T> {
     private static final Logger LOGGER = Nucleus.getLogger();
-    
+
     public final String fileLocation;
     public final ResourceLocation id;
     public final ConfigType type;
@@ -46,8 +46,8 @@ public class ConfigObject<T> {
     protected @Nullable T instance;
 
     /**
-     * @param fileLocation           the path to the config
-     * @param id           the name for the config
+     * @param fileLocation   the path to the config
+     * @param id             the name for the config
      * @param type           the type of config
      * @param codec          the codec used to (de)serialize the config
      * @param defaultCreator a supplier to create the default/empty version of this config
@@ -79,19 +79,20 @@ public class ConfigObject<T> {
     public File getFile() {
         return Platform.getConfigFolder().resolve(fileLocation + ".jsonc").toFile();
     }
+
     public File getBackupFile(int num) {
         return Platform.getConfigFolder().resolve(fileLocation + "-backup-" + num + ".jsonc").toFile();
     }
 
     public <C> C serialize(DynamicOps<C> ops) {
         return codec.encodeStart(ops, instance)
-                .getOrThrow(false, s -> LOGGER.error("Failed to encode config '{}'! -> {}", id, s));
+                .getOrThrow(s -> new RuntimeException("Failed to encode config '" + id + "'! -> '" + s));
     }
 
     protected void attemptParse(String data) {
         JsonElement json = Nucleus.GSON.fromJson(data, JsonElement.class);
         instance = codec.parse(JsonOps.INSTANCE, json)
-                .getOrThrow(false, s -> LOGGER.error("Failed to parse json for config '{}'! -> {}", id, s));
+                .getOrThrow(s -> new RuntimeException("Failed to parse json for config '" + id + "'! -> '" + s));
 
         if (presetGetter != null) {
             var preset = presetGetter.apply(instance);
@@ -187,10 +188,10 @@ public class ConfigObject<T> {
     @Override
     public String toString() {
         return "ConfigObject[" +
-                "fileLocation=" + fileLocation + ", " +
-                "name=" + id + ", " +
-                "type=" + type + ", " +
-                "instance=" + instance + ']';
+               "fileLocation=" + fileLocation + ", " +
+               "name=" + id + ", " +
+               "type=" + type + ", " +
+               "instance=" + instance + ']';
     }
 
     public static class Automatic<T> extends ConfigObject<T> {

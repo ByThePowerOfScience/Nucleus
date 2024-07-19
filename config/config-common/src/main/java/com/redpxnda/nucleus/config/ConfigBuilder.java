@@ -68,7 +68,7 @@ public class ConfigBuilder<T> {
     }
 
     public ConfigBuilder<T> id(String id) {
-        return id(new ResourceLocation(id));
+        return id(ResourceLocation.parse(id));
     }
 
     /**

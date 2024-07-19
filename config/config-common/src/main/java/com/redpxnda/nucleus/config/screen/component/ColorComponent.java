@@ -47,7 +47,7 @@ public class ColorComponent extends AbstractWidget implements ConfigComponent<Co
                 }
                 color = null;
             } else {
-                color = getValue();
+                color = getConfigValue();
                 picker.setColor(color);
                 if (!isValid) {
                     parent.validateChild(this);
@@ -117,18 +117,18 @@ public class ColorComponent extends AbstractWidget implements ConfigComponent<Co
 
     @Override
     public boolean checkValidity() {
-        return getValue() != null;
+        return getConfigValue() != null;
     }
 
     @Override
-    public Color getValue() {
+    public Color getConfigValue() {
         try {
             return new Color(textWidget.getValue());
         } catch (Exception e) {
             return null;
         }
     }
-    public void setValue(Color value) {
+    public void setConfigValue(Color value) {
         setValueNoUpdate(value);
         picker.setColor(value);
     }

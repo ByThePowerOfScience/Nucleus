@@ -15,7 +15,7 @@ import net.minecraft.util.FastColor;
 import static com.redpxnda.nucleus.Nucleus.MOD_ID;
 
 public class ColorPickerWidget extends AbstractWidget {
-    public static final ResourceLocation TEXTURE = new ResourceLocation(MOD_ID, "textures/gui/color_picker.png");
+    public static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(MOD_ID, "textures/gui/color_picker.png");
 
     protected final Font textRenderer;
     protected final Consumer<Color> onUpdate;

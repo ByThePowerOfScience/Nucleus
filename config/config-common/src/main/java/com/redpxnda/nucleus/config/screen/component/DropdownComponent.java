@@ -13,6 +13,7 @@ import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
+
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractScrollWidget;
@@ -36,7 +37,8 @@ public class DropdownComponent<E> extends EditBox implements ConfigComponent<E> 
     public boolean isOpen = false;
     public final Button dropdownOpener;
     public final AbstractScrollWidget dropdown;
-    public Consumer<E> onSet = (e) -> {};
+    public Consumer<E> onSet = (e) -> {
+    };
 
     public DropdownComponent(Font textRenderer, int x, int y, int width, int height, Class<E> enumClass) {
         this(textRenderer, x, y, width, height, MiscUtil.evaluateSupplier(() -> {
@@ -50,7 +52,8 @@ public class DropdownComponent<E> extends EditBox implements ConfigComponent<E> 
                     Field f = enumClass.getField(name);
                     Comment comment = f.getAnnotation(Comment.class);
                     if (comment != null) comments.put(name, Component.literal(comment.value()));
-                } catch (NoSuchFieldException ignored) {}
+                } catch (NoSuchFieldException ignored) {
+                }
                 map.put(name, constant);
             }
             return new Tuple<>(map, comments);
@@ -67,7 +70,7 @@ public class DropdownComponent<E> extends EditBox implements ConfigComponent<E> 
         this.comments = entriesAndComments.getB();
         this.textRenderer = textRenderer;
 
-        this.dropdownOpener = new EmptyButtonWidget(x+width-20, y, 20, 20, CLOSED_TEXT, wid -> {
+        this.dropdownOpener = new EmptyButtonWidget(x + width - 20, y, 20, 20, CLOSED_TEXT, wid -> {
             isOpen = !isOpen;
             wid.setMessage(isOpen ? OPEN_TEXT : CLOSED_TEXT);
         }, Color.WHITE.argb(), Color.TEXT_GRAY.argb());
@@ -98,9 +101,9 @@ public class DropdownComponent<E> extends EditBox implements ConfigComponent<E> 
 
     public AbstractScrollWidget getDropdownWidget() {
         return new SelectableOptionsWidget<>(textRenderer, entries, (op, e) -> {
-            setValue(e);
+            setConfigValue(e);
             dropdownOpener.onPress();
-        }, getX(), getY(), getWidth(), (textRenderer.lineHeight+1)*(Math.min(entries.size(), 5)) + 8);
+        }, getX(), getY(), getWidth(), (textRenderer.lineHeight + 1) * (Math.min(entries.size(), 5)) + 8);
     }
 
     @Override
@@ -116,8 +119,18 @@ public class DropdownComponent<E> extends EditBox implements ConfigComponent<E> 
 
     @Override
     public void performPositionUpdate() {
-        dropdownOpener.setPosition(getX()+width-20, getY());
+        dropdownOpener.setPosition(getX() + width - 20, getY());
         dropdown.setPosition(getX(), getY());
+    }
+
+    @Override
+    public void requestPositionUpdate() {
+        ConfigComponent.super.requestPositionUpdate();
+    }
+
+    @Override
+    public InlineMode getInlineMode() {
+        return ConfigComponent.super.getInlineMode();
     }
 
     @Override
@@ -133,7 +146,8 @@ public class DropdownComponent<E> extends EditBox implements ConfigComponent<E> 
             if (isValid && isHovered()) {
                 if (!getValue().isEmpty()) {
                     Component text = getComment(getValue());
-                    if (text != null) context.renderTooltip(textRenderer, textRenderer.split(text, 150), DefaultTooltipPositioner.INSTANCE, mouseX, mouseY);
+                    if (text != null)
+                        context.renderTooltip(textRenderer, textRenderer.split(text, 150), DefaultTooltipPositioner.INSTANCE, mouseX, mouseY);
                 }
             }
         }
@@ -141,27 +155,32 @@ public class DropdownComponent<E> extends EditBox implements ConfigComponent<E> 
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (isOpen && dropdown.isMouseOver(mouseX, mouseY) && dropdown.mouseClicked(mouseX, mouseY, button)) return true;
-        if (dropdownOpener.isMouseOver(mouseX, mouseY) && dropdownOpener.mouseClicked(mouseX, mouseY, button)) return true;
+        if (isOpen && dropdown.isMouseOver(mouseX, mouseY) && dropdown.mouseClicked(mouseX, mouseY, button))
+            return true;
+        if (dropdownOpener.isMouseOver(mouseX, mouseY) && dropdownOpener.mouseClicked(mouseX, mouseY, button))
+            return true;
         return super.mouseClicked(mouseX, mouseY, button);
     }
 
     @Override
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
-        if (isOpen && dropdown.isMouseOver(mouseX, mouseY) && dropdown.mouseReleased(mouseX, mouseY, button)) return true;
+        if (isOpen && dropdown.isMouseOver(mouseX, mouseY) && dropdown.mouseReleased(mouseX, mouseY, button))
+            return true;
         return super.mouseReleased(mouseX, mouseY, button);
     }
 
     @Override
     public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
-        if (isOpen && dropdown.isMouseOver(mouseX, mouseY) && dropdown.mouseDragged(mouseX, mouseY, button, deltaX, deltaY)) return true;
+        if (isOpen && dropdown.isMouseOver(mouseX, mouseY) && dropdown.mouseDragged(mouseX, mouseY, button, deltaX, deltaY))
+            return true;
         return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
-        if (isOpen && dropdown.isMouseOver(mouseX, mouseY) && dropdown.mouseScrolled(mouseX, mouseY, amount)) return true;
-        return super.mouseScrolled(mouseX, mouseY, amount);
+    public boolean mouseScrolled(double mouseX, double mouseY, double amount, double xAmount) {
+        if (isOpen && dropdown.isMouseOver(mouseX, mouseY) && dropdown.mouseScrolled(mouseX, mouseY, amount, xAmount))
+            return true;
+        return super.mouseScrolled(mouseX, mouseY, amount, xAmount);
     }
 
     @Override
@@ -174,11 +193,12 @@ public class DropdownComponent<E> extends EditBox implements ConfigComponent<E> 
         return comments.get(key);
     }
 
+
     public String getKey(E value) {
         return entries.inverse().get(value);
     }
 
-    public E getValue(String key) {
+    public E getConfigValue(String key) {
         return entries.get(key);
     }
 
@@ -188,12 +208,11 @@ public class DropdownComponent<E> extends EditBox implements ConfigComponent<E> 
     }
 
     @Override
-    public E getValue() {
+    public E getConfigValue() {
         return selected;
     }
 
-    @Override
-    public void setValue(E value) {
+    public void setConfigValue(E value) {
         selected = value;
         setValue(getKey(value));
         updateValidity();

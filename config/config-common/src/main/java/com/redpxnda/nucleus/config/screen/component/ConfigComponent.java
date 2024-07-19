@@ -26,9 +26,9 @@ public interface ConfigComponent<T> extends Renderable, GuiEventListener, Layout
 
     boolean checkValidity();
 
-    T getValue();
+    T getConfigValue();
 
-    void setValue(T value);
+    void setConfigValue(T value);
 
     default void onRemoved() {}
 

@@ -34,8 +34,8 @@ public class TagKeyComponent<T> extends AbstractWidget implements ConfigComponen
     }
 
     @Override
-    public TagKey<T> getValue() {
-        ResourceLocation val = delegate.getValue();
+    public TagKey<T> getConfigValue() {
+        ResourceLocation val = delegate.getConfigValue();
         return val == null ? null : TagKey.create(registry, val);
     }
 
@@ -46,8 +46,8 @@ public class TagKeyComponent<T> extends AbstractWidget implements ConfigComponen
     }
 
     @Override
-    public void setValue(TagKey<T> value) {
-        delegate.setValue(value.location());
+    public void setConfigValue(TagKey<T> value) {
+        delegate.setConfigValue(value.location());
     }
 
     @Override
@@ -71,8 +71,8 @@ public class TagKeyComponent<T> extends AbstractWidget implements ConfigComponen
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
-        return delegate.mouseScrolled(mouseX, mouseY, amount);
+    public boolean mouseScrolled(double mouseX, double mouseY, double amount, double xAmount) {
+        return delegate.mouseScrolled(mouseX, mouseY, amount, xAmount);
     }
 
     @Override

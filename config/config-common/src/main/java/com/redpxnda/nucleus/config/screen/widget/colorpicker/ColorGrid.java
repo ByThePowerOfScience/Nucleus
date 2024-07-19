@@ -71,15 +71,15 @@ public class ColorGrid extends AbstractWidget {
         Matrix4f matrix4f = context.pose().last().pose();
 
         float iLightness = 1-lightness;
-        vc.vertex(matrix4f, getX() + saturation*width - 3, getY() + iLightness*height - 3, 1).color(Color.WHITE.r(), Color.WHITE.g(), Color.WHITE.b(), Color.WHITE.a()).endVertex();
-        vc.vertex(matrix4f, getX() + saturation*width - 3, getY() + iLightness*height + 3, 1).color(Color.WHITE.r(), Color.WHITE.g(), Color.WHITE.b(), Color.WHITE.a()).endVertex();
-        vc.vertex(matrix4f, getX() + saturation*width + 3, getY() + iLightness*height + 3, 1).color(Color.WHITE.r(), Color.WHITE.g(), Color.WHITE.b(), Color.WHITE.a()).endVertex();
-        vc.vertex(matrix4f, getX() + saturation*width + 3, getY() + iLightness*height - 3, 1).color(Color.WHITE.r(), Color.WHITE.g(), Color.WHITE.b(), Color.WHITE.a()).endVertex();
+        vc.addVertex(matrix4f, getX() + saturation*width - 3, getY() + iLightness*height - 3, 1).setColor(Color.WHITE.r(), Color.WHITE.g(), Color.WHITE.b(), Color.WHITE.a());
+        vc.addVertex(matrix4f, getX() + saturation*width - 3, getY() + iLightness*height + 3, 1).setColor(Color.WHITE.r(), Color.WHITE.g(), Color.WHITE.b(), Color.WHITE.a());
+        vc.addVertex(matrix4f, getX() + saturation*width + 3, getY() + iLightness*height + 3, 1).setColor(Color.WHITE.r(), Color.WHITE.g(), Color.WHITE.b(), Color.WHITE.a());
+        vc.addVertex(matrix4f, getX() + saturation*width + 3, getY() + iLightness*height - 3, 1).setColor(Color.WHITE.r(), Color.WHITE.g(), Color.WHITE.b(), Color.WHITE.a());
 
-        vc.vertex(matrix4f, getX() + saturation*width - 2, getY() + iLightness*height - 2, 1).color(color.r(), color.g(), color.b(), color.a()).endVertex();
-        vc.vertex(matrix4f, getX() + saturation*width - 2, getY() + iLightness*height + 2, 1).color(color.r(), color.g(), color.b(), color.a()).endVertex();
-        vc.vertex(matrix4f, getX() + saturation*width + 2, getY() + iLightness*height + 2, 1).color(color.r(), color.g(), color.b(), color.a()).endVertex();
-        vc.vertex(matrix4f, getX() + saturation*width + 2, getY() + iLightness*height - 2, 1).color(color.r(), color.g(), color.b(), color.a()).endVertex();
+        vc.addVertex(matrix4f, getX() + saturation*width - 2, getY() + iLightness*height - 2, 1).setColor(color.r(), color.g(), color.b(), color.a());
+        vc.addVertex(matrix4f, getX() + saturation*width - 2, getY() + iLightness*height + 2, 1).setColor(color.r(), color.g(), color.b(), color.a());
+        vc.addVertex(matrix4f, getX() + saturation*width + 2, getY() + iLightness*height + 2, 1).setColor(color.r(), color.g(), color.b(), color.a());
+        vc.addVertex(matrix4f, getX() + saturation*width + 2, getY() + iLightness*height - 2, 1).setColor(color.r(), color.g(), color.b(), color.a());
 
         for (int i = 0; i < height; i++) {
             float delt = (float) i/height;
@@ -90,10 +90,10 @@ public class ColorGrid extends AbstractWidget {
             Color right = hueColor.copy();
             right.lerp(delt, Color.BLACK);
 
-            vc.vertex(matrix4f, getX(), getY()+i, 0).color(left.r(), left.g(), left.b(), left.a()).endVertex();
-            vc.vertex(matrix4f, getX(), getY()+i+1, 0).color(left.r(), left.g(), left.b(), left.a()).endVertex();
-            vc.vertex(matrix4f, getX()+width, getY()+i+1, 0).color(right.r(), right.g(), right.b(), right.a()).endVertex();
-            vc.vertex(matrix4f, getX()+width, getY()+i, 0).color(right.r(), right.g(), right.b(), right.a()).endVertex();
+            vc.addVertex(matrix4f, getX(), getY()+i, 0).setColor(left.r(), left.g(), left.b(), left.a());
+            vc.addVertex(matrix4f, getX(), getY()+i+1, 0).setColor(left.r(), left.g(), left.b(), left.a());
+            vc.addVertex(matrix4f, getX()+width, getY()+i+1, 0).setColor(right.r(), right.g(), right.b(), right.a());
+            vc.addVertex(matrix4f, getX()+width, getY()+i, 0).setColor(right.r(), right.g(), right.b(), right.a());
         }
     }
 

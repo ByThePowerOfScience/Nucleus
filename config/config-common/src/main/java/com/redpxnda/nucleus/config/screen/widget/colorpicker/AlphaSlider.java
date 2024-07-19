@@ -59,10 +59,10 @@ public class AlphaSlider extends AbstractWidget {
         renderScrollbar(context, mouseX, mouseY, delta);
         VertexConsumer vc = context.bufferSource().getBuffer(RenderType.gui());
         Matrix4f matrix4f = context.pose().last().pose();
-        vc.vertex(matrix4f, getX(), getY(), 0).color(1f, 1f, 1f, 0f).endVertex();
-        vc.vertex(matrix4f, getX(), getY()+height-1, 0).color(1f, 1f, 1f, 0f).endVertex();
-        vc.vertex(matrix4f, getX()+width, getY()+height-1, 0).color(1f, 1f, 1f, 1f).endVertex();
-        vc.vertex(matrix4f, getX()+width, getY(), 0).color(1f, 1f, 1f, 1f).endVertex();
+        vc.addVertex(matrix4f, getX(), getY(), 0).setColor(1f, 1f, 1f, 0f);
+        vc.addVertex(matrix4f, getX(), getY()+height-1, 0).setColor(1f, 1f, 1f, 0f);
+        vc.addVertex(matrix4f, getX()+width, getY()+height-1, 0).setColor(1f, 1f, 1f, 1f);
+        vc.addVertex(matrix4f, getX()+width, getY(), 0).setColor(1f, 1f, 1f, 1f);
     }
 
     protected void renderScrollbar(GuiGraphics context, int mouseX, int mouseY, float delta) {

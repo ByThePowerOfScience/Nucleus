@@ -17,8 +17,8 @@ public class EntityTypeListComponent extends TagListComponent<EntityType<?>, Ent
     }
 
     @Override
-    public void setValue(EntityTypeList value) {
-        super.setValue(value);
+    public void setConfigValue(EntityTypeList value) {
+        super.setConfigValue(value);
         value.getBuiltins().forEach(str -> components.add(new Entry(predicateEntryType, str)));
     }
 

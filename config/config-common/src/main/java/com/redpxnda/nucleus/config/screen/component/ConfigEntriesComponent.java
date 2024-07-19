@@ -24,7 +24,6 @@ import org.slf4j.Logger;
 
 import java.lang.reflect.Field;
 import java.util.*;
-import java.util.Map.Entry;
 
 @Environment(EnvType.CLIENT)
 public class ConfigEntriesComponent<T> extends AbstractScrollWidget implements Renderable, GuiEventListener, ConfigComponent<T> {
@@ -91,8 +90,8 @@ public class ConfigEntriesComponent<T> extends AbstractScrollWidget implements R
     }
 
     public void performPositionUpdate() {
-        minimizer.setPosition(getX()+KEY_TEXT_WIDTH-38, getY());
-        if (parent != null) width = KEY_TEXT_WIDTH-18;
+        minimizer.setPosition(getX() + KEY_TEXT_WIDTH - 38, getY());
+        if (parent != null) width = KEY_TEXT_WIDTH - 18;
         contentHeight = getY() + 20;
         if (!isMinimized()) {
             components.forEach((k, c) -> {
@@ -108,7 +107,7 @@ public class ConfigEntriesComponent<T> extends AbstractScrollWidget implements R
             if (!components.isEmpty()) contentHeight -= 8; // last element should not increase height
         }
         if (parent != null)
-            height = contentHeight-getY();
+            height = contentHeight - getY();
         if (scrollAmount() > getMaxScrollAmount()) setScrollAmount(getMaxScrollAmount());
     }
 
@@ -213,7 +212,7 @@ public class ConfigEntriesComponent<T> extends AbstractScrollWidget implements R
         int thumbHeight = getScrollBarHeight();
         int left = getX() + width;
         int right = getX() + width + 6;
-        int top = Math.max(getY(), (int)scrollAmount() * (height - thumbHeight) / getMaxScrollAmount() + getY());
+        int top = Math.max(getY(), (int) scrollAmount() * (height - thumbHeight) / getMaxScrollAmount() + getY());
         int bottom = top + thumbHeight;
         context.fill(left, top, right, bottom, -8355712);
         context.fill(left, top, right - 1, bottom - 1, -4144960);
@@ -289,21 +288,23 @@ public class ConfigEntriesComponent<T> extends AbstractScrollWidget implements R
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
-        if (!isMinimized() && focusedComponent != null && focusedComponent.mouseScrolled(mouseX, mouseY, amount))
+    public boolean mouseScrolled(double mouseX, double mouseY, double amount, double xAmount) {
+        if (!isMinimized() && focusedComponent != null && focusedComponent.mouseScrolled(mouseX, mouseY, amount, xAmount))
             return true;
-        return parent == null && super.mouseScrolled(mouseX, mouseY, amount);
+        return parent == null && super.mouseScrolled(mouseX, mouseY, amount, xAmount);
     }
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        if (!isMinimized() && focusedComponent != null && focusedComponent.keyPressed(keyCode, scanCode, modifiers)) return true;
+        if (!isMinimized() && focusedComponent != null && focusedComponent.keyPressed(keyCode, scanCode, modifiers))
+            return true;
         return super.keyPressed(keyCode, scanCode, modifiers);
     }
 
     @Override
     public boolean keyReleased(int keyCode, int scanCode, int modifiers) {
-        if (!isMinimized() && focusedComponent != null && focusedComponent.keyReleased(keyCode, scanCode, modifiers)) return true;
+        if (!isMinimized() && focusedComponent != null && focusedComponent.keyReleased(keyCode, scanCode, modifiers))
+            return true;
         return super.keyReleased(keyCode, scanCode, modifiers);
     }
 
@@ -328,12 +329,12 @@ public class ConfigEntriesComponent<T> extends AbstractScrollWidget implements R
     }
 
     @Override
-    public T getValue() {
+    public T getConfigValue() {
         if (value != null)
             components.forEach((key, pair) -> {
                 try {
                     ConfigComponent comp = pair.getB();
-                    pair.getA().set(value, comp.getValue());
+                    pair.getA().set(value, comp.getConfigValue());
                 } catch (IllegalAccessException | IllegalArgumentException e) {
                     LOGGER.error("Exception whilst setting config's value from a ConfigComponent! (Incorrect type?)", e);
                 }
@@ -342,11 +343,11 @@ public class ConfigEntriesComponent<T> extends AbstractScrollWidget implements R
     }
 
     @Override
-    public void setValue(T val) {
+    public void setConfigValue(T val) {
         components.forEach((key, pair) -> {
             try {
                 ConfigComponent comp = pair.getB();
-                comp.setValue(pair.getA().get(val));
+                comp.setConfigValue(pair.getA().get(val));
             } catch (IllegalAccessException | IllegalArgumentException e) {
                 LOGGER.error("Exception whilst setting ConfigComponent's value! (Incorrect type?)", e);
             }

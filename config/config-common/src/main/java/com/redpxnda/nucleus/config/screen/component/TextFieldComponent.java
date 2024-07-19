@@ -34,10 +34,10 @@ public class TextFieldComponent extends EditBox implements ConfigComponent<Strin
     }
 
     @Override
-    public String getValue() {
-        return getValue();
+    public String getConfigValue() {
+        return getConfigValue();
     }
-    public void setValue(String value) {
+    public void setConfigValue(String value) {
         super.setValue(value);
     }
 
