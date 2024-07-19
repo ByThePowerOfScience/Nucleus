@@ -2,6 +2,7 @@ package com.redpxnda.nucleus.facet.mixin;
 
 import com.redpxnda.nucleus.facet.*;
 import com.redpxnda.nucleus.facet.statuseffect.StatusEffectFacet;
+import net.minecraft.core.Holder;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -26,12 +27,12 @@ public abstract class StatusEffectInstanceMixin implements FacetHolder {
         return nucleus$facets;
     }
 
-    @Inject(method = "<init>(Lnet/minecraft/entity/effect/StatusEffect;IIZZZLnet/minecraft/entity/effect/StatusEffectInstance;Ljava/util/Optional;)V", at = @At("RETURN"))
-    private void nucleus$attachFacetsOnConstruction(MobEffect type, int duration, int amplifier, boolean ambient, boolean showParticles, boolean showIcon, MobEffectInstance hiddenEffect, Optional factorCalculationData, CallbackInfo ci) {
+    @Inject(method = "<init>(Lnet/minecraft/core/Holder;IIZZZLnet/minecraft/world/effect/MobEffectInstance;)V", at = @At("RETURN"))
+    private void nucleus$attachFacetsOnConstruction(Holder holder, int i, int j, boolean bl, boolean bl2, boolean bl3, MobEffectInstance mobEffectInstance, CallbackInfo ci) {
         StatusEffectFacet.setupFacets((MobEffectInstance) (Object) this);
     }
 
-    @Inject(method = "copyFrom", at = @At("TAIL"))
+    @Inject(method = "setDetailsFrom", at = @At("TAIL"))
     private void nucleus$copyFacets(MobEffectInstance that, CallbackInfo ci) {
         clearFacets();
         StatusEffectFacet.setupFacets((MobEffectInstance) (Object) this);
@@ -44,7 +45,7 @@ public abstract class StatusEffectInstanceMixin implements FacetHolder {
         });
     }
 
-    @Inject(method = "upgrade", at = @At("TAIL"))
+    @Inject(method = "update", at = @At("TAIL"))
     private void nucleus$upgradeFacets(MobEffectInstance that, CallbackInfoReturnable<Boolean> cir) {
         FacetInventory inv = FacetHolder.of(that).getFacets();
         nucleus$facets.forEach((key, facet) -> {
@@ -58,7 +59,8 @@ public abstract class StatusEffectInstanceMixin implements FacetHolder {
         StatusEffectFacet.writeFacetsToNbt(nbt, this);
     }
 
-    @Inject(method = "fromNbt(Lnet/minecraft/entity/effect/StatusEffect;Lnet/minecraft/nbt/NbtCompound;)Lnet/minecraft/entity/effect/StatusEffectInstance;", at = @At("TAIL"))
+    @Inject(method = "fromNbt(Lnet/minecraft/entity/effect/StatusEffect;Lnet/minecraft/nbt/NbtCompound;)Lnet/minecraft/entity/effect/StatusEffectInstance;",
+            at = @At("TAIL"))
     private static void nucleus$readFacetsFromNbt(MobEffect type, CompoundTag nbt, CallbackInfoReturnable<MobEffectInstance> cir) {
         MobEffectInstance instance = cir.getReturnValue();
         if (nbt.contains(FacetRegistry.TAG_FACETS_ID)) {
@@ -70,7 +72,9 @@ public abstract class StatusEffectInstanceMixin implements FacetHolder {
         }
     }
 
-    @Inject(method = "applyUpdateEffect", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/effect/StatusEffect;applyUpdateEffect(Lnet/minecraft/entity/LivingEntity;I)V"))
+    @Inject(method = "applyUpdateEffect",
+            at = @At(value = "INVOKE",
+            target = "Lnet/minecraft/entity/effect/StatusEffect;applyUpdateEffect(Lnet/minecraft/entity/LivingEntity;I)V"))
     private void nucleus$facetApplyEffectUpdate(LivingEntity entity, CallbackInfo ci) {
         nucleus$facets.forEach((facetKey, facet) -> {
             if (facet instanceof StatusEffectFacet<?,?> sef)

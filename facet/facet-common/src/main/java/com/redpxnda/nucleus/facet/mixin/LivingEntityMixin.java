@@ -14,8 +14,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class LivingEntityMixin {
 
     @Inject(
-            method = "onStatusEffectApplied",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/effect/StatusEffect;onApplied(Lnet/minecraft/entity/LivingEntity;Lnet/minecraft/entity/attribute/AttributeContainer;I)V"))
+            method = "onEffectAdded",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/world/effect/MobEffect;addAttributeModifiers(Lnet/minecraft/world/entity/ai/attributes/AttributeMap;I)V"))
     private void nucleus$callStatusEffectFacetApplied(MobEffectInstance effect, Entity source, CallbackInfo ci) {
         FacetHolder.of(effect).getFacets().forEach((key, facet) -> {
             if (facet instanceof StatusEffectFacet<?,?> sef)
@@ -24,8 +24,8 @@ public abstract class LivingEntityMixin {
     }
 
     @Inject(
-            method = "onStatusEffectUpgraded",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/effect/StatusEffect;onApplied(Lnet/minecraft/entity/LivingEntity;Lnet/minecraft/entity/attribute/AttributeContainer;I)V"))
+            method = "onEffectUpdated",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/world/effect/MobEffect;addAttributeModifiers(Lnet/minecraft/world/entity/ai/attributes/AttributeMap;I)V"))
     private void nucleus$callStatusEffectFacetAppliedOnChange(MobEffectInstance effect, boolean reapplyEffect, Entity source, CallbackInfo ci) {
         FacetHolder.of(effect).getFacets().forEach((key, facet) -> {
             if (facet instanceof StatusEffectFacet<?,?> sef)
@@ -34,8 +34,8 @@ public abstract class LivingEntityMixin {
     }
 
     @Inject(
-            method = "onStatusEffectUpgraded",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/effect/StatusEffect;onRemoved(Lnet/minecraft/entity/LivingEntity;Lnet/minecraft/entity/attribute/AttributeContainer;I)V"))
+            method = "onEffectUpdated",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/world/effect/MobEffect;removeAttributeModifiers(Lnet/minecraft/world/entity/ai/attributes/AttributeMap;)V"))
     private void nucleus$callStatusEffectFacetRemovedOnChange(MobEffectInstance effect, boolean reapplyEffect, Entity source, CallbackInfo ci) {
         FacetHolder.of(effect).getFacets().forEach((key, facet) -> {
             if (facet instanceof StatusEffectFacet<?,?> sef)
@@ -44,8 +44,8 @@ public abstract class LivingEntityMixin {
     }
 
     @Inject(
-            method = "onStatusEffectRemoved",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/effect/StatusEffect;onRemoved(Lnet/minecraft/entity/LivingEntity;Lnet/minecraft/entity/attribute/AttributeContainer;I)V"))
+            method = "onEffectRemoved",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/world/effect/MobEffect;removeAttributeModifiers(Lnet/minecraft/world/entity/ai/attributes/AttributeMap;)V"))
     private void nucleus$callStatusEffectFacetRemoved(MobEffectInstance effect, CallbackInfo ci) {
         FacetHolder.of(effect).getFacets().forEach((key, facet) -> {
             if (facet instanceof StatusEffectFacet<?,?> sef)
