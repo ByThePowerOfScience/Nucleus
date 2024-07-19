@@ -5,6 +5,7 @@ import com.google.common.collect.HashBiMap;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.function.Supplier;
 import net.minecraft.resources.ResourceLocation;
@@ -13,7 +14,8 @@ import static com.redpxnda.nucleus.Nucleus.loc;
 
 public class DoubleSupplier {
     public static final BiMap<ResourceLocation, Type<?>> suppliers = HashBiMap.create();
-    public static final Codec<Instance> DISPATCH = Type.CODEC.dispatch("type", Instance::type, Type::codec);
+    //TODO:idfk if this MapCodec.assumeMapUnsafe is functional
+    public static final Codec<Instance> DISPATCH = Type.CODEC.dispatch("type", Instance::type, s -> MapCodec.assumeMapUnsafe(s.codec()));
     public static final Codec<Instance> CODEC = Codec.either(
             Codec.DOUBLE,
             DISPATCH

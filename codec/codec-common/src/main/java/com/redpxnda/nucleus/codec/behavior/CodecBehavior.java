@@ -15,6 +15,7 @@ import com.redpxnda.nucleus.codec.tag.TaggableEntryCodec;
 import com.redpxnda.nucleus.math.InterpolateMode;
 import com.redpxnda.nucleus.math.MathUtil;
 import com.redpxnda.nucleus.util.*;
+import net.minecraft.network.chat.ComponentSerialization;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 import org.slf4j.Logger;
@@ -207,7 +208,7 @@ public class CodecBehavior {
 
         registerClass(ResourceLocation.class, ResourceLocation.CODEC);
         registerClass(DoubleSupplier.Instance.class, DoubleSupplier.CODEC);
-        registerClass(Component.class, ExtraCodecs.COMPONENT);
+        registerClass(Component.class, ComponentSerialization.CODEC);
         registerClass(Color.class, MiscCodecs.COLOR);
         registerClass(InterpolateMode.class, InterpolateMode.codec);
         registerClass(Vector3f.class, MiscCodecs.VECTOR_3F);
