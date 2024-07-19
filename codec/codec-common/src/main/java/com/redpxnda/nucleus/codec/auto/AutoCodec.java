@@ -20,8 +20,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import static java.lang.StringTemplate.STR;
-
 /**
  * {@link AutoCodec}s are comparable to {@link Gson}. They automatically generate a codec from some class,
  * scanning fields to add as parameters. Inevitably, as auto-generation tends to be, {@link AutoCodec}s can
