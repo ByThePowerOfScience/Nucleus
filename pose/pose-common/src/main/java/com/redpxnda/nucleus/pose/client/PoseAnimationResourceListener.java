@@ -58,7 +58,7 @@ public class PoseAnimationResourceListener extends SimpleJsonResourceReloadListe
                 });
 
             list.forEach(obj -> animations.put(
-                    new ResourceLocation(obj.get("name").getAsString()).toString(),
+                    ResourceLocation.parse(obj.get("name").getAsString()).toString(),
                     MiscCodecs.quickParse(obj, HumanoidPoseAnimation.codec, s -> MiscUtil.logError(LOGGER, STR."Failed to parse HumanoidPoseAnimation at \{key}! -> \{s}"))
             ));
         });
@@ -206,11 +206,11 @@ public class PoseAnimationResourceListener extends SimpleJsonResourceReloadListe
     @Environment(EnvType.CLIENT)
     public static void positionMatricesToState(@Nullable HumanoidPoseAnimation.FrameMultiplier leftHandMult, HumanoidPoseAnimation.PartState rel, HumanoidPoseAnimation.PartState exact, PoseStack matrices) {
         if (leftHandMult == null) {
-            matrices.mulPoseMatrix(exact.generateMatrix());
-            matrices.mulPoseMatrix(rel.generateMatrix());
+            matrices.mulPose(exact.generateMatrix());
+            matrices.mulPose(rel.generateMatrix());
         } else {
-            matrices.mulPoseMatrix(exact.generateMatrix(leftHandMult));
-            matrices.mulPoseMatrix(rel.generateMatrix(leftHandMult));
+            matrices.mulPose(exact.generateMatrix(leftHandMult));
+            matrices.mulPose(rel.generateMatrix(leftHandMult));
         }
     }
 
