@@ -25,7 +25,7 @@ public interface StatusEffectFacet<F extends StatusEffectFacet<F, T>, T extends 
      * will only run if {@link MobEffect#applyEffectTick} is called.
      * @see MobEffect#applyEffectTick
      */
-    default void applyEffectUpdate(LivingEntity entity, MobEffectInstance instance) {}
+    default void applyEffectTick(LivingEntity entity, MobEffectInstance instance) {}
 
     /**
      * @see MobEffect#addAttributeModifiers
