@@ -48,7 +48,7 @@ public class SimpleDispatcher<T extends Dispatchable> extends MapCodec<T> {
     public <A> DataResult<ResourceLocation> getIdentifierFromData(DynamicOps<A> ops, MapLike<A> input) {
         A value = input.get(typeKey);
         if (value == null) return DataResult.error(() -> "Could not find key '" + typeKey + "' in data provided to SimpleDispatcher#getIdentifierFromData: " + input);
-        return ops.getStringValue(value).map(ResourceLocation::new);
+        return ops.getStringValue(value).map(ResourceLocation::parse);
     }
 
     @Override

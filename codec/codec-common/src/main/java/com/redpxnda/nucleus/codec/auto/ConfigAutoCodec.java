@@ -29,19 +29,24 @@ public class ConfigAutoCodec<C> extends AutoCodec<C> {
         super(cls, errorMsg, fieldMap);
         this.creator = creator;
     }
+
     public ConfigAutoCodec(Class<C> cls, String errorMsg, @Nullable Supplier<C> creator) {
         super(cls, errorMsg);
         this.creator = creator;
     }
+
     public static <T> ConfigAutoCodec<T> of(Class<T> cls) {
         return new ConfigAutoCodec<>(cls, "Field not present for " + cls.getSimpleName() + ".", null);
     }
+
     public static <T> ConfigAutoCodec<T> of(Class<T> cls, Supplier<T> creator) {
         return new ConfigAutoCodec<>(cls, "Field not present for " + cls.getSimpleName() + ".", creator);
     }
+
     public static <T> ConfigAutoCodec<T> of(Class<T> cls, String errorMsg) {
         return new ConfigAutoCodec<>(cls, errorMsg, null);
     }
+
     public static <T> ConfigAutoCodec<T> of(Class<T> cls, String errorMsg, Supplier<T> creator) {
         return new ConfigAutoCodec<>(cls, errorMsg, creator);
     }
@@ -49,10 +54,10 @@ public class ConfigAutoCodec<C> extends AutoCodec<C> {
     @Override
     public <T> RecordBuilder<T> encode(C input, DynamicOps<T> ops, RecordBuilder<T> map) {
         RecordBuilder<T> result = super.encode(input, ops, map);
-        T obj = result.build(ops.emptyMap()).getOrThrow(false, s -> LOGGER.error("Failed to build RecordBuilder in ConfigAutoCodec! -> {}", s));
+        T obj = result.build(ops.emptyMap()).getOrThrow(s -> new RuntimeException("Failed to build RecordBuilder in ConfigAutoCodec! -> " + s));
 
         RecordBuilder<T> withComments = ops.mapBuilder();
-        ops.getMapValues(obj).getOrThrow(false, s -> LOGGER.error("Failed to create map in ConfigAutoCodec! -> {}", s)).forEach(pair -> {
+        ops.getMapValues(obj).getOrThrow(s -> new RuntimeException("Failed to create map in ConfigAutoCodec! -> " + s)).forEach(pair -> {
             T key = pair.getFirst();
             T val = pair.getSecond();
             if (val == null) val = ops.empty();

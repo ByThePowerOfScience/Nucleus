@@ -19,9 +19,9 @@ import java.util.function.BiFunction;
  * <p>
  * Example value assigner (serialized):
  * {
- *   "value1": "cool String!",
- *   "value2": 16,
- *   "value3": true
+ * "value1": "cool String!",
+ * "value2": 16,
+ * "value3": true
  * }
  * In this example, the field "value1" will be tested against the string "cool String!" when using
  * the {@link ValueTester#test(Object)} method. Similar idea with the other fields.
@@ -61,8 +61,11 @@ public class ValueTester<T> {
         }
     }
 
-    public record Template<T, A> (Codec<A> codec, BiFunction<T, Object, Boolean> field, A defInput) {}
-    public record Instruction<T, A> (Codec<A> codec, BiFunction<T, Object, Boolean> field, Object input) {}
+    public record Template<T, A>(Codec<A> codec, BiFunction<T, Object, Boolean> field, A defInput) {
+    }
+
+    public record Instruction<T, A>(Codec<A> codec, BiFunction<T, Object, Boolean> field, Object input) {
+    }
 
     public static class VTCodec<T> implements Codec<ValueTester<T>> {
         private final Map<String, Template<T, ?>> map;
@@ -77,7 +80,7 @@ public class ValueTester<T> {
             map.forEach((key, t) -> {
                 Optional<A> val = ops.get(input, key).result();
                 if (val.isPresent()) {
-                    Object obj = t.codec().parse(ops, val.get()).getOrThrow(false, s -> LOGGER.error("Failed to deserialize key '{}' during ValueTester creation! -> {}", key, s));
+                    Object obj = t.codec().parse(ops, val.get()).getOrThrow(s -> new RuntimeException("Failed to deserialize key '" + key + "' during ValueTester creation! -> " + s));
                     inst.put(key, new Instruction<>(t.codec(), t.field, obj));
                 } else {
                     inst.put(key, new Instruction<>(t.codec(), t.field, t.defInput));
@@ -91,7 +94,7 @@ public class ValueTester<T> {
             Map<A, A> map = new HashMap<>();
             input.instructions.forEach((key, instruction) -> {
                 DataResult<A> obj = ((Codec<Object>) instruction.codec()).encodeStart(ops, instruction.input());
-                map.put(ops.createString(key), obj.getOrThrow(false, s -> LOGGER.error("Failed to encode key '{}' for ValueTester! -> {}", key, s)));
+                map.put(ops.createString(key), obj.getOrThrow(s -> new RuntimeException("Failed to encode key '" + key + "' for ValueTester! -> " + s)));
             });
             return DataResult.success(ops.createMap(map));
         }

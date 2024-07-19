@@ -20,6 +20,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.stream.Stream;
 
+import static java.lang.StringTemplate.STR;
+
 /**
  * {@link AutoCodec}s are comparable to {@link Gson}. They automatically generate a codec from some class,
  * scanning fields to add as parameters. Inevitably, as auto-generation tends to be, {@link AutoCodec}s can
@@ -46,11 +48,11 @@ import java.util.stream.Stream;
  * IMPORTANT NOTE: {@link AutoCodec}s aren't directly codecs, but rather are {@link MapCodec}s. To get the actual codec
  * object, use {@link AutoCodec#codec()}.
  *
+ * @param <C> The type this {@link AutoCodec} represents
  * @see CodecBehavior.Override
  * @see Ignored
  * @see CodecBehavior.Optional
  * @see Settings
- * @param <C> The type this {@link AutoCodec} represents
  */
 @SuppressWarnings({"unchecked", "rawtypes"})
 public class AutoCodec<C> extends MapCodec<C> {
@@ -93,9 +95,11 @@ public class AutoCodec<C> extends MapCodec<C> {
             fields.put(name, new AutoCodecField(name, codec, fieldType, field.getType(), field));
         }
     }
+
     public static <T> AutoCodec<T> of(Class<T> cls) {
         return new AutoCodec<>(cls, "Field not present for " + cls.getSimpleName() + ".");
     }
+
     public static <T> AutoCodec<T> of(Class<T> cls, String errorMsg) {
         return new AutoCodec<>(cls, errorMsg);
     }
@@ -103,10 +107,11 @@ public class AutoCodec<C> extends MapCodec<C> {
     protected C createCInstance(Class<C> cls) {
         return (C) createClassInstance(cls);
     }
+
     protected static Object createClassInstance(Class<?> cls) {
         if (cls.isInterface() || Modifier.isAbstract(cls.getModifiers()) || cls.isAnnotation()) {
             LOGGER.error("Failed to create instance for class '{}' during AutoCodec decoding! Cannot instantiate interfaces/abstract classes.\n" +
-                    "Please override the codec for this class.", cls.getSimpleName());
+                         "Please override the codec for this class.", cls.getSimpleName());
             throw new IllegalArgumentException("Cannot instantiate interfaces/abstract classes.");
         }
 
@@ -114,7 +119,9 @@ public class AutoCodec<C> extends MapCodec<C> {
             Constructor<?> constructor = cls.getDeclaredConstructor();
             constructor.setAccessible(true);
             return constructor.newInstance();
-        } catch (InvocationTargetException | InstantiationException | IllegalAccessException | NoSuchMethodException ignored) {}
+        } catch (InvocationTargetException | InstantiationException | IllegalAccessException |
+                 NoSuchMethodException ignored) {
+        }
         //sun.misc.Unsafe? for now, no.
         LOGGER.error("Failed to create instance for class '{}' during AutoCodec decoding! No available nullary constructor.", cls.getSimpleName());
         throw new IllegalArgumentException("No available nullary constructor!");
@@ -127,7 +134,7 @@ public class AutoCodec<C> extends MapCodec<C> {
             Object value = field.codec.decode(
                     ops,
                     map
-            ).getOrThrow(s -> MiscUtil.logError(LOGGER, STR."Failed to parse field '\{field.field.getName()}' in AutoCodec decoding of '\{cls.getSimpleName()}'! -> \{s}"));
+            ).getOrThrow(s -> MiscUtil.logError(LOGGER, "Failed to parse field '" + field.field.getName() + "' in AutoCodec decoding of '" + cls.getSimpleName() + "! -> " + s));
 
             boolean setIfNull = defaultSetIfNullBehavior(field, value, instance);
             if (field.codec instanceof NullabilityHandler nh) setIfNull = nh.shouldSetToNull(ops, map);
@@ -174,9 +181,9 @@ public class AutoCodec<C> extends MapCodec<C> {
     @java.lang.Override
     public String toString() {
         return "AutoCodec{" +
-                "cls=" + cls +
-                ", fields=" + fields +
-                '}';
+               "cls=" + cls +
+               ", fields=" + fields +
+               '}';
     }
 
     @java.lang.Override
@@ -229,9 +236,11 @@ public class AutoCodec<C> extends MapCodec<C> {
      */
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.FIELD)
-    public @interface Ignored {}
+    public @interface Ignored {
+    }
 
-    public record AutoCodecField(String name, MapCodec<?> codec, Type type, Class<?> clazz, Field field) {}
+    public record AutoCodecField(String name, MapCodec<?> codec, Type type, Class<?> clazz, Field field) {
+    }
 
     /*private static class TestVessel {
         @IntegerRange(min = 0, max = 10)

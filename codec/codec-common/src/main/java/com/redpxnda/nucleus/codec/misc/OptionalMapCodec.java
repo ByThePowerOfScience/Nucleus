@@ -37,7 +37,7 @@ public class OptionalMapCodec<A> extends MapCodec<A> implements AutoCodec.Nullab
         if (input == null && optional.encodeToNull())
             prefix.add(ops.createString(name), ops.empty());
         else if (input != null)
-            prefix.add(ops.createString(name), codec.encodeStart(ops, input).getOrThrow(false, s -> LOGGER.error("Failed to encode optional object '{}'! -> {}", input, s)));
+            prefix.add(ops.createString(name), codec.encodeStart(ops, input).getOrThrow(s -> new RuntimeException("Failed to encode optional object '" + input + "'! -> " + s)));
         return prefix;
     }
 

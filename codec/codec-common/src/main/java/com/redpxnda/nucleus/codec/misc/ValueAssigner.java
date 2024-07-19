@@ -20,9 +20,9 @@ import java.util.function.Consumer;
  * <p>
  * Example value assigner (serialized):
  * {
- *   "value1": "cool String!",
- *   "value2": 16,
- *   "value3": true
+ * "value1": "cool String!",
+ * "value2": 16,
+ * "value3": true
  * }
  * In this example, the "value1" section will apply the {@link BiConsumer} saved under the "value1" key,
  * inputting a value of "cool String!" for the second input. The first input will be the instance of the
@@ -38,6 +38,7 @@ public class ValueAssigner<T> {
     public ValueAssigner(Map<String, Instruction<T, ?>> instructions) {
         this.instructions = instructions;
     }
+
     public ValueAssigner() {
         this(new HashMap<>());
     }
@@ -47,6 +48,7 @@ public class ValueAssigner<T> {
         instructions.put(key, new Instruction<>(null, assigner, null));
         return this;
     }
+
     public Instruction<T, ?> get(String str) {
         return instructions.get(str);
     }
@@ -61,6 +63,7 @@ public class ValueAssigner<T> {
         protected CodecBuilder(Map<String, Template<T, ?>> templates) {
             this.templates = templates;
         }
+
         public CodecBuilder() {
             this(new HashMap<>());
         }
@@ -87,6 +90,7 @@ public class ValueAssigner<T> {
             return new Builder<>(this);
         }
     }
+
     public static class Builder<T> {
         private final CodecBuilder<T> codecBuilder;
         private final Map<String, Instruction<T, ?>> instructions = new HashMap<>();
@@ -117,8 +121,11 @@ public class ValueAssigner<T> {
         }
     }
 
-    public record Template<T, A> (Codec<A> codec, BiConsumer<T, A> assigner, A defInput) {}
-    public record Instruction<T, A> (Codec<A> codec, Consumer<T> assigner, Object input) {}
+    public record Template<T, A>(Codec<A> codec, BiConsumer<T, A> assigner, A defInput) {
+    }
+
+    public record Instruction<T, A>(Codec<A> codec, Consumer<T> assigner, Object input) {
+    }
 
     public static class VACodec<T> implements Codec<ValueAssigner<T>> {
         private final Map<String, Template<T, ?>> map;
@@ -133,7 +140,7 @@ public class ValueAssigner<T> {
             map.forEach((key, t) -> {
                 Optional<A> val = ops.get(input, key).result();
                 if (val.isPresent()) {
-                    Object obj = t.codec().parse(ops, val.get()).getOrThrow(false, s -> LOGGER.error("Failed to deserialize key '{}' during ValueAssigner creation! -> {}", key, s));
+                    Object obj = t.codec().parse(ops, val.get()).getOrThrow(s -> new RuntimeException("Failed to deserialize key '" + key + "' during ValueAssigner creation! -> " + s));
                     inst.put(key, new Instruction<>(t.codec(), subject -> ((BiConsumer<T, Object>) t.assigner()).accept(subject, obj), obj));
                 } else {
                     inst.put(key, new Instruction<>(t.codec(), subject -> ((BiConsumer<T, Object>) t.assigner()).accept(subject, t.defInput), t.defInput));
@@ -147,7 +154,7 @@ public class ValueAssigner<T> {
             Map<A, A> map = new HashMap<>();
             input.instructions.forEach((key, instruction) -> {
                 DataResult<A> obj = ((Codec<Object>) instruction.codec()).encodeStart(ops, instruction.input());
-                map.put(ops.createString(key), obj.getOrThrow(false, s -> LOGGER.error("Failed to encode key '{}' for ValueAssigner! -> {}", key, s)));
+                map.put(ops.createString(key), obj.getOrThrow(s -> new RuntimeException("Failed to encode key '" + key + "' for ValueAssigner! -> {}" + s)));
             });
             return DataResult.success(ops.createMap(map));
         }
