@@ -59,6 +59,6 @@ public class FacetSyncPacket<T extends Tag, C extends EntityFacet<T>> implements
 
     @Override
     public Type<? extends CustomPacketPayload> type() {
-        return null;
+        return TYPE;
     }
 }
