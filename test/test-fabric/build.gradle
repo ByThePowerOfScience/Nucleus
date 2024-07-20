@@ -3,5 +3,5 @@ repositories {
 }
 
 dependencies {
-    modImplementation "com.terraformersmc:modmenu:7.2.1"
+    modImplementation "com.terraformersmc:modmenu:11.0.1"
 }

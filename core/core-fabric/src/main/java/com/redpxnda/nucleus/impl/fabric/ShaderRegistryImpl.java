@@ -12,6 +12,7 @@ public class ShaderRegistryImpl {
     public static final List<Triple<ResourceLocation, VertexFormat, Consumer<ShaderInstance>>> SHADERS = new ArrayList<>();
 
     public static void register(ResourceLocation loc, VertexFormat vertexFormat, Consumer<ShaderInstance> onLoad) {
-        SHADERS.add(Triple.of(loc, vertexFormat, onLoad));
+        //SHADERS.add(Triple.of(loc, vertexFormat, onLoad));
+        //TODO:panda idfk ur shaders bricc the game. u go fix
     }
 }
