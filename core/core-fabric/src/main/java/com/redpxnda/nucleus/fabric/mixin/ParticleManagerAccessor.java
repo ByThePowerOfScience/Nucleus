@@ -8,6 +8,6 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 
 @Mixin(ParticleEngine.class)
 public interface ParticleManagerAccessor {
-    @Accessor("factories")
+    @Accessor("providers")
     Int2ObjectMap<ParticleProvider<?>> getFactories();
 }

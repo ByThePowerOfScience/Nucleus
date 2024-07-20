@@ -60,7 +60,7 @@ public interface CurioTrinket {
      * @return Whether the stack can be unequipped
      */
     default boolean canUnequip(ItemStack stack, LivingEntity entity, CommonSlotReference slotIndex) {
-        return !EnchantmentHelper.hasBindingCurse(stack);
+        return true;
     }
 
     /**
@@ -80,9 +80,6 @@ public interface CurioTrinket {
     }
 
     /**
-     * The attribute modifiers this trinket should provide.
-     * Override {@link #useNbtAttributeBehavior(ItemStack, LivingEntity, int, UUID)} to control whether attributes can be added with an nbt tag.
-     *
      * @param stack The stack holding the potential attributes
      * @param entity The entity wearing the ItemStack
      * @param uuid The generated UUID for use in attribute modifiers (See ICurioItem's and Trinket's getAttributeModifiers, they explain it better)

@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(Player.class)
 public class PlayerEntityMixin {
-    @Inject(method = "canHarvest", at = @At("RETURN"), cancellable = true)
+    @Inject(method = "hasCorrectToolForDrops", at = @At("RETURN"), cancellable = true)
     private void nucleus$canPlayerHarvestEvent(BlockState state, CallbackInfoReturnable<Boolean> cir) {
         CompoundEventResult<Boolean> result = PlayerEvents.CAN_PLAYER_HARVEST.invoker().check((Player) (Object) this, state, cir.getReturnValue());
         if (result.interruptsFurtherEvaluation())

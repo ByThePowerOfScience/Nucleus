@@ -9,6 +9,6 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 
 @Mixin(ItemInHandRenderer.class)
 public interface HeldItemRendererAccessor {
-    @Invoker
+    @Invoker("renderPlayerArm")
     void callRenderArmHoldingItem(PoseStack matrices, MultiBufferSource vertexConsumers, int light, float equipProgress, float swingProgress, HumanoidArm arm);
 }

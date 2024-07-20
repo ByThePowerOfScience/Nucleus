@@ -315,6 +315,6 @@ public class Rendering {
     }
 
     public static void addVertex(PoseStack stack, VertexConsumer vc, float red, float green, float blue, float alpha, float x, float y, float z, float u, float v, int light) {
-        vc.addVertex(stack.last().pose(),x, y, z).setUv(u, v).setColor(red, green, blue, 1.0).setLight(light).setNormal(stack.last().normal(), 1, 0, 0);
+        vc.addVertex(stack.last().pose(),x, y, z).setUv(u, v).setColor(red, green, blue, 1.0f).setLight(light).setNormal(stack.last(), 1.0f, 0.0f, 0.0f);
     }
 }

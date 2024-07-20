@@ -32,7 +32,7 @@ public interface PlayerSendable {
      */
     default void sendToTrackers(Entity trackedEntity) {
         if (trackedEntity.level().getChunkSource() instanceof ServerChunkCache chunkCache) {
-            ChunkMap.TrackedEntity tracked = ((ThreadedAnvilChunkStorageAccessor) chunkCache.chunkMap).getEntityTrackers().get(trackedEntity.getId());
+            ChunkMap.TrackedEntity tracked = ((ThreadedAnvilChunkStorageAccessor) chunkCache.chunkMap).getEntityMap().get(trackedEntity.getId());
             if (tracked != null) ((TrackedEntityAccessor) tracked).getListeners().forEach(cnct -> send(cnct.getPlayer()));
         }
     }

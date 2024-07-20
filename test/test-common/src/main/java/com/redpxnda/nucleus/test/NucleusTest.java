@@ -13,7 +13,7 @@ import net.minecraft.world.entity.player.Player;
 
 public class NucleusTest {
     public static final String MOD_ID = "nucleus_test";
-    public static final ResourceLocation loc = new ResourceLocation("nucleus", "item/blank");
+    public static final ResourceLocation loc = ResourceLocation.fromNamespaceAndPath("nucleus", "item/blank");
 
     public static void init() {
         /*
@@ -24,7 +24,7 @@ public class NucleusTest {
         ██║     ██║  ██║╚██████╗███████╗   ██║   ███████║
         ╚═╝     ╚═╝  ╚═╝ ╚═════╝╚══════╝   ╚═╝   ╚══════╝
         */
-        CoolEntityFacet.KEY = FacetRegistry.register(new ResourceLocation("example", "cool_entity_facet"), CoolEntityFacet.class);
+        CoolEntityFacet.KEY = FacetRegistry.register(ResourceLocation.fromNamespaceAndPath("example", "cool_entity_facet"), CoolEntityFacet.class);
 
         FacetRegistry.ENTITY_FACET_ATTACHMENT.register((entity, attacher) -> {
             if (entity instanceof Player)
@@ -57,7 +57,7 @@ public class NucleusTest {
         );
 
         if (Platform.getEnv() == EnvType.CLIENT)
-            ConfigManager.CONFIG_SCREENS_REGISTRY.register(r -> r.add("nucleus_test", new ResourceLocation("nucleus:test-common")));
+            ConfigManager.CONFIG_SCREENS_REGISTRY.register(r -> r.add("nucleus_test", ResourceLocation.parse("nucleus:test-common")));
 
         /*
         ██████╗ ███████╗ ██████╗ ██╗███████╗████████╗██████╗ ██╗███████╗███████╗

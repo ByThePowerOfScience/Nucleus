@@ -16,7 +16,7 @@ public class ServerEntityMixin {
     @Shadow @Final private Entity entity;
 
     @Inject(
-            method = "startTracking",
+            method = "addPairing",
             at = @At("TAIL")
     )
     private void nucleus$trackingChangeEventStartedStage(ServerPlayer player, CallbackInfo ci) {
@@ -24,7 +24,7 @@ public class ServerEntityMixin {
     }
 
     @Inject(
-            method = "stopTracking",
+            method = "removePairing",
             at = @At("TAIL")
     )
     private void nucleus$trackingChangeEventStoppedStage(ServerPlayer player, CallbackInfo ci) {

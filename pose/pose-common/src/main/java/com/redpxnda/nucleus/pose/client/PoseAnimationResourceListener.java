@@ -32,8 +32,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-import static java.lang.StringTemplate.STR;
-
 @Environment(EnvType.CLIENT)
 public class PoseAnimationResourceListener extends SimpleJsonResourceReloadListener {
     private static final Logger LOGGER = Nucleus.getLogger();
@@ -59,7 +57,7 @@ public class PoseAnimationResourceListener extends SimpleJsonResourceReloadListe
 
             list.forEach(obj -> animations.put(
                     ResourceLocation.parse(obj.get("name").getAsString()).toString(),
-                    MiscCodecs.quickParse(obj, HumanoidPoseAnimation.codec, s -> MiscUtil.logError(LOGGER, STR."Failed to parse HumanoidPoseAnimation at \{key}! -> \{s}"))
+                    MiscCodecs.quickParse(obj, HumanoidPoseAnimation.codec, s -> MiscUtil.logError(LOGGER, "Failed to parse HumanoidPoseAnimation at " + key + "! -> " + s))
             ));
         });
     }
@@ -91,24 +89,24 @@ public class PoseAnimationResourceListener extends SimpleJsonResourceReloadListe
                 HumanoidPoseAnimation.Frame fm = animation.frames.get(0);
                 positionMatricesToState(leftHandMult, relPartState.apply(fm), exactPartState.apply(fm), matrices);
             } else if (animation.frames.size() > 0) {
-                float maxLength = animation.length*20f;
-                double elapsedTime = Rendering.getGameAndPartialTime()-cap.updateTime;
-                if ((animation.loops == -1 || (animation.loops > 1 && elapsedTime < maxLength*animation.loops)) && elapsedTime >= maxLength) {
+                float maxLength = animation.length * 20f;
+                double elapsedTime = Rendering.getGameAndPartialTime() - cap.updateTime;
+                if ((animation.loops == -1 || (animation.loops > 1 && elapsedTime < maxLength * animation.loops)) && elapsedTime >= maxLength) {
                     cap.frameIndex = 0;
                     elapsedTime %= maxLength;
                 } else elapsedTime = Math.min(elapsedTime, maxLength);
 
                 HumanoidPoseAnimation.Frame frame = animation.frames.get(cap.frameIndex);
-                while (frame.endTime*20 < elapsedTime) {
+                while (frame.endTime * 20 < elapsedTime) {
                     cap.frameIndex++;
                     frame = animation.frames.get(cap.frameIndex);
                 }
-                int nextIndex = cap.frameIndex+1;
+                int nextIndex = cap.frameIndex + 1;
                 HumanoidPoseAnimation.Frame nextFrame = nextIndex >= animation.frames.size() ? animation.frames.get(0) : animation.frames.get(nextIndex);
 
-                float cTime = frame.endTime*20;
-                float nTime = nextFrame.endTime*20;
-                float delta = (float) ((elapsedTime+20 - cTime)/(nTime-cTime));
+                float cTime = frame.endTime * 20;
+                float nTime = nextFrame.endTime * 20;
+                float delta = (float) ((elapsedTime + 20 - cTime) / (nTime - cTime));
 
                 HumanoidPoseAnimation.Frame fm = frame.interpItemTo(delta, nextFrame);
                 positionMatricesToState(leftHandMult, relPartState.apply(fm), exactPartState.apply(fm), matrices);
@@ -138,24 +136,24 @@ public class PoseAnimationResourceListener extends SimpleJsonResourceReloadListe
                     HumanoidPoseAnimation.Frame fm = animation.frames.get(0);
                     positionMatricesToState(leftHandMult, relPartState.apply(fm), exactPartState.apply(fm), matrices);
                 } else if (animation.frames.size() > 0) {
-                    float maxLength = animation.length*20f;
-                    double elapsedTime = Rendering.getGameAndPartialTime()-cap.updateTime;
-                    if ((animation.loops == -1 || (animation.loops > 1 && elapsedTime < maxLength*animation.loops)) && elapsedTime >= maxLength) {
+                    float maxLength = animation.length * 20f;
+                    double elapsedTime = Rendering.getGameAndPartialTime() - cap.updateTime;
+                    if ((animation.loops == -1 || (animation.loops > 1 && elapsedTime < maxLength * animation.loops)) && elapsedTime >= maxLength) {
                         cap.frameIndex = 0;
                         elapsedTime %= maxLength;
                     } else elapsedTime = Math.min(elapsedTime, maxLength);
 
                     HumanoidPoseAnimation.Frame frame = animation.frames.get(cap.frameIndex);
-                    while (frame.endTime*20 < elapsedTime) {
+                    while (frame.endTime * 20 < elapsedTime) {
                         cap.frameIndex++;
                         frame = animation.frames.get(cap.frameIndex);
                     }
-                    int nextIndex = cap.frameIndex+1;
+                    int nextIndex = cap.frameIndex + 1;
                     HumanoidPoseAnimation.Frame nextFrame = nextIndex >= animation.frames.size() ? animation.frames.get(0) : animation.frames.get(nextIndex);
 
-                    float cTime = frame.endTime*20;
-                    float nTime = nextFrame.endTime*20;
-                    float delta = (float) ((elapsedTime+20 - cTime)/(nTime-cTime));
+                    float cTime = frame.endTime * 20;
+                    float nTime = nextFrame.endTime * 20;
+                    float delta = (float) ((elapsedTime + 20 - cTime) / (nTime - cTime));
 
                     HumanoidPoseAnimation.Frame fm = frame.interpFpTo(delta, nextFrame);
                     positionMatricesToState(leftHandMult, relPartState.apply(fm), exactPartState.apply(fm), matrices);
@@ -178,24 +176,24 @@ public class PoseAnimationResourceListener extends SimpleJsonResourceReloadListe
                     positionModelToFrame(animation.leftHandMultiplier, animation.frames.get(0), model, arm); // only use first frame and avoid extra calculations if there's only one frame
                 else if (animation.frames.size() > 0) {
                     // configuring elapsedTime (making loops work and making sure it doesn't go over maxLength)
-                    float maxLength = animation.length*20f;
-                    double elapsedTime = Rendering.getGameAndPartialTime()-cap.updateTime;
-                    if ((animation.loops == -1 || (animation.loops > 1 && elapsedTime < maxLength*animation.loops)) && elapsedTime >= maxLength) {
+                    float maxLength = animation.length * 20f;
+                    double elapsedTime = Rendering.getGameAndPartialTime() - cap.updateTime;
+                    if ((animation.loops == -1 || (animation.loops > 1 && elapsedTime < maxLength * animation.loops)) && elapsedTime >= maxLength) {
                         cap.frameIndex = 0;
                         elapsedTime %= maxLength;
                     } else elapsedTime = Math.min(elapsedTime, maxLength);
 
                     HumanoidPoseAnimation.Frame frame = animation.frames.get(cap.frameIndex);
-                    while (frame.endTime*20 < elapsedTime) {
+                    while (frame.endTime * 20 < elapsedTime) {
                         cap.frameIndex++;
                         frame = animation.frames.get(cap.frameIndex);
                     }
-                    int nextIndex = cap.frameIndex+1;
+                    int nextIndex = cap.frameIndex + 1;
                     HumanoidPoseAnimation.Frame nextFrame = nextIndex >= animation.frames.size() ? animation.frames.get(0) : animation.frames.get(nextIndex);
 
-                    float cTime = frame.endTime*20;
-                    float nTime = nextFrame.endTime*20;
-                    float delta = (float) ((elapsedTime+20 - cTime)/(nTime-cTime));
+                    float cTime = frame.endTime * 20;
+                    float nTime = nextFrame.endTime * 20;
+                    float delta = (float) ((elapsedTime + 20 - cTime) / (nTime - cTime));
                     positionModelToFrame(animation.leftHandMultiplier, frame.interpTo(delta, nextFrame), model, arm);
                 }
             }
@@ -256,32 +254,33 @@ public class PoseAnimationResourceListener extends SimpleJsonResourceReloadListe
     public static void positionModelPartToState(ModelPart part, HumanoidPoseAnimation.PartState state, boolean set, HumanoidPoseAnimation.FrameMultiplier mult) {
         if (state == null || state == HumanoidPoseAnimation.PartState.EMPTY) return;
         if (set) {
-            part.x = state.position.x*mult.position.x;
-            part.y = state.position.y*mult.position.y;
-            part.z = state.position.z*mult.position.z;
+            part.x = state.position.x * mult.position.x;
+            part.y = state.position.y * mult.position.y;
+            part.z = state.position.z * mult.position.z;
 
-            part.xRot = state.rotation.x*mult.rotation.x;
-            part.yRot = state.rotation.y*mult.rotation.y;
-            part.zRot = state.rotation.z*mult.rotation.z;
+            part.xRot = state.rotation.x * mult.rotation.x;
+            part.yRot = state.rotation.y * mult.rotation.y;
+            part.zRot = state.rotation.z * mult.rotation.z;
 
-            part.xScale = state.scale.x*mult.scale.x;
-            part.yScale = state.scale.y*mult.scale.y;
-            part.zScale = state.scale.z*mult.scale.z;
+            part.xScale = state.scale.x * mult.scale.x;
+            part.yScale = state.scale.y * mult.scale.y;
+            part.zScale = state.scale.z * mult.scale.z;
             return;
         }
 
-        part.x += state.position.x*mult.position.x;
-        part.y += state.position.y*mult.position.y;
-        part.z += state.position.z*mult.position.z;
+        part.x += state.position.x * mult.position.x;
+        part.y += state.position.y * mult.position.y;
+        part.z += state.position.z * mult.position.z;
 
-        part.xRot += state.rotation.x*mult.rotation.x;
-        part.yRot += state.rotation.y*mult.rotation.y;
-        part.zRot += state.rotation.z*mult.rotation.z;
+        part.xRot += state.rotation.x * mult.rotation.x;
+        part.yRot += state.rotation.y * mult.rotation.y;
+        part.zRot += state.rotation.z * mult.rotation.z;
 
-        part.xScale *= state.scale.x*mult.scale.x;
-        part.yScale *= state.scale.y*mult.scale.y;
-        part.zScale *= state.scale.z*mult.scale.z;
+        part.xScale *= state.scale.x * mult.scale.x;
+        part.yScale *= state.scale.y * mult.scale.y;
+        part.zScale *= state.scale.z * mult.scale.z;
     }
+
     @Environment(EnvType.CLIENT)
     public static void positionModelPartToState(ModelPart part, HumanoidPoseAnimation.PartState state, boolean set) {
         if (state == null || state == HumanoidPoseAnimation.PartState.EMPTY) return;

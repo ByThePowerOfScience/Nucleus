@@ -9,6 +9,6 @@ import net.minecraft.server.network.ServerPlayerConnection;
 
 @Mixin(ChunkMap.TrackedEntity.class)
 public interface TrackedEntityAccessor {
-    @Accessor
+    @Accessor("seenBy")
     Set<ServerPlayerConnection> getListeners();
 }

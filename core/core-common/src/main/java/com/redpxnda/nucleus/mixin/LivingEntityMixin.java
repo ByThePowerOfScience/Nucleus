@@ -3,6 +3,8 @@ package com.redpxnda.nucleus.mixin;
 import com.redpxnda.nucleus.event.MiscEvents;
 import dev.architectury.event.CompoundEventResult;
 import dev.architectury.event.EventResult;
+import dev.architectury.networking.NetworkManager;
+import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.world.entity.LivingEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -13,7 +15,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(LivingEntity.class)
 public class LivingEntityMixin {
     @Inject(
-            method = "jump",
+            method = "jumpFromGround",
             at = @At("HEAD"),
             cancellable = true)
     private void nucleus$entityJumpEvent(CallbackInfo ci) {
@@ -23,7 +25,7 @@ public class LivingEntityMixin {
     }
 
     @Inject(
-            method = "getJumpVelocity",
+            method = "getJumpPower()F",
             at = @At("HEAD"),
             cancellable = true)
     private void nucleus$entityJumpPowerEvent(CallbackInfoReturnable<Float> cir) {

@@ -78,8 +78,8 @@ public class MappingsDataLoader extends SimplePreparableReloadListener<Map<Resou
         System.out.println("Mappings done .. .. " + loadedMappings);
 
         TwoStepTreeRemapper remapper = new TwoStepTreeRemapper(
-                loadedMappings.get(new ResourceLocation("nucleus:mojmap")),
-                loadedMappings.get(new ResourceLocation("nucleus:yarn")),
+                loadedMappings.get(ResourceLocation.parse("nucleus:mojmap")),
+                loadedMappings.get(ResourceLocation.parse("nucleus:yarn")),
                 "source",
                 "target",
                 "official",

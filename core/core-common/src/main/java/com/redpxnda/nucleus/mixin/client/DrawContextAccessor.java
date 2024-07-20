@@ -7,12 +7,12 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 
 @Mixin(GuiGraphics.class)
 public interface DrawContextAccessor {
-    @Accessor
+    @Accessor("managed")
     boolean isRunningDrawCallback();
 
-    @Invoker
+    @Invoker("flushIfUnmanaged")
     void callTryDraw();
 
-    @Invoker
+    @Invoker("flushIfManaged")
     void callDrawIfRunning();
 }

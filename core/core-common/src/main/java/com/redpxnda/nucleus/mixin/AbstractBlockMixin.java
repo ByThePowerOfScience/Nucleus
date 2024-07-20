@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 @Mixin(BlockBehaviour.class)
 public class AbstractBlockMixin {
-    @Inject(method = "calcBlockBreakingDelta", at = @At("TAIL"), locals = LocalCapture.CAPTURE_FAILHARD, cancellable = true)
+    @Inject(method = "getDestroyProgress", at = @At("TAIL"), locals = LocalCapture.CAPTURE_FAILHARD, cancellable = true)
     private void nucleus$playerBlockBreakSpeedEvent(BlockState state, Player player, BlockGetter world, BlockPos pos, CallbackInfoReturnable<Float> cir, float f, int i) {
         CompoundEventResult<Float> result = PlayerEvents.PLAYER_BREAK_SPEED.invoker().get(player, state, pos, cir.getReturnValue()*f*i);
         if (result.interruptsFurtherEvaluation())

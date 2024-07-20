@@ -34,10 +34,10 @@ public class GuiDrawUtil {
         float g = color.greenAsFloat();
         float b = color.blueAsFloat();
         VertexConsumer vertexConsumer = graphics.bufferSource().getBuffer(renderType);
-        vertexConsumer.vertex(matrix4f, minX, minY, z).color(r, g, b, a).endVertex();
-        vertexConsumer.vertex(matrix4f, minX, maxY, z).color(r, g, b, a).endVertex();
-        vertexConsumer.vertex(matrix4f, maxX, maxY, z).color(r, g, b, a).endVertex();
-        vertexConsumer.vertex(matrix4f, maxX, minY, z).color(r, g, b, a).endVertex();
+        vertexConsumer.addVertex(matrix4f, minX, minY, z).setColor(r, g, b, a);
+        vertexConsumer.addVertex(matrix4f, minX, maxY, z).setColor(r, g, b, a);
+        vertexConsumer.addVertex(matrix4f, maxX, maxY, z).setColor(r, g, b, a);
+        vertexConsumer.addVertex(matrix4f, maxX, minY, z).setColor(r, g, b, a);
         ((DrawContextAccessor) graphics).callTryDraw();
     }
 }

@@ -405,9 +405,9 @@ subprojects { Project subproject ->
         }
 
         java {
-            /*toolchain {
+            toolchain {
                 languageVersion.set(JavaLanguageVersion.of(21))
-            }*/
+            }
             withSourcesJar()
         }
 

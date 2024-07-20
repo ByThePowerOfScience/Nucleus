@@ -6,12 +6,13 @@ import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.network.protocol.game.ClientboundRemoveMobEffectPacket;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.protocol.game.ClientboundUpdateMobEffectPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeMap;
 
@@ -29,7 +30,8 @@ public abstract class RenderingMobEffect extends MobEffect {
     }
 
     @Environment(EnvType.CLIENT)
-    public void renderPost(MobEffectInstance instance, LivingEntity entity, float entityYaw, float partialTick, PoseStack matrixStack, MultiBufferSource multiBufferSource, int packedLight) {}
+    public void renderPost(MobEffectInstance instance, LivingEntity entity, float entityYaw, float partialTick, PoseStack matrixStack, MultiBufferSource multiBufferSource, int packedLight) {
+    }
 
     /**
      * @return true if further hud rendering should be interrupted
@@ -39,31 +41,34 @@ public abstract class RenderingMobEffect extends MobEffect {
         return false;
     }
 
-    @Override
+    //@Override
     public void removeAttributeModifiers(LivingEntity entity, AttributeMap attributeMap, int i) {
-        super.removeAttributeModifiers(entity, attributeMap, i);
+        //super.removeAttributeModifiers(entity, attributeMap, i);
         if (entity.level() instanceof ServerLevel level) {
             level.getPlayers(player -> true).forEach(player -> {
-                player.connection.send(new ClientboundRemoveMobEffectPacket(entity.getId(), this));
+                //player.connection.send(new ClientboundRemoveMobEffectPacket(entity.getId(), this));
             });
         }
     }
 
     /**
      * Make sure to enable ticking for your effect in order for updates to work
+     *
+     * @return
      */
     @Override
-    public void applyEffectTick(LivingEntity entity, int i) {
-        super.applyEffectTick(entity, i);
-        if (tickUpdateInterval() < 1) return;
+    public boolean applyEffectTick(LivingEntity entity, int i) {
+        boolean apply = super.applyEffectTick(entity, i);
+        if (tickUpdateInterval() < 1) return false;
         if (entity.level() instanceof ServerLevel level && level.getGameTime() % tickUpdateInterval() == 0) {
-            MobEffectInstance instance = entity.getEffect(this);
-            if (instance == null) return;
+            MobEffectInstance instance = entity.getEffect(BuiltInRegistries.MOB_EFFECT.wrapAsHolder(this));
+            if (instance == null) return false;
 
             level.getPlayers(player -> player.position().distanceTo(entity.position()) < maxTickUpdateDistance()).forEach(player -> {
-                player.connection.send(new ClientboundUpdateMobEffectPacket(entity.getId(), instance));
+                player.connection.send(new ClientboundUpdateMobEffectPacket(entity.getId(), instance, apply));
             });
         }
+        return apply;
     }
 
     /**
@@ -82,15 +87,15 @@ public abstract class RenderingMobEffect extends MobEffect {
         return 1;
     }
 
-    @Override
+    //@Override
     public void addAttributeModifiers(LivingEntity entity, AttributeMap attributeMap, int i) {
-        super.addAttributeModifiers(entity, attributeMap, i);
+        //super.addAttributeModifiers(entity, attributeMap, i);
         if (entity.level() instanceof ServerLevel level) {
-            MobEffectInstance instance = entity.getEffect(this);
+            MobEffectInstance instance = entity.getEffect(BuiltInRegistries.MOB_EFFECT.wrapAsHolder(this));
             if (instance == null) return;
 
             level.getPlayers(player -> true).forEach(player -> {
-                player.connection.send(new ClientboundUpdateMobEffectPacket(entity.getId(), instance));
+                player.connection.send(new ClientboundUpdateMobEffectPacket(entity.getId(), instance, false));
             });
         }
     }

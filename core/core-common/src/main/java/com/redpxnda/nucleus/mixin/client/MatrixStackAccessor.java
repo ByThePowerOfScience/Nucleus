@@ -7,6 +7,6 @@ import java.util.Deque;
 
 @Mixin(PoseStack.class)
 public interface MatrixStackAccessor {
-    @Accessor
+    @Accessor("poseStack")
     Deque<PoseStack.Pose> getStack();
 }

@@ -79,13 +79,13 @@ public class TestConfig {
     @CodecBehavior.Optional
     public String str = "aggggh!";
 
-    public ResourceLocation identifier = new ResourceLocation("abcd");
+    public ResourceLocation identifier = ResourceLocation.tryParse("abcd");
 
     public Item item = Items.ACACIA_LOG;
 
     public Color color = new Color();
 
-    public TagKey<EntityType<?>> entityTypeTag = TagKey.create(Registries.ENTITY_TYPE, new ResourceLocation("sussy:tag"));
+    public TagKey<EntityType<?>> entityTypeTag = TagKey.create(Registries.ENTITY_TYPE, ResourceLocation.parse("sussy:tag"));
 
     public EntityTypeList entityTypeList = EntityTypeList.of();
 

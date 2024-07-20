@@ -35,7 +35,7 @@ public class RegistryAnalyzerImpl {
                 continue;
             }
 
-            ResourceLocation identifier = new ResourceLocation(modId, id.value());
+            ResourceLocation identifier =ResourceLocation.fromNamespaceAndPath(modId, id.value());
             try {
                 Object obj = field.get(null);
                 Registry.register((Registry) reg, identifier, obj);
