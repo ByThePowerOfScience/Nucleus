@@ -35,8 +35,8 @@ ext {
                     { DependencyHandler dh -> dh.implementation(dh.include("net.fabricmc:mapping-io-extras:${rootProject.mappingio_extras_version}")) } // todo remove this guy?
             ],
             "forge": [
-                    { DependencyHandler dh -> dh.forgeRuntimeLibrary(dh.include("org.ow2.asm:asm:${rootProject.asm_version}")) },
-                    { DependencyHandler dh -> dh.forgeRuntimeLibrary(dh.include("org.ow2.asm:asm-tree:${rootProject.asm_version}")) },
+                    //{ DependencyHandler dh -> dh.forgeRuntimeLibrary(dh.include("org.ow2.asm:asm:${rootProject.asm_version}")) },
+                    //{ DependencyHandler dh -> dh.forgeRuntimeLibrary(dh.include("org.ow2.asm:asm-tree:${rootProject.asm_version}")) },
                     { DependencyHandler dh -> dh.forgeRuntimeLibrary(dh.include("com.dfsek:paralithic:${rootProject.paralithic_version}")) },
                     { DependencyHandler dh -> dh.forgeRuntimeLibrary(dh.include("net.fabricmc:mapping-io:${rootProject.mappingio_version}")) },
                     { DependencyHandler dh -> dh.forgeRuntimeLibrary(dh.include("net.fabricmc:mapping-io-extras:${rootProject.mappingio_extras_version}")) } // todo remove this guy?

@@ -138,14 +138,11 @@ public class ${fabricClassName} implements ModInitializer {
 """package com.redpxnda.nucleus.${name}.forge;
 
 import com.redpxnda.nucleus.${name}.${mainClassName};
-import dev.architectury.platform.forge.EventBuses;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.neoforged.fml.common.Mod;
 
 @Mod(${mainClassName}.MOD_ID)
 public class ${forgeClassName} {
     public ${forgeClassName}() {
-        EventBuses.registerModEventBus(${mainClassName}.MOD_ID, FMLJavaModLoadingContext.get().getModEventBus());
         ${mainClassName}.init();
     }
 }
@@ -194,9 +191,9 @@ public class ${forgeClassName} {
   ]""" : "[]"},
   "depends": [
     {
-      "id": "forge",
+      "id": "neoforge",
       "mandatory": true,
-      "version": "[47,)",
+      "version": "[21.0.0-beta,)",
       "ordering": "NONE",
       "side": "BOTH",
       "platform": "forge"
@@ -246,7 +243,7 @@ public class ${forgeClassName} {
   "forge": {
     "general": {
       "modLoader": "javafml",
-      "loaderVersion": "[47,)"
+      "loaderVersion": "[1,)"
     },
     "mod": {}
   }
@@ -442,10 +439,17 @@ subprojects { Project subproject ->
                         mod."${key}" = value
                     }
 
+                    def mixins = mod_data.mixins.collect { entry ->
+                        return [
+                                config : entry
+                        ]
+                    }
+
                     def data = [
                             license     : (mod_data.license ?: "MIT"),
                             mods        : [mod],
-                            dependencies: ["${mod_data.id}": depends]
+                            dependencies: ["${mod_data.id}": depends],
+                            mixins      : mixins
                     ]
                     mod_data.forge.general.each { key, value ->
                         data."${key}" = value
@@ -635,7 +639,7 @@ subprojects { Project subproject ->
 }
 
 static def includeMixinExtras(Project proj) {
-    proj.subprojects { Project subproject ->
+    /*proj.subprojects { Project subproject ->
         def platform = subproject.name
 
         def isFabric = platform.endsWith("fabric")
@@ -652,11 +656,11 @@ static def includeMixinExtras(Project proj) {
                 implementation(annotationProcessor("io.github.llamalad7:mixinextras-common:${rootProject.mixin_extras_version}"))
             }
         }
-    }
+    }*/
 }
 
 static def implementMixinExtras(Project proj) {
-    proj.subprojects { Project subproject ->
+    /*proj.subprojects { Project subproject ->
         def platform = subproject.name
 
         def isFabric = platform.endsWith("fabric")
@@ -673,7 +677,7 @@ static def implementMixinExtras(Project proj) {
                 implementation(annotationProcessor("io.github.llamalad7:mixinextras-common:${rootProject.mixin_extras_version}"))
             }
         }
-    }
+    }*/
 }
 
 static def copyAccessWidenersFrom(Project proj, String module) {

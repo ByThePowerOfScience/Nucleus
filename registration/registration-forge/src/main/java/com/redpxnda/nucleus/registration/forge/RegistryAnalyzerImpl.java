@@ -5,6 +5,11 @@ import com.google.common.collect.Multimaps;
 import com.redpxnda.nucleus.registration.RegistryAnalyzer;
 import com.redpxnda.nucleus.registration.RegistryId;
 import com.redpxnda.nucleus.util.MiscUtil;
+import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Tuple;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.HashMap;
@@ -13,10 +18,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import net.minecraft.core.Registry;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.Tuple;
 
 public class RegistryAnalyzerImpl {
     public static final Multimap<String, Tuple<Supplier<Map<ResourceKey<?>, Map<ResourceLocation, Object>>>, Consumer<Object>>> registrationListeners = Multimaps.newMultimap(new ConcurrentHashMap<>(), HashSet::new);
@@ -46,7 +47,7 @@ public class RegistryAnalyzerImpl {
                 }
 
                 Map<ResourceLocation, Object> objects = map.computeIfAbsent(reg, k -> new HashMap<>());
-                ResourceLocation identifier = new ResourceLocation(modId, id.value());
+                ResourceLocation identifier = ResourceLocation.fromNamespaceAndPath(modId, id.value());
                 try {
                     if (objects.containsKey(identifier)) RegistryAnalyzer.LOGGER.warn("Identifier '{}' has been used for multiple entries of the same type for registry class '{}'!", identifier, cls.getSimpleName());
                     objects.put(identifier, field.get(null));

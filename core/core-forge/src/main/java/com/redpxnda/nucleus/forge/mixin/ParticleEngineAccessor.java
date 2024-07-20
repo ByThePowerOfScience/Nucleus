@@ -10,6 +10,6 @@ import net.minecraft.resources.ResourceLocation;
 
 @Mixin(ParticleEngine.class)
 public interface ParticleEngineAccessor {
-    @Accessor("f_107293_")
+    @Accessor("providers")
     Map<ResourceLocation, ParticleProvider<?>> getProviders();
 }

@@ -15,9 +15,9 @@
   ],
   "depends": [
     {
-      "id": "forge",
+      "id": "neoforge",
       "mandatory": true,
-      "version": "[47,)",
+      "version": "[21.0.0-beta,)",
       "ordering": "NONE",
       "side": "BOTH",
       "platform": "forge"
@@ -64,7 +64,7 @@
   "forge": {
     "general": {
       "modLoader": "javafml",
-      "loaderVersion": "[47,)"
+      "loaderVersion": "[1,)"
     },
     "mod": {}
   }

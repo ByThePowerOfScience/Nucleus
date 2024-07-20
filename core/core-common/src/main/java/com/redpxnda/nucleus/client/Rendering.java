@@ -2,12 +2,7 @@ package com.redpxnda.nucleus.client;
 
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.Tesselator;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.blaze3d.vertex.*;
 import com.redpxnda.nucleus.event.RenderEvents;
 import com.redpxnda.nucleus.impl.MiscAbstraction;
 import com.redpxnda.nucleus.impl.ShaderRegistry;
@@ -45,7 +40,6 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 import java.util.Map;
-import java.util.OptionalDouble;
 import java.util.function.BiFunction;
 
 import static com.redpxnda.nucleus.Nucleus.loc;
@@ -71,7 +65,7 @@ public class Rendering {
     };
 
     public static ShaderInstance alphaAnimationShader;
-    public static ShaderInstance trailShader;
+    //public static ShaderInstance trailShader;
 
     public static RenderType transparentTriangleStrip = RenderType.create(
             "nucleus_triangle_strip", DefaultVertexFormat.POSITION_COLOR_LIGHTMAP, VertexFormat.Mode.TRIANGLE_STRIP,
@@ -83,12 +77,12 @@ public class Rendering {
             "nucleus_alpha_animation_translucent", DefaultVertexFormat.BLOCK, VertexFormat.Mode.QUADS,
             0x200000, true, true, RenderType.translucentState(new RenderStateShard.ShaderStateShard(() -> alphaAnimationShader)));
 
-    public static final RenderType.CompositeRenderType trail = RenderType.create(
+    /*public static final RenderType.CompositeRenderType trail = RenderType.create(
             "nucleus_trail", DefaultVertexFormat.POSITION_COLOR_NORMAL, VertexFormat.Mode.LINES,
             256, RenderType.CompositeState.builder().setShaderState(new RenderStateShard.ShaderStateShard(() -> trailShader))
                     .setLineState(new RenderStateShard.LineStateShard(OptionalDouble.of(4))).setLayeringState(VIEW_OFFSET_Z_LAYERING)
                     .setTransparencyState(TRANSLUCENT_TRANSPARENCY).setOutputState(ITEM_ENTITY_TARGET).setWriteMaskState(COLOR_DEPTH_WRITE)
-                    .setCullState(NO_CULL).createCompositeState(false));
+                    .setCullState(NO_CULL).createCompositeState(false));*/
 
     public static final ParticleRenderType blockSheetTranslucent = new ParticleRenderType() {
 
@@ -108,7 +102,7 @@ public class Rendering {
 
     public static void init() {
         ShaderRegistry.register(loc("rendertype_alpha_animation"), DefaultVertexFormat.BLOCK, i -> alphaAnimationShader = i);
-        ShaderRegistry.register(loc("rendertype_trail"), DefaultVertexFormat.POSITION_COLOR_NORMAL, i -> trailShader = i);
+        //ShaderRegistry.register(loc("rendertype_trail"), DefaultVertexFormat.POSITION_COLOR_NORMAL, i -> trailShader = i);
 
         RenderEvents.LIVING_ENTITY_RENDER.register((stage, model, entity, entityYaw, partialTick, matrixStack, multiBufferSource, packedLight) -> {
             if (stage != RenderEvents.EntityRenderStage.PRE) return EventResult.pass();

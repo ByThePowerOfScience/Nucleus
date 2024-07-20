@@ -2,14 +2,14 @@ package com.redpxnda.nucleus.registration.forge;
 
 import com.redpxnda.nucleus.registration.NucleusRegistration;
 import com.redpxnda.nucleus.registration.RegistrationListener;
-import dev.architectury.platform.forge.EventBuses;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Tuple;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.registries.RegisterEvent;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.registries.RegisterEvent;
 
 import java.util.Map;
 import java.util.function.Consumer;
@@ -17,11 +17,10 @@ import java.util.function.Supplier;
 
 @Mod(NucleusRegistration.MOD_ID)
 public class NucleusRegistrationForge {
-    public NucleusRegistrationForge() {
-        EventBuses.registerModEventBus(NucleusRegistration.MOD_ID, FMLJavaModLoadingContext.get().getModEventBus());
+    public NucleusRegistrationForge(final IEventBus modEventBus, final ModContainer modContainer) {
         NucleusRegistration.init();
 
-        FMLJavaModLoadingContext.get().getModEventBus().register(NucleusRegistrationForge.class);
+        modEventBus.register(NucleusRegistrationForge.class);
     }
 
     @SubscribeEvent
