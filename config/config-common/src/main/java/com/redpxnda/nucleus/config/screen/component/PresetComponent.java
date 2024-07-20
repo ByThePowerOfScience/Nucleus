@@ -2,6 +2,7 @@ package com.redpxnda.nucleus.config.screen.component;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import com.redpxnda.nucleus.Nucleus;
 import com.redpxnda.nucleus.config.preset.ConfigPreset;
 import com.redpxnda.nucleus.config.preset.ConfigProvider;
 import com.redpxnda.nucleus.util.Comment;
@@ -19,7 +20,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Tuple;
 
 public class PresetComponent<C, E extends Enum<E> & ConfigProvider<C>> extends DropdownComponent<ConfigPreset<C, E>> {
-    public static final ResourceLocation WARNING = ResourceLocation.parse("textures/gui/report_button.png");
+    public static final ResourceLocation WARNING = Nucleus.loc("textures/gui/warning.png");
     public static final Component DESC_TEXT = Component.translatable("nucleus.config_screen.preset.description");
     public static final Component WARNING_TEXT = Component.translatable("nucleus.config_screen.preset.warning");
 

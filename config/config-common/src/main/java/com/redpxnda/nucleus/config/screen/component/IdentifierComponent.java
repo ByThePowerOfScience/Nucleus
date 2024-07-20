@@ -65,7 +65,8 @@ public class IdentifierComponent extends EditBox implements ConfigComponent<Reso
     public void insertText(String text) {
         String old = getValue();
         super.insertText(text);
-        setValue(old);
+        if (getConfigValue() == null)
+            setValue(old);
         updateValidity();
     }
 
