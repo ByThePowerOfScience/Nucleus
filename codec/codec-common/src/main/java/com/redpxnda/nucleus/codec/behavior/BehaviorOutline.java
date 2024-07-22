@@ -67,7 +67,11 @@ public class BehaviorOutline<B extends TypeBehaviorGetter<?, ?>> {
                 Object value;
                 if ((value = fieldCache.get(field)) == null) {
                     value = getWithoutCache(field, cls, raw, params, passes);
-                    fieldCache.put(field, value);
+                    if (value != null) {
+                        fieldCache.put(field, value);
+                    } else {
+                        LOGGER.error("could not find field " + field.getName() + " in class " + cls.getName());
+                    }
                 }
                 return value;
             }
