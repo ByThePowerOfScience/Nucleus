@@ -35,7 +35,7 @@ public class TextFieldComponent extends EditBox implements ConfigComponent<Strin
 
     @Override
     public String getConfigValue() {
-        return getConfigValue();
+        return getValue();
     }
     public void setConfigValue(String value) {
         super.setValue(value);
