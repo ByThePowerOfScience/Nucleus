@@ -322,7 +322,7 @@ subprojects { Project subproject ->
                     platformPackage = "forge" // todo neoforge rename
                 }
             } else if (isCommon) {
-                common(rootProject.enabled_platforms.split(",")) {
+                common(rootProject.enabled_platforms.split(",").collect { entry -> entry == "forge" ? "neoforge" : entry }) {
                     it.platformPackage "neoforge", "forge"
                 }
             }
@@ -747,7 +747,7 @@ static def setupAccessWideners(Project proj, String path) {
 
             remapJar {
                 if (isFabric) injectAccessWidener = true
-                if (isNeoForge) atAccessWideners.add "architectury.accessWidener"
+                if (isNeoForge) atAccessWideners.add "nucleus.accessWidener"
             }
         }
     }
